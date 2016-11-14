@@ -1251,6 +1251,7 @@ var require$$0$3 = Object.freeze({
 	      var _console;
 
 	      if (!this.logging) return;
+	      if (!this.logging.dragHandler) return;
 
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
@@ -1382,6 +1383,7 @@ var require$$0$3 = Object.freeze({
 	      var _console;
 
 	      if (!this.logging) return;
+	      if (!this.logging.service) return;
 
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
@@ -1583,10 +1585,21 @@ var require$$0$3 = Object.freeze({
 	function VueDragula (Vue) {
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+	  // set full fine-grained logging if true
+	  if (options.logging === true) {
+	    options.logging = {
+	      plugin: true,
+	      directive: true,
+	      service: true,
+	      dragHandler: true
+	    };
+	  }
+
 	  function logPlugin() {
 	    var _console;
 
 	    if (!options.logging) return;
+	    if (!options.logging.plugin) return;
 
 	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	      args[_key] = arguments[_key];
@@ -1596,6 +1609,9 @@ var require$$0$3 = Object.freeze({
 	  }
 
 	  function logDir() {
+	    if (!options.logging) return;
+	    if (!options.logging.directive) return;
+
 	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
 	      args[_key2] = arguments[_key2];
 	    }

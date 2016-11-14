@@ -37,6 +37,7 @@ export class DragulaService {
 
   log(event, ...args) {
     if (!this.logging) return
+    if (!this.logging.service) return
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 

@@ -20,12 +20,25 @@ const defaults = {
 }
 
 export default function (Vue, options = {}) {
+  // set full fine-grained logging if true
+  if (options.logging === true) {
+    options.logging = {
+      plugin: true,
+      directive: true,
+      service: true,
+      dragHandler: true
+    }
+  }
+
   function logPlugin(...args) {
     if (!options.logging) return
+    if (!options.logging.plugin) return
     console.log('vue-dragula plugin', ...args)
   }
 
   function logDir(...args) {
+    if (!options.logging) return
+    if (!options.logging.directive) return
     return logPlugin('v-dragula directive', ...args);
   }
 

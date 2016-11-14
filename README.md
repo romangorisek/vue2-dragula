@@ -258,6 +258,22 @@ Vue.use(VueDragula, {
 });
 ```
 
+*Fine grained logging*
+
+You can also specify more fine grained logging as follows:
+
+```js
+Vue.use(VueDragula, {
+  // ...
+  logging: {
+    service: true,
+    dragHandler: true
+  }
+});
+```
+
+The logging options are: `plugin`, `directive`, `service` and `dragHandler`
+
 Logging is essential in development mode!!
 
 ### Customis DragulaService

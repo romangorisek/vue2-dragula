@@ -27,6 +27,7 @@ export class DragHandler {
 
   log(event, ...args) {
     if (!this.logging) return
+    if (!this.logging.dragHandler) return
     console.log(`DragHandler [${this.name}] :`, event, ...args)
   }
 
