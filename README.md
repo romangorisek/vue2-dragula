@@ -29,10 +29,10 @@ yarn add kristianmandrup/vue-dragula#dev
 *Vue configuration*
 
 ```js
-var Vue = require('vue');
-var VueDragula = require('vue2-dragula');
+import Vue from 'vue'
+import { Vue2Dragula } from 'vue2-dragula'
 
-Vue.use(VueDragula);
+Vue.use(VueDragula, {logging: true});
 ```
 
 #### Direct include
