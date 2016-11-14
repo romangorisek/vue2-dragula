@@ -11,9 +11,10 @@ function createDragHandler({ctx, name, drake}) {
 }
 
 export class DragulaService {
-  constructor ({name, eventBus, drakes, options}) {
-    this.options = options || {}
-    this.logging = this.options.logging
+  constructor ({name, eventBus, drakes, options }) {
+    options  = options || {}
+    this.options = options
+    this.logging = options.logging
     this.name = name
     this.drakes = drakes = {} // drake store
     this.eventBus = eventBus
@@ -90,9 +91,9 @@ export class DragulaService {
 
     const dragHandler = this.createDragHandler({ ctx: this, name, drake })
 
-    drake.on('remove', dragHandler.remove)
-    drake.on('drag', dragHandler.drag)
-    drake.on('drop', dragHandler.drop)
+    drake.on('remove', dragHandler.remove.bind(dragHandler))
+    drake.on('drag', dragHandler.drag.bind(dragHandler))
+    drake.on('drop', dragHandler.drop.bind(dragHandler))
 
     drake.registered = true
   }

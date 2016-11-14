@@ -1227,14 +1227,17 @@ var require$$0$3 = Object.freeze({
 	  function DragHandler(_ref) {
 	    var ctx = _ref.ctx,
 	        name = _ref.name,
-	        drake = _ref.drake;
+	        drake = _ref.drake,
+	        options = _ref.options;
 	    classCallCheck(this, DragHandler);
 
 	    this.dragElm = null;
 	    this.dragIndex = null;
 	    this.dropIndex = null;
 	    this.sourceModel = null;
+	    this.logging = ctx.logging;
 	    this.ctx = ctx;
+	    this.name = ctx.name;
 	    this.drake = drake;
 	    this.name = name;
 	    this.eventBus = ctx.eventBus;
@@ -1243,18 +1246,34 @@ var require$$0$3 = Object.freeze({
 	  }
 
 	  createClass(DragHandler, [{
+	    key: 'log',
+	    value: function log(event) {
+	      var _console;
+
+	      if (!this.logging) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, ['DragHandler [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
 	    key: 'removeModel',
 	    value: function removeModel(el, container, source) {
+	      this.log('removeModel', el, container, source);
 	      this.sourceModel.splice(this.dragIndex, 1);
 	    }
 	  }, {
 	    key: 'dropModelSame',
 	    value: function dropModelSame(dropElm, target, source) {
+	      this.log('dropModelSame', dropElm, target, source);
 	      this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0]);
 	    }
 	  }, {
 	    key: 'insertModel',
 	    value: function insertModel(targetModel, dropElmModel) {
+	      this.log('insertModel', targetModel, dropElmModel);
 	      targetModel.splice(this.dropIndex, 0, dropElmModel);
 	    }
 	  }, {
@@ -1262,6 +1281,7 @@ var require$$0$3 = Object.freeze({
 	    value: function dropModelTarget(dropElm, target, source) {
 	      var _this = this;
 
+	      this.log('dropModelTarget', dropElm, target, source);
 	      var notCopy = this.dragElm === dropElm;
 	      var targetModel = this.findModelForContainer(target, this.drake);
 	      var dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel;
@@ -1277,11 +1297,13 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'dropModel',
 	    value: function dropModel(dropElm, target, source) {
+	      this.log('dropModel', dropElm, target, source);
 	      target === source ? this.dropModelSame(dropElm, target, source) : this.dropModelTarget(dropElm, target, source);
 	    }
 	  }, {
 	    key: 'remove',
 	    value: function remove(el, container, source) {
+	      this.log('remove', el, container, source);
 	      if (!this.drake.models) {
 	        return;
 	      }
@@ -1293,12 +1315,14 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'drag',
 	    value: function drag(el, source) {
+	      this.log('drag', el, source);
 	      this.dragElm = el;
 	      this.dragIndex = this.domIndexOf(el, source);
 	    }
 	  }, {
 	    key: 'drop',
 	    value: function drop(dropElm, target, source) {
+	      this.log('drop', dropElm, target, source);
 	      if (!this.drake.models || !target) {
 	        return;
 	      }
@@ -1341,8 +1365,9 @@ var require$$0$3 = Object.freeze({
 	        options = _ref2.options;
 	    classCallCheck(this, DragulaService);
 
-	    this.options = options || {};
-	    this.logging = this.options.logging;
+	    options = options || {};
+	    this.options = options;
+	    this.logging = options.logging;
 	    this.name = name;
 	    this.drakes = drakes = {}; // drake store
 	    this.eventBus = eventBus;
@@ -1416,9 +1441,9 @@ var require$$0$3 = Object.freeze({
 
 	      var dragHandler = this.createDragHandler({ ctx: this, name: name, drake: drake });
 
-	      drake.on('remove', dragHandler.remove);
-	      drake.on('drag', dragHandler.drag);
-	      drake.on('drop', dragHandler.drop);
+	      drake.on('remove', dragHandler.remove.bind(dragHandler));
+	      drake.on('drag', dragHandler.drag.bind(dragHandler));
+	      drake.on('drop', dragHandler.drop.bind(dragHandler));
 
 	      drake.registered = true;
 	    }
@@ -1538,12 +1563,14 @@ var require$$0$3 = Object.freeze({
 	  createService: function createService(_ref) {
 	    var name = _ref.name,
 	        eventBus = _ref.eventBus,
-	        drakes = _ref.drakes;
+	        drakes = _ref.drakes,
+	        options = _ref.options;
 
 	    return new DragulaService({
 	      name: name,
 	      eventBus: eventBus,
-	      drakes: drakes
+	      drakes: drakes,
+	      options: options
 	    });
 	  },
 	  createEventBus: function createEventBus(Vue) {
@@ -1584,10 +1611,11 @@ var require$$0$3 = Object.freeze({
 	  var eventBus = createEventBus(Vue, options);
 
 	  // global service
-	  var service = createService({
+	  var appService = createService({
 	    name: 'global.dragula',
 	    eventBus: eventBus,
-	    drakes: options.drakes
+	    drakes: options.drakes,
+	    options: options
 	  });
 
 	  var globalName = 'globalDrake';
@@ -1601,9 +1629,9 @@ var require$$0$3 = Object.freeze({
 
 	      // convenience functions on global service
 	      this.$service = {
-	        options: service.setOptions.bind(service),
-	        find: service.find.bind(service),
-	        eventBus: this.eventBus = service.eventBus
+	        options: appService.setOptions.bind(appService),
+	        find: appService.find.bind(appService),
+	        eventBus: this.eventBus = appService.eventBus
 	      };
 
 	      // alias
@@ -1731,9 +1759,9 @@ var require$$0$3 = Object.freeze({
 
 	          try {
 	            for (var _iterator3 = services[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	              var _service = _step3.value;
+	              var service = _step3.value;
 
-	              _service.on(handlerConfig);
+	              service.on(handlerConfig);
 	            }
 	          } catch (err) {
 	            _didIteratorError3 = true;
@@ -1760,6 +1788,8 @@ var require$$0$3 = Object.freeze({
 
 	      // return named service or first service
 	      value: function service(name) {
+	        if (!this._serviceMap) return;
+
 	        var found = this._serviceMap[name];
 	        if (!found || !name) {
 	          var keys = this.servicesNames;
@@ -1792,15 +1822,15 @@ var require$$0$3 = Object.freeze({
 	      if (_dragula) {
 	        logDir('trying to find and use component service');
 
-	        var componentService = _dragula.services[serviceName];
+	        var componentService = _dragula.service(serviceName);
 	        if (componentService) {
 	          logDir('using component service', componentService);
 	          return componentService;
 	        }
 	      }
 	    }
-	    logDir('using global service', service);
-	    return service.find(name, vnode);
+	    logDir('using global service', appService);
+	    return appService; //.find(name, vnode)
 	  }
 
 	  function findDrake(name, vnode, serviceName) {
@@ -1966,6 +1996,8 @@ var require$$0$3 = Object.freeze({
 
 	plugin.version = '1.0.0';
 
+	var Vue2Dragula = plugin;
+
 	if (typeof define === 'function' && define.amd) {
 	  // eslint-disable-line
 	  define([], function () {
@@ -1975,7 +2007,7 @@ var require$$0$3 = Object.freeze({
 	  window.Vue.use(plugin);
 	}
 
-	exports['default'] = plugin;
+	exports.Vue2Dragula = Vue2Dragula;
 	exports.DragulaService = DragulaService;
 	exports.DragHandler = DragHandler;
 

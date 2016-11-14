@@ -6,11 +6,12 @@ if (!dragula) {
 }
 
 const defaults = {
-  createService: function ({name, eventBus, drakes}) {
+  createService: function ({name, eventBus, drakes, options}) {
     return new DragulaService({
       name,
       eventBus,
-      drakes
+      drakes,
+      options
     })
   },
   createEventBus: function(Vue, options = {}) {
@@ -36,10 +37,11 @@ export default function (Vue, options = {}) {
   const eventBus = createEventBus(Vue, options)
 
   // global service
-  const service = createService({
+  const appService = createService({
     name: 'global.dragula',
     eventBus,
-    drakes: options.drakes
+    drakes: options.drakes,
+    options
   })
 
   let globalName = 'globalDrake'
@@ -51,9 +53,9 @@ export default function (Vue, options = {}) {
 
       // convenience functions on global service
       this.$service = {
-        options: service.setOptions.bind(service),
-        find: service.find.bind(service),
-        eventBus: this.eventBus = service.eventBus
+        options: appService.setOptions.bind(appService),
+        find: appService.find.bind(appService),
+        eventBus: this.eventBus = appService.eventBus
       }
 
       // alias
@@ -138,6 +140,8 @@ export default function (Vue, options = {}) {
 
     // return named service or first service
     service(name) {
+      if (!this._serviceMap) return
+
       let found = this._serviceMap[name]
       if (!found || !name) {
         let keys = this.servicesNames
@@ -158,15 +162,15 @@ export default function (Vue, options = {}) {
       if (dragula) {
         logDir('trying to find and use component service')
 
-        let componentService = dragula.services[serviceName]
+        let componentService = dragula.service(serviceName)
         if (componentService) {
           logDir('using component service', componentService)
           return componentService
         }
       }
     }
-    logDir('using global service', service)
-    return service.find(name, vnode)
+    logDir('using global service', appService)
+    return appService //.find(name, vnode)
   }
 
   function findDrake(name, vnode, serviceName) {

@@ -11,7 +11,7 @@ function plugin (Vue, options = {}) {
 
 plugin.version = '1.0.0'
 
-export default plugin
+export const Vue2Dragula = plugin
 
 // make it possible to subclass service and drag handler
 export { DragulaService } from './service'
