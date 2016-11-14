@@ -11,7 +11,7 @@ This library has been refactored, upgraded and extended with powerful new featur
 - Removed concept of bags. References named drakes directly
 - [Vue2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
-See [Changelog](https://github.com/kristianmandrup/vue-dragula/blob/dev/Changelog.md) for more details.
+See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Changelog.md) for more details.
 
 ## Install
 #### CommonJS
@@ -19,11 +19,11 @@ See [Changelog](https://github.com/kristianmandrup/vue-dragula/blob/dev/Changelo
 Note: Library will soon be available as `vue2-dragula`.
 
 ```bash
-npm install kristianmandrup/vue-dragula#dev --save
+npm install kristianmandrup/vue2-dragula#master --save
 ```
 
 ```bash
-yarn add kristianmandrup/vue-dragula#dev
+yarn add kristianmandrup/vue2-dragula#master
 ```
 
 *Vue configuration*
