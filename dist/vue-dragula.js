@@ -1818,8 +1818,10 @@ var require$$0$3 = Object.freeze({
 
 	        var found = this._serviceMap[name];
 	        if (!found || !name) {
-	          var keys = this.servicesNames;
-	          found = this._serviceMap[keys[0]];
+	          var keys = this.serviceNames;
+	          if (keys) {
+	            found = this._serviceMap[keys[0]];
+	          }
 	        }
 	        return found;
 	      }

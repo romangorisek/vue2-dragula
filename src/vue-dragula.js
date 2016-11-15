@@ -167,8 +167,10 @@ export default function (Vue, options = {}) {
 
       let found = this._serviceMap[name]
       if (!found || !name) {
-        let keys = this.servicesNames
-        found = this._serviceMap[keys[0]]
+        let keys = this.serviceNames
+        if (keys) {
+          found = this._serviceMap[keys[0]]
+        }
       }
       return found
     }
