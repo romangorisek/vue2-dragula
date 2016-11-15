@@ -110,7 +110,7 @@ export class DragulaService {
   }
 
   destroy (name) {
-    this.log('destroy', name)
+    this.log('destroy (drake) ', name)
     this._validate('destroy', name)
     let drake = this.find(name)
     if (!drake) { return }
@@ -123,7 +123,7 @@ export class DragulaService {
   }
 
   setOptions (name, options) {
-    this.log('setOptions', name, options)
+    this.log('setOptions (drake)', name, options)
     this._validate('setOptions', name)
     let drake = this.add(name, dragula(options))
     this.handleModels(name, drake)

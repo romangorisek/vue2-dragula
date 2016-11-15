@@ -1488,7 +1488,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'destroy',
 	    value: function destroy(name) {
-	      this.log('destroy', name);
+	      this.log('destroy (drake) ', name);
 	      this._validate('destroy', name);
 	      var drake = this.find(name);
 	      if (!drake) {
@@ -1505,7 +1505,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'setOptions',
 	    value: function setOptions(name, options) {
-	      this.log('setOptions', name, options);
+	      this.log('setOptions (drake)', name, options);
 	      this._validate('setOptions', name);
 	      var drake = this.add(name, dragula$1(options));
 	      this.handleModels(name, drake);
@@ -1655,6 +1655,8 @@ var require$$0$3 = Object.freeze({
 	        find: appService.find.bind(appService),
 	        eventBus: this.eventBus = appService.eventBus
 	      };
+	      // add default drake on global app service
+	      this.$service.setOptions('default', {});
 
 	      // alias
 	      this.createServices = this.createService;
@@ -1744,14 +1746,14 @@ var require$$0$3 = Object.freeze({
 
 	        try {
 	          for (var _iterator2 = drakeNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var _drakeName = _step2.value;
+	            var drakeName = _step2.value;
 
-	            var drakeOpts = drakes[_drakeName];
+	            var drakeOpts = drakes[drakeName];
 	            if (drakeOpts === true) {
 	              drakeOpts = {};
 	            }
 
-	            service.setOptions(_drakeName, drakeOpts);
+	            service.setOptions(drakeName, drakeOpts);
 	          }
 	        } catch (err) {
 	          _didIteratorError2 = true;
@@ -1977,6 +1979,7 @@ var require$$0$3 = Object.freeze({
 
 	      var _calcNames3 = calcNames(globalName, vnode, this),
 	          name = _calcNames3.name,
+	          drakeName = _calcNames3.drakeName,
 	          serviceName = _calcNames3.serviceName;
 
 	      var service = findService(name, vnode, serviceName);

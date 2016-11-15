@@ -76,6 +76,8 @@ export default function (Vue, options = {}) {
         find: appService.find.bind(appService),
         eventBus: this.eventBus = appService.eventBus
       }
+      // add default drake on global app service
+      this.$service.setOptions('default', {})
 
       // alias
       this.createServices = this.createService
@@ -307,7 +309,7 @@ export default function (Vue, options = {}) {
     unbind (container, binding, vnode) {
       logDir('unbind', container, binding, vnode)
 
-      const { name, serviceName } = calcNames(globalName, vnode, this)
+      const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
       const drake = service.find(drakeName, vnode)
 
