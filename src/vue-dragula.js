@@ -19,6 +19,12 @@ const defaults = {
   }
 }
 
+function isEmpty(str) {
+  if (!str) return true
+  if (str.length === 0) return true
+  return false
+}
+
 export default function (Vue, options = {}) {
   // set full fine-grained logging if true
   if (options.logging === true) {
@@ -85,6 +91,7 @@ export default function (Vue, options = {}) {
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
       let drakes = serviceOpts.drakes || {}
+      let drake = serviceOpts.drake
       let opts = Object.assign({}, options, serviceOpts)
       names = names || [name]
       let eventBus = serviceOpts.eventBus || eventBus
@@ -99,9 +106,12 @@ export default function (Vue, options = {}) {
 
         this._serviceMap[name] = newService
 
-        if (drakes) {
-          this.drakesFor(name, drakes)
+        // use 'default' drakes if none specified
+        if (!drakes.default) {
+          drakes.default = drake || true
         }
+
+        this.drakesFor(name, drakes)
       }
       return this
     }
@@ -191,7 +201,7 @@ export default function (Vue, options = {}) {
   }
 
   function calcNames(name, vnode, ctx) {
-    const drakeName = vnode
+    let drakeName = vnode
       ? vnode.data.attrs.drake // Vue 2
       : this.params.drake // Vue 1
 
@@ -202,6 +212,8 @@ export default function (Vue, options = {}) {
     if (drakeName !== undefined && drakeName.length !== 0) {
       name = drakeName
     }
+    drakeName = isEmpty(drakeName) ? 'default' : drakeName
+
     return {name, drakeName, serviceName}
   }
 
@@ -213,7 +225,7 @@ export default function (Vue, options = {}) {
 
       const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
-      const drake = service.find(name, vnode)
+      const drake = service.find(drakeName, vnode)
 
       if (!vnode) {
         container = this.el // Vue 1
@@ -253,7 +265,7 @@ export default function (Vue, options = {}) {
 
       const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
-      const drake = service.find(name, vnode)
+      const drake = service.find(drakeName, vnode)
 
       if (!drake.models) {
         drake.models = []
@@ -295,7 +307,7 @@ export default function (Vue, options = {}) {
 
       const { name, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
-      const drake = service.find(name, vnode)
+      const drake = service.find(drakeName, vnode)
 
       logDir({
         service: {

@@ -9,7 +9,7 @@ function plugin (Vue, options = {}) {
   VueDragula(Vue, options)
 }
 
-plugin.version = '1.0.0'
+plugin.version = '2.0.1'
 
 export const Vue2Dragula = plugin
 

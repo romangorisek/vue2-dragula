@@ -385,7 +385,25 @@ This ensures that the `DragulaService` instance `myService` is registered and co
 </div>
 ```
 
-Now when the `v-dragula` directives are evaluated and bound to the component (via directive `bind` method), they will each find an existing drake of that name and push their `container` to the list of `drake.containers`.
+If you simply specify the service name without a specific named drake configuration it will use the `default` drake. A named service will always have a `default` drake configuration.
+
+```html
+  <div class="container" v-dragula="colTwo" service="myService">
+    <div v-for="text in colTwo">{{text}}</div>
+  </div>
+```
+
+You can configure the `default` drake simply using the `drake` option on the service.
+
+```js
+this.$dragula.create({
+  name: 'myService',
+  drake: {
+  }
+})
+```
+
+When the `v-dragula` directives are evaluated and bound to the component (via directive `bind` method), they will each find a drake configuration of that name on the service and push their DOM `container` to the list of `drake.containers`.
 
 ```js
   if (drake) {

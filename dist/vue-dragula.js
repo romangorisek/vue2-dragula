@@ -1582,6 +1582,12 @@ var require$$0$3 = Object.freeze({
 	  }
 	};
 
+	function isEmpty(str) {
+	  if (!str) return true;
+	  if (str.length === 0) return true;
+	  return false;
+	}
+
 	function VueDragula (Vue) {
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -1671,6 +1677,7 @@ var require$$0$3 = Object.freeze({
 	        var names = serviceOpts.names || [];
 	        var name = serviceOpts.name || [];
 	        var drakes = serviceOpts.drakes || {};
+	        var drake = serviceOpts.drake;
 	        var opts = Object.assign({}, options, serviceOpts);
 	        names = names || [name];
 	        var eventBus = serviceOpts.eventBus || eventBus;
@@ -1691,9 +1698,12 @@ var require$$0$3 = Object.freeze({
 
 	            this._serviceMap[_name] = newService;
 
-	            if (drakes) {
-	              this.drakesFor(_name, drakes);
+	            // use 'default' drakes if none specified
+	            if (!drakes.default) {
+	              drakes.default = drake || true;
 	            }
+
+	            this.drakesFor(_name, drakes);
 	          }
 	        } catch (err) {
 	          _didIteratorError = true;
@@ -1863,6 +1873,8 @@ var require$$0$3 = Object.freeze({
 	    if (drakeName !== undefined && drakeName.length !== 0) {
 	      name = drakeName;
 	    }
+	    drakeName = isEmpty(drakeName) ? 'default' : drakeName;
+
 	    return { name: name, drakeName: drakeName, serviceName: serviceName };
 	  }
 
@@ -1878,7 +1890,7 @@ var require$$0$3 = Object.freeze({
 	          serviceName = _calcNames.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
-	      var drake = service.find(name, vnode);
+	      var drake = service.find(drakeName, vnode);
 
 	      if (!vnode) {
 	        container = this.el; // Vue 1
@@ -1922,7 +1934,7 @@ var require$$0$3 = Object.freeze({
 	          serviceName = _calcNames2.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
-	      var drake = service.find(name, vnode);
+	      var drake = service.find(drakeName, vnode);
 
 	      if (!drake.models) {
 	        drake.models = [];
@@ -1966,7 +1978,7 @@ var require$$0$3 = Object.freeze({
 	          serviceName = _calcNames3.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
-	      var drake = service.find(name, vnode);
+	      var drake = service.find(drakeName, vnode);
 
 	      logDir({
 	        service: {
@@ -2010,7 +2022,7 @@ var require$$0$3 = Object.freeze({
 	  VueDragula(Vue, options);
 	}
 
-	plugin.version = '1.0.0';
+	plugin.version = '2.0.1';
 
 	var Vue2Dragula = plugin;
 
