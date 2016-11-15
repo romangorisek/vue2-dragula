@@ -1,35 +1,31 @@
 # vue2-dragula
 > :ok_hand: Drag and drop so simple it hurts
 
-Vue wrapper for [dragula](https://github.com/bevacqua/dragula) drag'n drop library, based on [vue-dragula](https://github.com/Astray-git/vue-dragula) by [@Astray-git](https://github.com/Astray-git). 
+Vue wrapper for [dragula](https://github.com/bevacqua/dragula) drag'n drop library, based on [vue-dragula](https://github.com/Astray-git/vue-dragula) by [@Astray-git](https://github.com/Astray-git).
 
 This library has been refactored, upgraded and extended with powerful new features for use with Vue 2.
 
-## Status
+## Overview
 - Works with [Vue 2](https://medium.com/the-vue-point/vue-2-0-is-here-ef1f26acf4b8#.c089dtgol)
-- Service and directive are more flexible and powerful
-- Removed concept of bags. References named drakes directly
+- Way more flexible and powerful than original (Vue 1) plugin
+- Removed concept of bags. Reference named drakes directly
 - [Vue2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Changelog.md) for more details.
 
-## TODO
-
-### Fine grained event handlers
-
-Currently the event system is not working as it should. We need to make for a more fine grained event system. Currently we emit events on the Vue eventbus as `drag`, `drop` etc. They should instead be targeted for each named service such as `$service:drop` and `first:drag` for the global `$service` and `first` service respectively.
-
 ## Install
 #### CommonJS
 
-Note: Library will soon be available as `vue2-dragula`.
+*npm*
 
 ```bash
-npm install kristianmandrup/vue2-dragula#master --save
+npm install vue2-dragula --save
 ```
 
+*yarn*
+
 ```bash
-yarn add kristianmandrup/vue2-dragula#master
+yarn add vue2-dragula
 ```
 
 *Vue configuration*
@@ -38,11 +34,12 @@ yarn add kristianmandrup/vue2-dragula#master
 import Vue from 'vue'
 import { Vue2Dragula } from 'vue2-dragula'
 
-Vue.use(VueDragula, {logging: true});
+Vue.use(VueDragula, {
+  logging: {
+    service: true
+  }
+});
 ```
-
-#### Direct include
-You can directly include the library with a `<script>` tag when you have Vue and dragula already included globally. It will automatically install itself.
 
 ## Template Usage
 ``` html
@@ -57,8 +54,8 @@ You can directly include the library with a `<script>` tag when you have Vue and
 </div>
 ```
 
-## APIs
-You can access the main API from `Vue.$dragula.$service` or from within a component via `this.$dragula.$service`. This references the application level dragula service.
+## API
+You can access the global app service via `Vue.$dragula.$service` or from within a component via `this.$dragula.$service`.
 
 You can also create named services for more fine grained control (more on this later)
 
@@ -66,10 +63,10 @@ You can also create named services for more fine grained control (more on this l
 Set [dragula options](https://github.com/bevacqua/dragula#optionscontainers)
 
 ```js
-...
+// ...
 new Vue({
-  ...
-  created: function () {
+  // ...
+  created () {
     const service = Vue.$dragula.$service
     service.options('my-drake', {
       direction: 'vertical'
@@ -110,8 +107,9 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 
 [Vue 2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
-## The API in more depth
-Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive. Add named service(s) via `this.$dragula.createService` and initialise with the drakes you want to use.
+## The API in depth
+Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive. 
+Add named service(s) via `this.$dragula.createService` and initialise with the drakes you want to use.
 
 ### $dragula
 `$dragula` API:
@@ -126,7 +124,9 @@ Access `this.$dragula` in your `created () { ... }` life cycle hook of any compo
 
 ### DragulaService
 The `DragulaService` constructor takes the following deconstructed arguments.
-Only `name` is required
+Only `name` and `eventBus` are required. 
+
+Note: You don't normally need to create the `DragulaService` yourself. Use the API to handle this for you.
 
 ```js
 class DragulaService {
@@ -137,13 +137,13 @@ class DragulaService {
 }
 ```
 
-Drakes are indexed by name in the `drakes` Object of the service. Each key is the name of a drake and points to a `drake` instance. The `drake` can have event handlers, models, containers etc. See [dragula options](https://github.com/bevacqua/dragula#dragulacontainers-options)
+Drakes are indexed by name in the `drakes` Object of the service. Each key is the name of a drake which points to a `drake` instance. The `drake` can have event handlers, models, containers etc. See [dragula options](https://github.com/bevacqua/dragula#dragulacontainers-options)
 
 ## Model mechanics
-The `drake` event handlers have default mechanics for how to operated on the underlyng models. These can be customized as needed.
+The `drake` event handlers have default mechanics for how to operate on the underlyng models. These can be customized as needed.
 
-A common schenario is to have a tree of node objects, where each node has 
-a `children` key. We should be able to drag elements to modify the node tree stucture.
+A common scenario is to have a tree of node objects, where each node has 
+a `children` key. You'd want to be able to drag elements to modify the node tree stucture.
 
 ```js
 {
@@ -175,8 +175,8 @@ a `children` key. We should be able to drag elements to modify the node tree stu
 }
 ```
 
-In this example we should be able to move a form input specication object from one form container node into another. This is possible simply by 
-setting `<template>` elements with `v-dragula` directive to point to `children[0].children` and `children[1].children` respectively. We can use the rest of the node tree data to visualize the various different nodes, f.ex for a Visual editor/IDE :)
+In this example we should be able to move a form input specification object from one form container node to another. This is possible simply by 
+setting `<template>` elements with `v-dragula` directives to point to `children[0].children` and `children[1].children` respectively. We can use the rest of the node tree data to visualize the various different nodes. This could form the basis for a visual editor!
 
 ### DragHandler for fine-grained control
 For fine-grained control on how nodes are added/removed from the various lists. Some lists might only allow that nodes added at the front or back, some might have validation/business rules etc.
@@ -243,16 +243,37 @@ export default {
 
 Note that you can set a drake to `true` as a convenience to configure it with default options. This is a shorthand for `third: {}`. You can also pass an array of drake names, ie `drakes: ['third', 'fourth']`
 
-### Binding models to dragable elements
-Please note that `vue-dragula` expects the `v-dragula` binding expression to point to a model in the VM of the component.
+### Binding models to draggable elements
+Please note that `vue-dragula` expects the `v-dragula` binding expression to point to a model in the VM of the component, ie. `v-dragula="items"`
 
 When you move the elements in the UI you also (by default) rearrange the underlying model list items (using `findModelForContainer` in the service). This is VERY powerful!
 
 Note that special Vue events `removeModel` and `dropModel` are emitted as model items are moved around (using [splice](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/splice) by default).
 
+```js
+this.name, el, source, this.dragIndex
+  'my-first:removeModel': (drake, el, source, dragIndex) => {
+    // ...
+  },
+  'my-first:dropModel': (drake, dropEl, target, source, dropIndex) => {
+    // ...
+  }
+```
+
+- `el` and `dropEl` are DOM elements
+- `source` is the element being dragged
+- `target` is the element being dragged to
+- `dragIndex` and `dropIndex` are indexes in the VM models (lists)
+
 If you need more advanced control over models (such as filtering, conditions etc.) you can use watchers on these models and then create derived models in response, perhaps dispatching local model state to a [Vuex](vuex.vuejs.org) store. We recommend keeping the "raw" dragula models intact and in sync with the UI models/elements.
 
-Each `drake` is setup to delegate dragula events to the Vue event system (`$emit`) ie. to use `eventBus` to send events of the same name. This lets you define custom drag'n drop event handling as regular Vue event handlers.
+### Event delegation
+
+Each `drake` is setup to delegate dragula events to the Vue event system (ie. `$emit`) and sends events of the same name. This lets you define custom drag'n drop event handling as regular Vue event handlers.
+
+A named service `my-first` emits events such as `drop` and `my-first:drop` so you can choose to setup listeneres to for service specific events!
+
+There are also two special events for when the underlying models are operated on: `removeModel` and `dropModel`. These also have service specific variants.
 
 ### Logging
 You can pass a `logging: true` as an option when initialising the plugin or when you create a new service.
@@ -418,9 +439,7 @@ When the `v-dragula` directives are evaluated and bound to the component (via di
   }
 ```
 
-Sweet :)
-
-### Advanced drake Magic
+### Advanced drake configuration
 If you need to add [dragula containers and models](https://github.com/bevacqua/dragula#dragulacontainers-options) programmatically, try something like this:
 
 ```js
@@ -432,7 +451,7 @@ If you need to add [dragula containers and models](https://github.com/bevacqua/d
 
 Here the `model` is a pointer to a list in the model data of your VM. The container is a DOM element which contains a list of elements that an be dragged and rearranged and their ordering reflected (mirrored) in the model.
 
-To access and modify a particular drake models and containers:
+To access and modify models and containers for a particular drake:
 
 ```js
 let drake = this.$dragula.service('my-list').find('third')
@@ -443,9 +462,62 @@ drake.models.push({
 drake.containers.push(container)
 ```
 
-You will need a good understanding of the inner workings of Dragula in order to get this right, so do this at your own risk and experiment.
-Feel free to improve the API to make this easier and less "risky".
-Enjoy :)
+You will need a good understanding of the inner workings of Dragula in order to get this right ;) Feel free to help improve the API to make this easier!
+
+## Adding Drag Effects
+
+Please see and try out the `DragEffects` example of the [demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
+
+```js
+// https://developer.mozilla.org/en/docs/Web/API/Element/classList
+service.on({
+  accepts: (drake, el, target) => {
+    return true
+  },
+  drag: (drake, el, container) => {
+    el.classList.remove('ex-moved')
+  },
+  drop: (drake, el, container) => {
+    el.classList.add('ex-moved')
+  },
+  over: (drake, el, container) => {
+    el.classList.add('ex-over')
+  },
+  out: (drake, el, container) => {
+    el.classList.remove('ex-over')
+  }
+})
+```
+
+You can also subscribe to service specific events, here for `drag` events from the service called `my-first`
+
+```js
+  'my-first:drag': (drake, el, container) => {
+    el.classList.remove('ex-moved')
+  },
+```
+
+Sample effect styling with [CSS fade-in transition effect](http://www.chrisbuttery.com/articles/fade-in-fade-out-with-javascript/)
+
+```css
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.ex-moved {
+  animation: fadeIn .5s ease-in 1 forwards;
+  border: 2px solid yellow;
+  padding: 2px
+}
+
+.ex-over {
+  animation: fadeIn .5s ease-in 1 forwards;
+  border: 4px solid green;
+  padding: 2px
+}
+```
 
 ## License
 

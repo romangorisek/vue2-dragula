@@ -147,6 +147,7 @@ export class DragulaService {
         let sendArgs = [name].concat(args)
         _this.log('eventBus.$emit', type, sendArgs)
         _this.eventBus.$emit(type, ...sendArgs)
+        _this.eventBus.$emit(`${this.name}:type`, ...sendArgs)
       }
 
       drake.on(type, replicate)

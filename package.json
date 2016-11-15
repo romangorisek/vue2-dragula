@@ -1,6 +1,6 @@
 {
   "name": "vue2-dragula",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Vue 2 wrapper for dragula",
   "main": "dist/vue-dragula.js",
   "files": [
@@ -8,11 +8,11 @@
     "src",
     "styles"
   ],
-  "author": "YichangLiu",
+  "author": "Kristian Mandrup",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Astray-git/vue-dragula.git"
+    "url": "https://github.com/kristianmandrup/vue2-dragula.git"
   },
   "scripts": {
     "dev": "webpack --watch example/example.js example/example.build.js",
@@ -41,7 +41,7 @@
     "rollup-plugin-commonjs": "^3.3.1",
     "rollup-plugin-node-resolve": "^2.0.0",
     "uglify-js": "^2.6.2",
-    "vue": "^2.0.0",
+    "vue": "^2.0.1",
     "webpack": "^1.12.9"
   }
 }
