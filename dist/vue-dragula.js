@@ -1214,6 +1214,16 @@ var require$$0$3 = Object.freeze({
 	  };
 	}();
 
+	var toConsumableArray = function (arr) {
+	  if (Array.isArray(arr)) {
+	    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+	    return arr2;
+	  } else {
+	    return Array.from(arr);
+	  }
+	};
+
 	var raf = window.requestAnimationFrame;
 	var waitForTransition = raf ? function (fn) {
 	  raf(function () {
@@ -1359,18 +1369,20 @@ var require$$0$3 = Object.freeze({
 	}
 
 	var DragulaService = function () {
-	  function DragulaService(_ref2) {
-	    var name = _ref2.name,
-	        eventBus = _ref2.eventBus,
-	        drakes = _ref2.drakes,
-	        options = _ref2.options;
+	  function DragulaService() {
+	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    classCallCheck(this, DragulaService);
+	    var name = opts.name,
+	        eventBus = opts.eventBus,
+	        drakes = opts.drakes,
+	        options = opts.options;
 
+	    this.log('construct DragulaService', opts);
 	    options = options || {};
 	    this.options = options;
 	    this.logging = options.logging;
 	    this.name = name;
-	    this.drakes = drakes = {}; // drake store
+	    this.drakes = drakes || {}; // drake store
 	    this.eventBus = eventBus;
 	    this.createDragHandler = options.createDragHandler || createDragHandler;
 
@@ -1457,6 +1469,7 @@ var require$$0$3 = Object.freeze({
 	    value: function on() {
 	      var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+	      this.log('on (events) ', handlerConfig);
 	      var handlerNames = Object.keys(handlerConfig);
 
 	      var _iteratorNormalCompletion = true;
@@ -1468,6 +1481,7 @@ var require$$0$3 = Object.freeze({
 	          var handlerName = _step.value;
 
 	          var handlerFunction = handlerConfig[handlerName];
+	          this.log('$on', handlerName, handlerFunction);
 	          this.eventBus.$on(handlerName, handlerFunction);
 	        }
 	      } catch (err) {
@@ -1519,10 +1533,17 @@ var require$$0$3 = Object.freeze({
 	      drake.initEvents = true;
 	      var _this = this;
 	      var emitter = function emitter(type) {
+	        _this.log('emitter', type);
+
 	        function replicate() {
+	          var _this$eventBus;
+
 	          var args = Array.prototype.slice.call(arguments);
-	          _this.eventBus.$emit(type, [name].concat(args));
+	          var sendArgs = [name].concat(args);
+	          _this.log('eventBus.$emit', type, sendArgs);
+	          (_this$eventBus = _this.eventBus).$emit.apply(_this$eventBus, [type].concat(toConsumableArray(sendArgs)));
 	        }
+
 	        drake.on(type, replicate);
 	      };
 	      this.events.forEach(emitter);
@@ -1576,8 +1597,6 @@ var require$$0$3 = Object.freeze({
 	    });
 	  },
 	  createEventBus: function createEventBus(Vue) {
-	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
 	    return new Vue();
 	  }
 	};
@@ -1614,12 +1633,25 @@ var require$$0$3 = Object.freeze({
 	    (_console = console).log.apply(_console, ['vue-dragula plugin'].concat(args));
 	  }
 
+	  function logServiceConfig() {
+	    var _console2;
+
+	    if (!options.logging) return;
+	    if (!options.logging.service) return;
+
+	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	      args[_key2] = arguments[_key2];
+	    }
+
+	    (_console2 = console).log.apply(_console2, ['vue-dragula service config: '].concat(args));
+	  }
+
 	  function logDir() {
 	    if (!options.logging) return;
 	    if (!options.logging.directive) return;
 
-	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	      args[_key2] = arguments[_key2];
+	    for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+	      args[_key3] = arguments[_key3];
 	    }
 
 	    return logPlugin.apply(undefined, ['v-dragula directive'].concat(args));
@@ -1627,13 +1659,21 @@ var require$$0$3 = Object.freeze({
 
 	  logPlugin('Initializing vue-dragula plugin', options);
 
-	  var createService = options.createService || defaults.createService;
-	  var createEventBus = options.createEventBus || defaults.createEventBus;
+	  var _createService = options.createService || defaults.createService;
+	  var createEventBus = options.createEventBus || defaults.createEventBus || new Vue();
 
+	  logPlugin('create eventBus', createEventBus);
 	  var eventBus = createEventBus(Vue, options);
 
+	  if (!eventBus) {
+	    console.warn('Eventbus could not be created');
+	    throw new Error('Eventbus could not be created');
+	  }
+
+	  logPlugin('eventBus created', eventBus);
+
 	  // global service
-	  var appService = createService({
+	  var appService = _createService({
 	    name: 'global.dragula',
 	    eventBus: eventBus,
 	    drakes: options.drakes,
@@ -1653,7 +1693,7 @@ var require$$0$3 = Object.freeze({
 	      this.$service = {
 	        options: appService.setOptions.bind(appService),
 	        find: appService.find.bind(appService),
-	        eventBus: this.eventBus = appService.eventBus
+	        eventBus: appService.eventBus
 	      };
 	      // add default drake on global app service
 	      this.$service.options('default', {});
@@ -1675,15 +1715,22 @@ var require$$0$3 = Object.freeze({
 	      value: function createService() {
 	        var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+	        logServiceConfig('createService', serviceOpts);
+
 	        this._serviceMap = this._serviceMap || {};
+
 	        var names = serviceOpts.names || [];
 	        var name = serviceOpts.name || [];
 	        var drakes = serviceOpts.drakes || {};
 	        var drake = serviceOpts.drake;
 	        var opts = Object.assign({}, options, serviceOpts);
-	        names = names || [name];
-	        var eventBus = serviceOpts.eventBus || eventBus;
+	        names = names.length > 0 ? names : [name];
+	        var eventBus = serviceOpts.eventBus || appService.eventBus;
+	        if (!eventBus) {
+	          console.warn('Eventbus could not be created', eventBus);
+	        }
 
+	        logServiceConfig('names', names);
 	        var _iteratorNormalCompletion = true;
 	        var _didIteratorError = false;
 	        var _iteratorError = undefined;
@@ -1692,13 +1739,13 @@ var require$$0$3 = Object.freeze({
 	          for (var _iterator = names[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	            var _name = _step.value;
 
-	            var newService = new DragulaService({
+	            var createOpts = {
 	              name: _name,
 	              eventBus: eventBus,
 	              options: opts
-	            });
-
-	            this._serviceMap[_name] = newService;
+	            };
+	            logServiceConfig('create DragulaService', _name, createOpts);
+	            this._serviceMap[_name] = _createService(createOpts);
 
 	            // use 'default' drakes if none specified
 	            if (!drakes.default) {
@@ -1729,6 +1776,7 @@ var require$$0$3 = Object.freeze({
 	      value: function drakesFor(name) {
 	        var drakes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+	        logServiceConfig('drakesFor', name, drakes);
 	        var service = this.service(name);
 
 	        if (Array.isArray(drakes)) {
@@ -1777,19 +1825,27 @@ var require$$0$3 = Object.freeze({
 	      value: function on(name) {
 	        var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+	        logServiceConfig('on', name, handlerConfig);
 	        if ((typeof name === 'undefined' ? 'undefined' : _typeof(name)) === 'object') {
 	          handlerConfig = name;
 	          // add event handlers for all services
-	          var services = Object.values(this.serviceMap);
+	          var serviceNames = this.serviceNames;
+
+	          if (!serviceNames || serviceNames.length < 1) {
+	            console.warn('vue-dragula: No services found to add events handlers for', this._serviceMap);
+	            return this;
+	          }
+
+	          logServiceConfig('add event handlers for', serviceNames);
 	          var _iteratorNormalCompletion3 = true;
 	          var _didIteratorError3 = false;
 	          var _iteratorError3 = undefined;
 
 	          try {
-	            for (var _iterator3 = services[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	              var service = _step3.value;
+	            for (var _iterator3 = serviceNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	              var serviceName = _step3.value;
 
-	              service.on(handlerConfig);
+	              this.on(serviceName, handlerConfig);
 	            }
 	          } catch (err) {
 	            _didIteratorError3 = true;
@@ -1805,9 +1861,17 @@ var require$$0$3 = Object.freeze({
 	              }
 	            }
 	          }
-	        } else {
-	          this.service(name).on(handlerConfig);
+
+	          return this;
 	        }
+
+	        var service = this.service(name);
+	        if (!service) {
+	          console.warn('vue-dragula: no service ' + name + ' to add event handlers for');
+	          return this;
+	        }
+	        logServiceConfig('service.on', service, handlerConfig);
+	        service.on(handlerConfig);
 	        return this;
 	      }
 	    }, {

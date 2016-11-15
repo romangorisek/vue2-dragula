@@ -11,12 +11,14 @@ function createDragHandler({ctx, name, drake}) {
 }
 
 export class DragulaService {
-  constructor ({name, eventBus, drakes, options }) {
+  constructor (opts = {}) {
+    let {name, eventBus, drakes, options } = opts
+    this.log('construct DragulaService', opts)
     options  = options || {}
     this.options = options
     this.logging = options.logging
     this.name = name
-    this.drakes = drakes = {} // drake store
+    this.drakes = drakes || {} // drake store
     this.eventBus = eventBus
     this.createDragHandler = options.createDragHandler || createDragHandler
 
@@ -101,10 +103,12 @@ export class DragulaService {
 
   // convenience to set eventBus handlers via Object
   on (handlerConfig = {}) {
+    this.log('on (events) ', handlerConfig)
     let handlerNames = Object.keys(handlerConfig)
 
     for (let handlerName of handlerNames) {
       let handlerFunction = handlerConfig[handlerName]
+      this.log('$on', handlerName, handlerFunction)
       this.eventBus.$on(handlerName, handlerFunction)
     }
   }
@@ -136,10 +140,15 @@ export class DragulaService {
     drake.initEvents = true
     let _this = this
     let emitter = type => {
+      _this.log('emitter', type)
+
       function replicate () {
         let args = Array.prototype.slice.call(arguments)
-        _this.eventBus.$emit(type, [name].concat(args))
+        let sendArgs = [name].concat(args)
+        _this.log('eventBus.$emit', type, sendArgs)
+        _this.eventBus.$emit(type, ...sendArgs)
       }
+
       drake.on(type, replicate)
     }
     this.events.forEach(emitter)

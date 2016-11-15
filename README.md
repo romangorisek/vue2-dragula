@@ -13,6 +13,12 @@ This library has been refactored, upgraded and extended with powerful new featur
 
 See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Changelog.md) for more details.
 
+## TODO
+
+### Fine grained event handlers
+
+Currently the event system is not working as it should. We need to make for a more fine grained event system. Currently we emit events on the Vue eventbus as `drag`, `drop` etc. They should instead be targeted for each named service such as `$service:drop` and `first:drag` for the global `$service` and `first` service respectively.
+
 ## Install
 #### CommonJS
 

@@ -14,7 +14,7 @@ const defaults = {
       options
     })
   },
-  createEventBus: function(Vue, options = {}) {
+  createEventBus: function(Vue) {
     return new Vue()
   }
 }
@@ -42,6 +42,12 @@ export default function (Vue, options = {}) {
     console.log('vue-dragula plugin', ...args)
   }
 
+  function logServiceConfig(...args) {
+    if (!options.logging) return
+    if (!options.logging.service) return
+    console.log('vue-dragula service config: ', ...args)
+  }
+
   function logDir(...args) {
     if (!options.logging) return
     if (!options.logging.directive) return
@@ -51,9 +57,17 @@ export default function (Vue, options = {}) {
   logPlugin('Initializing vue-dragula plugin', options)
 
   let createService = options.createService || defaults.createService
-  let createEventBus = options.createEventBus || defaults.createEventBus
+  let createEventBus = options.createEventBus || defaults.createEventBus || new Vue()
 
+  logPlugin('create eventBus', createEventBus)
   const eventBus = createEventBus(Vue, options)
+
+  if (!eventBus) {
+    console.warn('Eventbus could not be created')
+    throw new Error('Eventbus could not be created')
+  }
+
+  logPlugin('eventBus created', eventBus)
 
   // global service
   const appService = createService({
@@ -74,7 +88,7 @@ export default function (Vue, options = {}) {
       this.$service = {
         options: appService.setOptions.bind(appService),
         find: appService.find.bind(appService),
-        eventBus: this.eventBus = appService.eventBus
+        eventBus: appService.eventBus
       }
       // add default drake on global app service
       this.$service.options('default', {})
@@ -89,24 +103,30 @@ export default function (Vue, options = {}) {
     }
 
     createService(serviceOpts = {}) {
+      logServiceConfig('createService', serviceOpts)
+
       this._serviceMap = this._serviceMap || {};
+
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
       let drakes = serviceOpts.drakes || {}
       let drake = serviceOpts.drake
       let opts = Object.assign({}, options, serviceOpts)
-      names = names || [name]
-      let eventBus = serviceOpts.eventBus || eventBus
+      names = names.length > 0 ? names : [name]
+      let eventBus = serviceOpts.eventBus || appService.eventBus
+      if (!eventBus) {
+        console.warn('Eventbus could not be created', eventBus)
+      }
 
-
+      logServiceConfig('names', names)
       for (let name of names) {
-        let newService = new DragulaService({
+        let createOpts = {
           name,
           eventBus,
           options: opts
-        })
-
-        this._serviceMap[name] = newService
+        }
+        logServiceConfig('create DragulaService', name, createOpts)
+        this._serviceMap[name] = createService(createOpts)
 
         // use 'default' drakes if none specified
         if (!drakes.default) {
@@ -119,6 +139,7 @@ export default function (Vue, options = {}) {
     }
 
     drakesFor(name, drakes = {}) {
+      logServiceConfig('drakesFor', name, drakes)
       let service = this.service(name)
 
       if (Array.isArray(drakes)) {
@@ -142,16 +163,31 @@ export default function (Vue, options = {}) {
     }
 
     on(name, handlerConfig = {}) {
+      logServiceConfig('on', name, handlerConfig)
       if (typeof name === 'object') {
         handlerConfig = name
         // add event handlers for all services
-        let services = Object.values(this.serviceMap)
-        for (let service of services) {
-          service.on(handlerConfig)
+        let serviceNames = this.serviceNames
+
+        if (!serviceNames || serviceNames.length < 1) {
+          console.warn('vue-dragula: No services found to add events handlers for', this._serviceMap);
+          return this
         }
-      } else {
-        this.service(name).on(handlerConfig)
+
+        logServiceConfig('add event handlers for', serviceNames)
+        for (let serviceName of serviceNames) {
+          this.on(serviceName, handlerConfig)
+        }
+        return this
       }
+
+      let service = this.service(name)
+      if (!service) {
+        console.warn(`vue-dragula: no service ${name} to add event handlers for`)
+        return this
+      }
+      logServiceConfig('service.on', service, handlerConfig)
+      service.on(handlerConfig)
       return this
     }
 
