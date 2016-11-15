@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.1.0
+ * vue-dragula v2.1.1
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1321,7 +1321,9 @@ var require$$0$3 = Object.freeze({
 	      this.sourceModel = this.findModelForContainer(source, this.drake);
 	      this.removeModel(el, container, source);
 	      this.drake.cancel(true);
-	      this.eventBus.$emit('removeModel', [this.name, el, source, this.dragIndex]);
+	      // TODO: extract/refactor
+	      this.eventBus.$emit('removeModel', this.name, el, source, this.dragIndex);
+	      this.eventBus.$emit(this.name + ':removeModel', this.name, el, source, this.dragIndex);
 	    }
 	  }, {
 	    key: 'drag',
@@ -1340,7 +1342,9 @@ var require$$0$3 = Object.freeze({
 	      this.dropIndex = this.domIndexOf(dropElm, target);
 	      this.sourceModel = this.findModelForContainer(source, this.drake);
 	      this.dropModel(dropElm, target, source);
-	      this.eventBus.$emit('dropModel', [this.name, dropElm, target, source, this.dropIndex]);
+	      // TODO: extract/refactor
+	      this.eventBus.$emit('dropModel', this.name, dropElm, target, source, this.dropIndex);
+	      this.eventBus.$emit(this.name + ':dropModel', this.name, dropElm, target, source, this.dropIndex);
 	    }
 	  }, {
 	    key: 'dropElmModel',
@@ -1536,12 +1540,13 @@ var require$$0$3 = Object.freeze({
 	        _this.log('emitter', type);
 
 	        function replicate() {
-	          var _this$eventBus;
+	          var _this$eventBus, _this$eventBus2;
 
 	          var args = Array.prototype.slice.call(arguments);
 	          var sendArgs = [name].concat(args);
 	          _this.log('eventBus.$emit', type, sendArgs);
 	          (_this$eventBus = _this.eventBus).$emit.apply(_this$eventBus, [type].concat(toConsumableArray(sendArgs)));
+	          (_this$eventBus2 = _this.eventBus).$emit.apply(_this$eventBus2, [this.name + ':type'].concat(toConsumableArray(sendArgs)));
 	        }
 
 	        drake.on(type, replicate);
