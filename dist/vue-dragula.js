@@ -1656,7 +1656,7 @@ var require$$0$3 = Object.freeze({
 	        eventBus: this.eventBus = appService.eventBus
 	      };
 	      // add default drake on global app service
-	      this.$service.setOptions('default', {});
+	      this.$service.options('default', {});
 
 	      // alias
 	      this.createServices = this.createService;
