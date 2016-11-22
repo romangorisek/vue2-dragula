@@ -1292,6 +1292,9 @@ var require$$0$3 = Object.freeze({
 	          _this.sourceModel.splice(_this.dragIndex, 1);
 	        });
 	      }
+	      if (!targetModel) {
+	        this.log('No targetModel could be foind for ', target, this.drake);
+	      }
 	      this.insertModel(targetModel, dropElmModel);
 	      this.drake.cancel(true);
 	    }
@@ -1613,9 +1616,14 @@ var require$$0$3 = Object.freeze({
 	        this.log('findModelContainerByContainer', 'warning: no models found');
 	        return;
 	      }
-	      return drake.models.find(function (model) {
+	      var found = drake.models.find(function (model) {
 	        return model.container === container;
 	      });
+	      if (!found) {
+	        this.log('No matching model could be found for container:', container);
+	        this.log('... in drake', drake.name, ' models:', drake.models);
+	      }
+	      return found;
 	    }
 	  }, {
 	    key: 'drakeNames',
@@ -1957,6 +1965,8 @@ var require$$0$3 = Object.freeze({
 
 	  Vue.$dragula = new Dragula(options);
 
+	  var directivesConfugured = {};
+
 	  Vue.prototype.$dragula = Vue.$dragula;
 
 	  function findService(name, vnode, serviceName) {
@@ -2011,6 +2021,12 @@ var require$$0$3 = Object.freeze({
 	    var service = findService(name, vnode, serviceName);
 	    var drake = service.find(drakeName, vnode);
 
+	    // skip if has already been configured
+	    if (directivesConfugured[drakeName]) {
+	      logDir('already has model configured', drakeName);
+	      return;
+	    }
+
 	    if (!drake.models) {
 	      drake.models = [];
 	    }
@@ -2025,6 +2041,8 @@ var require$$0$3 = Object.freeze({
 	    }
 
 	    var modelContainer = service.findModelContainerByContainer(container, drake);
+
+	    directivesConfugured[drakeName] = true;
 
 	    logDir({
 	      service: {

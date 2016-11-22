@@ -57,6 +57,10 @@ export class DragHandler {
         this.sourceModel.splice(this.dragIndex, 1)
       })
     }
+    if (!targetModel) {
+      this.log('No targetModel could be foind for ', target, this.drake)
+
+    }
     this.insertModel(targetModel, dropElmModel)
     this.drake.cancel(true)
   }

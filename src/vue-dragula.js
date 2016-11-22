@@ -216,6 +216,8 @@ export default function (Vue, options = {}) {
 
   Vue.$dragula = new Dragula(options)
 
+  let directivesConfugured = {}
+
   Vue.prototype.$dragula = Vue.$dragula
 
   function findService(name, vnode, serviceName) {
@@ -267,6 +269,12 @@ export default function (Vue, options = {}) {
     const service = findService(name, vnode, serviceName)
     const drake = service.find(drakeName, vnode)
 
+    // skip if has already been configured
+    if (directivesConfugured[drakeName]) {
+      logDir('already has model configured', drakeName)
+      return
+    }
+
     if (!drake.models) {
       drake.models = []
     }
@@ -281,6 +289,8 @@ export default function (Vue, options = {}) {
     }
 
     let modelContainer = service.findModelContainerByContainer(container, drake)
+
+    directivesConfugured[drakeName] = true
 
     logDir({
       service: {

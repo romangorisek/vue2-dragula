@@ -206,7 +206,12 @@ export class DragulaService {
       this.log('findModelContainerByContainer', 'warning: no models found')
       return
     }
-    return drake.models.find(model => model.container === container)
+    let found = drake.models.find(model => model.container === container)
+    if (!found) {
+      this.log('No matching model could be found for container:', container)
+      this.log('... in drake', drake.name, ' models:', drake.models)
+    }
+    return found 
   }
 }
 
