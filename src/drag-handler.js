@@ -58,8 +58,9 @@ export class DragHandler {
       })
     }
     if (!targetModel) {
-      this.log('No targetModel could be foind for ', target, this.drake)
-
+      this.log('No targetModel could be found for:', target, this.drake)
+      this.drake.cancel(true)
+      return
     }
     this.insertModel(targetModel, dropElmModel)
     this.drake.cancel(true)
