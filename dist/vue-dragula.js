@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.1.1
+ * vue-dragula v2.2.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1214,16 +1214,6 @@ var require$$0$3 = Object.freeze({
 	  };
 	}();
 
-	var toConsumableArray = function (arr) {
-	  if (Array.isArray(arr)) {
-	    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-	    return arr2;
-	  } else {
-	    return Array.from(arr);
-	  }
-	};
-
 	var raf = window.requestAnimationFrame;
 	var waitForTransition = raf ? function (fn) {
 	  raf(function () {
@@ -1312,6 +1302,17 @@ var require$$0$3 = Object.freeze({
 	      target === source ? this.dropModelSame(dropElm, target, source) : this.dropModelTarget(dropElm, target, source);
 	    }
 	  }, {
+	    key: 'emit',
+	    value: function emit(eventName) {
+	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	      opts.model = this.sourceModel;
+	      opts.name = this.name;
+
+	      this.eventBus.$emit(eventName, opts);
+	      this.eventBus.$emit(this.name + ':' + eventName, opts);
+	    }
+	  }, {
 	    key: 'remove',
 	    value: function remove(el, container, source) {
 	      this.log('remove', el, container, source);
@@ -1322,8 +1323,11 @@ var require$$0$3 = Object.freeze({
 	      this.removeModel(el, container, source);
 	      this.drake.cancel(true);
 	      // TODO: extract/refactor
-	      this.eventBus.$emit('removeModel', this.name, el, source, this.dragIndex);
-	      this.eventBus.$emit(this.name + ':removeModel', this.name, el, source, this.dragIndex);
+	      this.emit('removeModel', {
+	        el: el,
+	        source: source,
+	        dragIndex: this.dragIndex
+	      });
 	    }
 	  }, {
 	    key: 'drag',
@@ -1334,17 +1338,21 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'drop',
-	    value: function drop(dropElm, target, source) {
-	      this.log('drop', dropElm, target, source);
+	    value: function drop(dropEl, target, source) {
+	      this.log('drop', dropEl, target, source);
 	      if (!this.drake.models || !target) {
 	        return;
 	      }
-	      this.dropIndex = this.domIndexOf(dropElm, target);
+	      this.dropIndex = this.domIndexOf(dropEl, target);
 	      this.sourceModel = this.findModelForContainer(source, this.drake);
-	      this.dropModel(dropElm, target, source);
-	      // TODO: extract/refactor
-	      this.eventBus.$emit('dropModel', this.name, dropElm, target, source, this.dropIndex);
-	      this.eventBus.$emit(this.name + ':dropModel', this.name, dropElm, target, source, this.dropIndex);
+	      this.dropModel(dropEl, target, source);
+
+	      this.emit('dropModel', {
+	        target: target,
+	        source: source,
+	        el: dropEl,
+	        dropIndex: this.dropIndex
+	      });
 	    }
 	  }, {
 	    key: 'dropElmModel',
@@ -1536,17 +1544,48 @@ var require$$0$3 = Object.freeze({
 	      this._validate('setupEvents', name);
 	      drake.initEvents = true;
 	      var _this = this;
+
+	      function calcOpts(name, args) {
+	        switch (name) {
+	          case 'cloned':
+	            return { clone: args[0], original: args[1], type: args[2] };
+
+	          case 'drag':
+	            return { el: args[0], source: args[1] };
+
+	          case 'dragend':
+	            return { el: args[0] };
+
+	          case 'drop':
+	            return {
+	              el: args[0],
+	              target: args[1],
+	              source: args[2],
+	              sibling: args[3]
+	            };
+
+	          default:
+	            return {
+	              el: args[0],
+	              container: args[1],
+	              source: args[2]
+	            };
+	        }
+	      }
+
 	      var emitter = function emitter(type) {
 	        _this.log('emitter', type);
 
 	        function replicate() {
-	          var _this$eventBus, _this$eventBus2;
-
 	          var args = Array.prototype.slice.call(arguments);
 	          var sendArgs = [name].concat(args);
-	          _this.log('eventBus.$emit', type, sendArgs);
-	          (_this$eventBus = _this.eventBus).$emit.apply(_this$eventBus, [type].concat(toConsumableArray(sendArgs)));
-	          (_this$eventBus2 = _this.eventBus).$emit.apply(_this$eventBus2, [this.name + ':type'].concat(toConsumableArray(sendArgs)));
+	          var opts = calcOpts(name, args);
+	          opts.name = name;
+	          opts.service = this;
+	          opts.drake = drake;
+	          _this.log('eventBus.$emit', type, name, opts);
+	          _this.eventBus.$emit(type, opts);
+	          _this.eventBus.$emit(this.name + ':' + type, opts);
 	        }
 
 	        drake.on(type, replicate);

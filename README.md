@@ -252,15 +252,15 @@ Note that special Vue events `removeModel` and `dropModel` are emitted as model 
 
 ```js
 this.name, el, source, this.dragIndex
-  'my-first:removeModel': (drake, el, source, dragIndex) => {
+  'my-first:removeModel': ({name, el, source, dragIndex, model}) => {
     // ...
   },
-  'my-first:dropModel': (drake, dropEl, target, source, dropIndex) => {
+  'my-first:dropModel': ({name, el, source, target, dropIndex, model}) => {
     // ...
   }
 ```
 
-- `el` and `dropEl` are DOM elements
+- `el` main DOM element of element (f.ex element being dropped on)
 - `source` is the element being dragged
 - `target` is the element being dragged to
 - `dragIndex` and `dropIndex` are indexes in the VM models (lists)
@@ -468,31 +468,35 @@ You will need a good understanding of the inner workings of Dragula in order to 
 
 Please see and try out the `DragEffects` example of the [demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
+See [dragula drakeon events](https://github.com/bevacqua/dragula#drakeon-events)
+
 ```js
 // https://developer.mozilla.org/en/docs/Web/API/Element/classList
 service.on({
-  accepts: (drake, el, target) => {
+  accepts: ({name, el, target}) => {
     return true
   },
-  drag: (drake, el, container) => {
+  drag: ({el, container, service, drake}) => {
     el.classList.remove('ex-moved')
   },
-  drop: (drake, el, container) => {
+  drop: ({el, container}) => {
     el.classList.add('ex-moved')
   },
-  over: (drake, el, container) => {
+  over: ({el, container}) => {
     el.classList.add('ex-over')
   },
-  out: (drake, el, container) => {
+  out: ({el, container}) => {
     el.classList.remove('ex-over')
   }
 })
 ```
 
+Here `name` is the drake name and `drake`  and `server` are the drake and service instances (objects).
+
 You can also subscribe to service specific events, here for `drag` events from the service called `my-first`
 
 ```js
-  'my-first:drag': (drake, el, container) => {
+  'my-first:drag': ({el, container}) => {
     el.classList.remove('ex-moved')
   },
 ```

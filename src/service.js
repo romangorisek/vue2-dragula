@@ -139,15 +139,48 @@ export class DragulaService {
     this._validate('setupEvents', name)
     drake.initEvents = true
     let _this = this
+
+    function calcOpts(name, args) {
+      switch (name) {
+        case 'cloned':
+          return { clone: args[0], original: args[1], type: args[2] }
+
+        case 'drag':
+          return { el: args[0], source: args[1] }
+
+        case 'dragend':
+          return { el: args[0] }
+
+        case 'drop':
+          return {
+            el: args[0],
+            target: args[1],
+            source: args[2],
+            sibling: args[3]
+          }
+
+        default:
+          return {
+            el: args[0],
+            container: args[1],
+            source: args[2]
+          }
+      }
+    }
+
     let emitter = type => {
       _this.log('emitter', type)
 
       function replicate () {
         let args = Array.prototype.slice.call(arguments)
         let sendArgs = [name].concat(args)
-        _this.log('eventBus.$emit', type, sendArgs)
-        _this.eventBus.$emit(type, ...sendArgs)
-        _this.eventBus.$emit(`${this.name}:type`, ...sendArgs)
+        let opts = calcOpts(name, args)
+        opts.name = name
+        opts.service = this
+        opts.drake = drake
+        _this.log('eventBus.$emit', type, name, opts)
+        _this.eventBus.$emit(type, opts)
+        _this.eventBus.$emit(`${this.name}:${type}`, opts)
       }
 
       drake.on(type, replicate)

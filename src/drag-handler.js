@@ -66,6 +66,13 @@ export class DragHandler {
     target === source ? this.dropModelSame(dropElm, target, source) : this.dropModelTarget(dropElm, target, source)
   }
 
+  emit(eventName, opts = {}) {
+    opts.model = this.sourceModel
+    opts.name = this.name
+
+    this.eventBus.$emit(eventName, opts)
+    this.eventBus.$emit(`${this.name}:${eventName}`, opts)
+  }
 
   remove (el, container, source) {
     this.log('remove', el, container, source)
@@ -76,8 +83,11 @@ export class DragHandler {
     this.removeModel(el, container, source)
     this.drake.cancel(true)
     // TODO: extract/refactor
-    this.eventBus.$emit('removeModel', this.name, el, source, this.dragIndex)
-    this.eventBus.$emit(`${this.name}:removeModel`, this.name, el, source, this.dragIndex)
+    this.emit('removeModel', {
+      el,
+      source,
+      dragIndex: this.dragIndex
+    })
   }
 
   drag (el, source) {
@@ -86,17 +96,21 @@ export class DragHandler {
     this.dragIndex = this.domIndexOf(el, source)
   }
 
-  drop (dropElm, target, source) {
-    this.log('drop', dropElm, target, source)
+  drop (dropEl, target, source) {
+    this.log('drop', dropEl, target, source)
     if (!this.drake.models || !target) {
       return
     }
-    this.dropIndex = this.domIndexOf(dropElm, target)
+    this.dropIndex = this.domIndexOf(dropEl, target)
     this.sourceModel = this.findModelForContainer(source, this.drake)
-    this.dropModel(dropElm, target, source)
-    // TODO: extract/refactor
-    this.eventBus.$emit('dropModel', this.name, dropElm, target, source, this.dropIndex)
-    this.eventBus.$emit(`${this.name}:dropModel`, this.name, dropElm, target, source, this.dropIndex)    
+    this.dropModel(dropEl, target, source)
+
+    this.emit('dropModel', {
+      target,
+      source,
+      el: dropEl,
+      dropIndex: this.dropIndex
+    })
   }
 
   get dropElmModel() {
