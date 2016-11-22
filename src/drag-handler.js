@@ -17,7 +17,7 @@ export class DragHandler {
     this.sourceModel = null
     this.logging = ctx.logging
     this.ctx = ctx
-    this.name = ctx.name
+    this.serviceName = ctx.name
     this.drake = drake
     this.name = name
     this.eventBus = ctx.eventBus
@@ -64,7 +64,6 @@ export class DragHandler {
       return
     }
     this.insertModel(targetModel, dropElmModel)
-    this.drake.cancel(true)
   }
 
   dropModel(dropElm, target, source) {
@@ -75,9 +74,11 @@ export class DragHandler {
   emit(eventName, opts = {}) {
     opts.model = this.sourceModel
     opts.name = this.name
+    let serviceEventName = `${this.serviceName}:${eventName}`
 
+    this.log('emit', serviceEventName, eventName, opts)
     this.eventBus.$emit(eventName, opts)
-    this.eventBus.$emit(`${this.name}:${eventName}`, opts)
+    this.eventBus.$emit(serviceEventName, opts)
   }
 
   remove (el, container, source) {

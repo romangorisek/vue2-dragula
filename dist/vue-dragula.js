@@ -1237,7 +1237,7 @@ var require$$0$3 = Object.freeze({
 	    this.sourceModel = null;
 	    this.logging = ctx.logging;
 	    this.ctx = ctx;
-	    this.name = ctx.name;
+	    this.serviceName = ctx.name;
 	    this.drake = drake;
 	    this.name = name;
 	    this.eventBus = ctx.eventBus;
@@ -1299,7 +1299,6 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 	      this.insertModel(targetModel, dropElmModel);
-	      this.drake.cancel(true);
 	    }
 	  }, {
 	    key: 'dropModel',
@@ -1314,9 +1313,11 @@ var require$$0$3 = Object.freeze({
 
 	      opts.model = this.sourceModel;
 	      opts.name = this.name;
+	      var serviceEventName = this.serviceName + ':' + eventName;
 
+	      this.log('emit', serviceEventName, eventName, opts);
 	      this.eventBus.$emit(eventName, opts);
-	      this.eventBus.$emit(this.name + ':' + eventName, opts);
+	      this.eventBus.$emit(serviceEventName, opts);
 	    }
 	  }, {
 	    key: 'remove',
@@ -1475,6 +1476,7 @@ var require$$0$3 = Object.freeze({
 	      }
 
 	      var dragHandler = this.createDragHandler({ ctx: this, name: name, drake: drake });
+	      this.log('created dragHandler for service', dragHandler);
 
 	      drake.on('remove', dragHandler.remove.bind(dragHandler));
 	      drake.on('drag', dragHandler.drag.bind(dragHandler));
@@ -1624,7 +1626,7 @@ var require$$0$3 = Object.freeze({
 	      });
 	      if (!found) {
 	        this.log('No matching model could be found for container:', container);
-	        this.log('... in drake', drake.name, ' models:', drake.models);
+	        this.log('in drake', drake.name, ' models:', drake.models);
 	      }
 	      return found;
 	    }
@@ -1968,7 +1970,7 @@ var require$$0$3 = Object.freeze({
 
 	  Vue.$dragula = new Dragula(options);
 
-	  var directivesConfugured = {};
+	  var drakeContainers = {};
 
 	  Vue.prototype.$dragula = Vue.$dragula;
 
@@ -2024,10 +2026,17 @@ var require$$0$3 = Object.freeze({
 	    var service = findService(name, vnode, serviceName);
 	    var drake = service.find(drakeName, vnode);
 
-	    // skip if has already been configured
-	    if (directivesConfugured[drakeName]) {
-	      logDir('already has model configured', drakeName);
-	      return;
+	    drakeContainers[drakeName] = drakeContainers[drakeName] || [];
+	    var dc = drakeContainers[drakeName];
+	    // skip if has already been configured (same container in same drake)
+	    if (dc) {
+	      var found = dc.find(function (c) {
+	        return c === container;
+	      });
+	      if (found) {
+	        logDir('already has drake container configured', drakeName, container);
+	        return;
+	      }
 	    }
 
 	    if (!drake.models) {
@@ -2045,7 +2054,7 @@ var require$$0$3 = Object.freeze({
 
 	    var modelContainer = service.findModelContainerByContainer(container, drake);
 
-	    directivesConfugured[drakeName] = true;
+	    dc.push(container);
 
 	    logDir({
 	      service: {
@@ -2116,7 +2125,9 @@ var require$$0$3 = Object.freeze({
 	    update: function update(container, binding, vnode, oldVnode) {
 	      logDir('UPDATE', container, binding, vnode);
 	      // Vue 1
-	      updateDirective(container, binding, vnode, oldVnode);
+	      if (Vue.version === 1) {
+	        updateDirective(container, binding, vnode, oldVnode);
+	      }
 	    },
 	    componentUpdated: function componentUpdated(container, binding, vnode, oldVnode) {
 	      logDir('COMPONENT UPDATED', container, binding, vnode);

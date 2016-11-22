@@ -94,6 +94,7 @@ export class DragulaService {
     }
 
     const dragHandler = this.createDragHandler({ ctx: this, name, drake })
+    this.log('created dragHandler for service', dragHandler)
 
     drake.on('remove', dragHandler.remove.bind(dragHandler))
     drake.on('drag', dragHandler.drag.bind(dragHandler))
@@ -209,9 +210,9 @@ export class DragulaService {
     let found = drake.models.find(model => model.container === container)
     if (!found) {
       this.log('No matching model could be found for container:', container)
-      this.log('... in drake', drake.name, ' models:', drake.models)
+      this.log('in drake', drake.name, ' models:', drake.models)
     }
-    return found 
+    return found
   }
 }
 

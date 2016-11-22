@@ -216,7 +216,7 @@ export default function (Vue, options = {}) {
 
   Vue.$dragula = new Dragula(options)
 
-  let directivesConfugured = {}
+  let drakeContainers = {}
 
   Vue.prototype.$dragula = Vue.$dragula
 
@@ -269,10 +269,15 @@ export default function (Vue, options = {}) {
     const service = findService(name, vnode, serviceName)
     const drake = service.find(drakeName, vnode)
 
-    // skip if has already been configured
-    if (directivesConfugured[drakeName]) {
-      logDir('already has model configured', drakeName)
-      return
+    drakeContainers[drakeName] = drakeContainers[drakeName] || []
+    let dc = drakeContainers[drakeName]
+    // skip if has already been configured (same container in same drake)
+    if (dc) {
+      let found = dc.find(c => c === container)
+      if (found) {
+        logDir('already has drake container configured', drakeName, container)
+        return
+      }
     }
 
     if (!drake.models) {
@@ -290,7 +295,7 @@ export default function (Vue, options = {}) {
 
     let modelContainer = service.findModelContainerByContainer(container, drake)
 
-    directivesConfugured[drakeName] = true
+    dc.push(container)
 
     logDir({
       service: {
@@ -358,7 +363,9 @@ export default function (Vue, options = {}) {
     update (container, binding, vnode, oldVnode) {
       logDir('UPDATE', container, binding, vnode)
       // Vue 1
-      updateDirective(container, binding, vnode, oldVnode)
+      if (Vue.version === 1) {
+        updateDirective(container, binding, vnode, oldVnode)
+      }
     },
 
     componentUpdated (container, binding, vnode, oldVnode) {
