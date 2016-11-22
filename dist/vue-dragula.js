@@ -1293,7 +1293,10 @@ var require$$0$3 = Object.freeze({
 	        });
 	      }
 	      if (!targetModel) {
-	        this.log('No targetModel could be foind for ', target, this.drake);
+	        this.log('No targetModel could be found for target:', target);
+	        this.log('in drake:', this.drake);
+	        this.drake.cancel(true);
+	        return;
 	      }
 	      this.insertModel(targetModel, dropElmModel);
 	      this.drake.cancel(true);

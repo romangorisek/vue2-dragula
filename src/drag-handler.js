@@ -58,7 +58,8 @@ export class DragHandler {
       })
     }
     if (!targetModel) {
-      this.log('No targetModel could be found for:', target, this.drake)
+      this.log('No targetModel could be found for target:', target)
+      this.log('in drake:', this.drake)
       this.drake.cancel(true)
       return
     }
