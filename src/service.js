@@ -89,6 +89,7 @@ export class DragulaService {
     this.log('handleModels', name, drake)
     this._validate('handleModels', name)
     if (drake.registered) { // do not register events twice
+      this.log('handleModels', 'already registered')
       return
     }
 
@@ -202,6 +203,7 @@ export class DragulaService {
 
   findModelContainerByContainer (container, drake) {
     if (!drake.models) {
+      this.log('findModelContainerByContainer', 'warning: no models found')
       return
     }
     return drake.models.find(model => model.container === container)

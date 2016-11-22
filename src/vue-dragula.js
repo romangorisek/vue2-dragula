@@ -51,7 +51,7 @@ export default function (Vue, options = {}) {
   function logDir(...args) {
     if (!options.logging) return
     if (!options.logging.directive) return
-    return logPlugin('v-dragula directive', ...args);
+    console.log('v-dragula directive', ...args);
   }
 
   logPlugin('Initializing vue-dragula plugin', options)
@@ -257,11 +257,61 @@ export default function (Vue, options = {}) {
     return {name, drakeName, serviceName}
   }
 
+  function updateDirective(container, binding, vnode, oldVnode) {
+    const newValue = vnode
+      ? binding.value // Vue 2
+      : container // Vue 1
+    if (!newValue) { return }
+
+    const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
+    const service = findService(name, vnode, serviceName)
+    const drake = service.find(drakeName, vnode)
+
+    if (!drake.models) {
+      drake.models = []
+    }
+
+    if (!vnode) {
+      container = this.el // Vue 1
+    }
+
+    if (!service) {
+      logDir('no service found', name, drakeName)
+      return
+    }
+
+    let modelContainer = service.findModelContainerByContainer(container, drake)
+
+    logDir({
+      service: {
+        name: serviceName,
+        instance: service
+      },
+      drake: {
+        name: drakeName,
+        instance: drake
+      },
+      container,
+      modelContainer
+    })
+
+    if (modelContainer) {
+      logDir('set model of container', newValue)
+      modelContainer.model = newValue
+    } else {
+      logDir('push model and container on drake', newValue, container)
+      drake.models.push({
+        model: newValue,
+        container: container
+      })
+    }
+  }
+
   Vue.directive('dragula', {
     params: ['drake', 'service'],
 
     bind (container, binding, vnode) {
-      logDir('bind', container, binding, vnode)
+      logDir('BIND', container, binding, vnode)
 
       const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
@@ -296,54 +346,23 @@ export default function (Vue, options = {}) {
     },
 
     update (container, binding, vnode, oldVnode) {
-      logDir('update', container, binding, vnode)
+      logDir('UPDATE', container, binding, vnode)
+      // Vue 1
+      updateDirective(container, binding, vnode, oldVnode)
+    },
 
-      const newValue = vnode
-        ? binding.value // Vue 2
-        : container // Vue 1
-      if (!newValue) { return }
+    componentUpdated (container, binding, vnode, oldVnode) {
+      logDir('COMPONENT UPDATED', container, binding, vnode)
+    },
 
-      const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
-      const service = findService(name, vnode, serviceName)
-      const drake = service.find(drakeName, vnode)
-
-      if (!drake.models) {
-        drake.models = []
-      }
-
-      if (!vnode) {
-        container = this.el // Vue 1
-      }
-
-      let modelContainer = service.findModelContainerByContainer(container, drake)
-
-      logDir({
-        service: {
-          name: serviceName,
-          instance: service
-        },
-        drake: {
-          name: drakeName,
-          instance: drake
-        },
-        container,
-        modelContainer
-      })
-
-      if (modelContainer) {
-        logDir('set model of container', newValue)
-        modelContainer.model = newValue
-      } else {
-        logDir('push model and container on drake', newValue, container)
-        drake.models.push({
-          model: newValue,
-          container: container
-        })
-      }
+    inserted (container, binding, vnode, oldVnode) {
+      logDir('INSERTED', container, binding, vnode)
+      // Vue 2
+      updateDirective(container, binding, vnode, oldVnode)
     },
 
     unbind (container, binding, vnode) {
-      logDir('unbind', container, binding, vnode)
+      logDir('UNBIND', container, binding, vnode)
 
       const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)

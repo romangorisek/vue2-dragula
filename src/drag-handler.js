@@ -21,8 +21,8 @@ export class DragHandler {
     this.drake = drake
     this.name = name
     this.eventBus = ctx.eventBus
-    this.findModelForContainer = ctx.findModelForContainer
-    this.domIndexOf = ctx.domIndexOf
+    this.findModelForContainer = ctx.findModelForContainer.bind(ctx)
+    this.domIndexOf = ctx.domIndexOf.bind(ctx)
   }
 
   log(event, ...args) {
@@ -77,6 +77,7 @@ export class DragHandler {
   remove (el, container, source) {
     this.log('remove', el, container, source)
     if (!this.drake.models) {
+      this.log('Warning: Can NOT remove it. Must have models:', this.drake.models)
       return
     }
     this.sourceModel = this.findModelForContainer(source, this.drake)

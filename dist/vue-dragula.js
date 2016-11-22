@@ -1241,8 +1241,8 @@ var require$$0$3 = Object.freeze({
 	    this.drake = drake;
 	    this.name = name;
 	    this.eventBus = ctx.eventBus;
-	    this.findModelForContainer = ctx.findModelForContainer;
-	    this.domIndexOf = ctx.domIndexOf;
+	    this.findModelForContainer = ctx.findModelForContainer.bind(ctx);
+	    this.domIndexOf = ctx.domIndexOf.bind(ctx);
 	  }
 
 	  createClass(DragHandler, [{
@@ -1317,6 +1317,7 @@ var require$$0$3 = Object.freeze({
 	    value: function remove(el, container, source) {
 	      this.log('remove', el, container, source);
 	      if (!this.drake.models) {
+	        this.log('Warning: Can NOT remove it. Must have models:', this.drake.models);
 	        return;
 	      }
 	      this.sourceModel = this.findModelForContainer(source, this.drake);
@@ -1463,6 +1464,7 @@ var require$$0$3 = Object.freeze({
 	      this._validate('handleModels', name);
 	      if (drake.registered) {
 	        // do not register events twice
+	        this.log('handleModels', 'already registered');
 	        return;
 	      }
 
@@ -1608,6 +1610,7 @@ var require$$0$3 = Object.freeze({
 	    key: 'findModelContainerByContainer',
 	    value: function findModelContainerByContainer(container, drake) {
 	      if (!drake.models) {
+	        this.log('findModelContainerByContainer', 'warning: no models found');
 	        return;
 	      }
 	      return drake.models.find(function (model) {
@@ -1692,6 +1695,8 @@ var require$$0$3 = Object.freeze({
 	  }
 
 	  function logDir() {
+	    var _console3;
+
 	    if (!options.logging) return;
 	    if (!options.logging.directive) return;
 
@@ -1699,7 +1704,7 @@ var require$$0$3 = Object.freeze({
 	      args[_key3] = arguments[_key3];
 	    }
 
-	    return logPlugin.apply(undefined, ['v-dragula directive'].concat(args));
+	    (_console3 = console).log.apply(_console3, ['v-dragula directive'].concat(args));
 	  }
 
 	  logPlugin('Initializing vue-dragula plugin', options);
@@ -1991,16 +1996,71 @@ var require$$0$3 = Object.freeze({
 	    return { name: name, drakeName: drakeName, serviceName: serviceName };
 	  }
 
+	  function updateDirective(container, binding, vnode, oldVnode) {
+	    var newValue = vnode ? binding.value // Vue 2
+	    : container; // Vue 1
+	    if (!newValue) {
+	      return;
+	    }
+
+	    var _calcNames = calcNames(globalName, vnode, this),
+	        name = _calcNames.name,
+	        drakeName = _calcNames.drakeName,
+	        serviceName = _calcNames.serviceName;
+
+	    var service = findService(name, vnode, serviceName);
+	    var drake = service.find(drakeName, vnode);
+
+	    if (!drake.models) {
+	      drake.models = [];
+	    }
+
+	    if (!vnode) {
+	      container = this.el; // Vue 1
+	    }
+
+	    if (!service) {
+	      logDir('no service found', name, drakeName);
+	      return;
+	    }
+
+	    var modelContainer = service.findModelContainerByContainer(container, drake);
+
+	    logDir({
+	      service: {
+	        name: serviceName,
+	        instance: service
+	      },
+	      drake: {
+	        name: drakeName,
+	        instance: drake
+	      },
+	      container: container,
+	      modelContainer: modelContainer
+	    });
+
+	    if (modelContainer) {
+	      logDir('set model of container', newValue);
+	      modelContainer.model = newValue;
+	    } else {
+	      logDir('push model and container on drake', newValue, container);
+	      drake.models.push({
+	        model: newValue,
+	        container: container
+	      });
+	    }
+	  }
+
 	  Vue.directive('dragula', {
 	    params: ['drake', 'service'],
 
 	    bind: function bind(container, binding, vnode) {
-	      logDir('bind', container, binding, vnode);
+	      logDir('BIND', container, binding, vnode);
 
-	      var _calcNames = calcNames(globalName, vnode, this),
-	          name = _calcNames.name,
-	          drakeName = _calcNames.drakeName,
-	          serviceName = _calcNames.serviceName;
+	      var _calcNames2 = calcNames(globalName, vnode, this),
+	          name = _calcNames2.name,
+	          drakeName = _calcNames2.drakeName,
+	          serviceName = _calcNames2.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
 	      var drake = service.find(drakeName, vnode);
@@ -2033,58 +2093,20 @@ var require$$0$3 = Object.freeze({
 	      service.handleModels(name, newDrake);
 	    },
 	    update: function update(container, binding, vnode, oldVnode) {
-	      logDir('update', container, binding, vnode);
-
-	      var newValue = vnode ? binding.value // Vue 2
-	      : container; // Vue 1
-	      if (!newValue) {
-	        return;
-	      }
-
-	      var _calcNames2 = calcNames(globalName, vnode, this),
-	          name = _calcNames2.name,
-	          drakeName = _calcNames2.drakeName,
-	          serviceName = _calcNames2.serviceName;
-
-	      var service = findService(name, vnode, serviceName);
-	      var drake = service.find(drakeName, vnode);
-
-	      if (!drake.models) {
-	        drake.models = [];
-	      }
-
-	      if (!vnode) {
-	        container = this.el; // Vue 1
-	      }
-
-	      var modelContainer = service.findModelContainerByContainer(container, drake);
-
-	      logDir({
-	        service: {
-	          name: serviceName,
-	          instance: service
-	        },
-	        drake: {
-	          name: drakeName,
-	          instance: drake
-	        },
-	        container: container,
-	        modelContainer: modelContainer
-	      });
-
-	      if (modelContainer) {
-	        logDir('set model of container', newValue);
-	        modelContainer.model = newValue;
-	      } else {
-	        logDir('push model and container on drake', newValue, container);
-	        drake.models.push({
-	          model: newValue,
-	          container: container
-	        });
-	      }
+	      logDir('UPDATE', container, binding, vnode);
+	      // Vue 1
+	      updateDirective(container, binding, vnode, oldVnode);
+	    },
+	    componentUpdated: function componentUpdated(container, binding, vnode, oldVnode) {
+	      logDir('COMPONENT UPDATED', container, binding, vnode);
+	    },
+	    inserted: function inserted(container, binding, vnode, oldVnode) {
+	      logDir('INSERTED', container, binding, vnode);
+	      // Vue 2
+	      updateDirective(container, binding, vnode, oldVnode);
 	    },
 	    unbind: function unbind(container, binding, vnode) {
-	      logDir('unbind', container, binding, vnode);
+	      logDir('UNBIND', container, binding, vnode);
 
 	      var _calcNames3 = calcNames(globalName, vnode, this),
 	          name = _calcNames3.name,
