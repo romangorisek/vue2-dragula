@@ -1341,6 +1341,7 @@ var require$$0$3 = Object.freeze({
 	    value: function drop(dropEl, target, source) {
 	      this.log('drop', dropEl, target, source);
 	      if (!this.drake.models || !target) {
+	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
 	        return;
 	      }
 	      this.dropIndex = this.domIndexOf(dropEl, target);
