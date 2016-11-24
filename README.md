@@ -523,6 +523,12 @@ Sample effect styling with [CSS fade-in transition effect](http://www.chrisbutte
 }
 ```
 
+## Bonus Recipes
+
+#### Auto-sorted lists
+
+Add an Rx `Observable` or a `watch` to your model (list) which triggers a `sort` of a derived (ie. immutable) model whenever it is updated. You should then display the derived model in your view. Otherwise each sort operation would trigger a new sort.
+
 ## License
 
 MIT Kristian Mandrup 2016
