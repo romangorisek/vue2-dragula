@@ -172,6 +172,7 @@ export class DragHandler {
 
   jsonDropElmModel() {
     let model = this.sourceModel.at(this.dragIndex)
-    return JSON.parse(JSON.stringify(model.model || model))
+    let stringable = model ? model.model || model.stringable : model
+    return JSON.parse(JSON.stringify(stringable || model))
   }
 }
