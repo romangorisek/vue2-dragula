@@ -1,16 +1,21 @@
 export class ModelManager {
   constructor(opts = {}) {
-    this.log('create', opts)
     this.opts = opts
     this.name = opts.name
+    this.drake = opts.drake
     this.model = this.createModel(opts.model || [])
     this.history = opts.history || this.createHistory()
     this.logging = opts.logging
     this.timeIndex = 0
+    this.log('CREATE', opts)
+  }
+
+  get shouldLog() {
+    return this.logging && this.logging.modelManager
   }
 
   log(event, ...args) {
-    if (!(this.logging && this.logging.modelManager)) return
+    if (!this.shouldLog) return
     console.log(`ModelManager [${this.name}] :`, event, ...args)
   }
 

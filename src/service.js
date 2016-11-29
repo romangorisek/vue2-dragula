@@ -18,17 +18,19 @@ function createModelManager(opts) {
 export class DragulaService {
   constructor (opts = {}) {
     let {name, eventBus, drakes, options } = opts
-    this.log('construct DragulaService', opts)
     options  = options || {}
     this.options = options
     this.logging = options.logging
+
+    this.log('CREATE DragulaService', opts)
+
     this.name = name
     this.drakes = drakes || {} // drake store
     this.eventBus = eventBus
     this.createDragHandler = options.createDragHandler || createDragHandler
     this.createModelManager = options.createModelManager || createModelManager
 
-    this.modelManager = this.createModelManager(opts)
+    this.modelManager = this.createModelManager(options)
 
     this.events = [
       'cancel',
@@ -49,9 +51,12 @@ export class DragulaService {
     return this.modelManager.createModel();
   }
 
+  get shouldLog() {
+    return this.logging && this.logging.service
+  }
+
   log(event, ...args) {
-    if (!this.logging) return
-    if (!this.logging.service) return
+    if (!this.shouldLog) return
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 

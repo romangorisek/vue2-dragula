@@ -244,7 +244,7 @@ export default {
   },
   // setup services with drakes
   created () {
-    this.$dragula.create({
+    this.$dragula.createService({
       name: 'myService',
       createDragHandler,
       drakes: {
@@ -297,7 +297,7 @@ function createModelManager(opts) {
 Then you can pass it as the `createModelManager` option when creating a service.
 
 ```js
-this.$dragula.create({
+this.$dragula.createService({
   name: 'myService',
   createDragHandler,
   createModelManager
@@ -436,7 +436,7 @@ Setup a service with one or more drakes ready for drag'n drop action
 
 ```js
 created () {
-  this.$dragula.create({
+  this.$dragula.createService({
     name: 'myService',
     drakes: {
       'first': {
@@ -485,7 +485,7 @@ If you simply specify the service name without a specific named drake configurat
 You can configure the `default` drake simply using the `drake` option on the service.
 
 ```js
-this.$dragula.create({
+this.$dragula.createService({
   name: 'myService',
   drake: {
   }

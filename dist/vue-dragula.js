@@ -1251,13 +1251,11 @@ var require$$0$3 = Object.freeze({
 	    value: function log(event) {
 	      var _console;
 
-	      if (!(this.logging && this.logging.dragHandler)) return;
-
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      (_console = console).log.apply(_console, ['DragHandler [' + this.name + '] :', event].concat(args));
+	      if (!this.shouldLog) (_console = console).log.apply(_console, ['DragHandler [' + this.name + '] :', event].concat(args));
 	    }
 	  }, {
 	    key: 'removeModel',
@@ -1351,6 +1349,8 @@ var require$$0$3 = Object.freeze({
 	    value: function getModel(location) {
 	      return this.modelManager.createFor({
 	        name: this.name,
+	        drake: this.drake,
+	        logging: this.logging,
 	        model: this.findModelForContainer(location, this.drake)
 	      });
 	    }
@@ -1410,6 +1410,11 @@ var require$$0$3 = Object.freeze({
 	      var model = this.sourceModel.at(this.dragIndex);
 	      return JSON.parse(JSON.stringify(model.model || model));
 	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.dragHandler;
+	    }
 	  }]);
 	  return DragHandler;
 	}();
@@ -1419,13 +1424,14 @@ var require$$0$3 = Object.freeze({
 	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    classCallCheck(this, ModelManager);
 
-	    this.log('create', opts);
 	    this.opts = opts;
 	    this.name = opts.name;
+	    this.drake = opts.drake;
 	    this.model = this.createModel(opts.model || []);
 	    this.history = opts.history || this.createHistory();
 	    this.logging = opts.logging;
 	    this.timeIndex = 0;
+	    this.log('CREATE', opts);
 	  }
 
 	  createClass(ModelManager, [{
@@ -1433,7 +1439,7 @@ var require$$0$3 = Object.freeze({
 	    value: function log(event) {
 	      var _console;
 
-	      if (!(this.logging && this.logging.modelManager)) return;
+	      if (!this.shouldLog) return;
 
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
@@ -1512,6 +1518,11 @@ var require$$0$3 = Object.freeze({
 
 	      return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
 	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.modelManager;
+	    }
 	  }]);
 	  return ModelManager;
 	}();
@@ -1541,17 +1552,19 @@ var require$$0$3 = Object.freeze({
 	        drakes = opts.drakes,
 	        options = opts.options;
 
-	    this.log('construct DragulaService', opts);
 	    options = options || {};
 	    this.options = options;
 	    this.logging = options.logging;
+
+	    this.log('CREATE DragulaService', opts);
+
 	    this.name = name;
 	    this.drakes = drakes || {}; // drake store
 	    this.eventBus = eventBus;
 	    this.createDragHandler = options.createDragHandler || createDragHandler;
 	    this.createModelManager = options.createModelManager || createModelManager;
 
-	    this.modelManager = this.createModelManager(opts);
+	    this.modelManager = this.createModelManager(options);
 
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 	  }
@@ -1566,8 +1579,7 @@ var require$$0$3 = Object.freeze({
 	    value: function log(event) {
 	      var _console;
 
-	      if (!this.logging) return;
-	      if (!this.logging.service) return;
+	      if (!this.shouldLog) return;
 
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
@@ -1780,6 +1792,11 @@ var require$$0$3 = Object.freeze({
 	        this.log('in drake', drake.name, ' models:', drake.models);
 	      }
 	      return found;
+	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.service;
 	    }
 	  }, {
 	    key: 'drakeNames',

@@ -26,8 +26,12 @@ export class DragHandler {
     this.domIndexOf = ctx.domIndexOf.bind(ctx)
   }
 
+  get shouldLog() {
+    return this.logging && this.logging.dragHandler
+  }
+
   log(event, ...args) {
-    if (!(this.logging && this.logging.dragHandler)) return
+    if (!this.shouldLog)
     console.log(`DragHandler [${this.name}] :`, event, ...args)
   }
 
@@ -110,6 +114,8 @@ export class DragHandler {
   getModel(location) {
     return this.modelManager.createFor({
       name: this.name,
+      drake: this.drake,
+      logging: this.logging,
       model: this.findModelForContainer(location, this.drake)
     })
   }
