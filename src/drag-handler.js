@@ -78,8 +78,8 @@ export class DragHandler {
   dropModelTarget(dropElm, target, source) {
     this.log('dropModelTarget', dropElm, target, source)
     let notCopy = this.dragElm === dropElm
-    let targetModel = this.getTargetModel(target)
-    let dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel
+    let targetModel = this.getModel(target)
+    let dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel()
 
     if (notCopy) {
       this.notCopy()
@@ -156,12 +156,12 @@ export class DragHandler {
     })
   }
 
-  get dropElmModel() {
+  dropElmModel() {
     return this.sourceModel.at(this.dragIndex)
   }
 
-  get jsonDropElmModel() {
+  jsonDropElmModel() {
     let model = this.sourceModel.at(this.dragIndex)
-    return JSON.parse(JSON.stringify(model))
+    return JSON.parse(JSON.stringify(model.model || model))
   }
 }

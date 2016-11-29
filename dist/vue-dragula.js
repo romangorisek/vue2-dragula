@@ -1314,8 +1314,8 @@ var require$$0$3 = Object.freeze({
 	    value: function dropModelTarget(dropElm, target, source) {
 	      this.log('dropModelTarget', dropElm, target, source);
 	      var notCopy = this.dragElm === dropElm;
-	      var targetModel = this.getTargetModel(target);
-	      var dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel;
+	      var targetModel = this.getModel(target);
+	      var dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel();
 
 	      if (notCopy) {
 	        this.notCopy();
@@ -1401,14 +1401,14 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'dropElmModel',
-	    get: function get() {
+	    value: function dropElmModel() {
 	      return this.sourceModel.at(this.dragIndex);
 	    }
 	  }, {
 	    key: 'jsonDropElmModel',
-	    get: function get() {
+	    value: function jsonDropElmModel() {
 	      var model = this.sourceModel.at(this.dragIndex);
-	      return JSON.parse(JSON.stringify(model));
+	      return JSON.parse(JSON.stringify(model.model || model));
 	    }
 	  }]);
 	  return DragHandler;
@@ -1422,9 +1422,10 @@ var require$$0$3 = Object.freeze({
 	    this.log('create', opts);
 	    this.opts = opts;
 	    this.name = opts.name;
-	    this.model = opts.model || this.createModel();
+	    this.model = this.createModel(opts.model || []);
 	    this.history = opts.history || this.createHistory();
 	    this.logging = opts.logging;
+	    this.timeIndex = 0;
 	  }
 
 	  createClass(ModelManager, [{
@@ -1451,14 +1452,20 @@ var require$$0$3 = Object.freeze({
 	      this.log('redo', 'not yet implemented');
 	    }
 	  }, {
+	    key: 'addToHistory',
+	    value: function addToHistory(model) {
+	      this.history.push(model);
+	      this.timeIndex++;
+	    }
+	  }, {
 	    key: 'at',
 	    value: function at(index) {
-	      return this.model[this.dragIndex];
+	      return this.model[index];
 	    }
 	  }, {
 	    key: 'createModel',
-	    value: function createModel() {
-	      return this.model || [];
+	    value: function createModel(model) {
+	      return this.model || model || [];
 	    }
 	  }, {
 	    key: 'createHistory',
@@ -1467,8 +1474,10 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'createFor',
-	    value: function createFor(model) {
-	      return new ModelManager({ model: model });
+	    value: function createFor() {
+	      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      return new ModelManager(opts);
 	    }
 	  }, {
 	    key: 'removeAt',
@@ -1477,7 +1486,7 @@ var require$$0$3 = Object.freeze({
 	        model: this.model,
 	        index: index
 	      });
-	      this.model.splice(this.Index, 1);
+	      return this.model.splice(index, 1);
 	    }
 	  }, {
 	    key: 'insertAt',
@@ -1487,7 +1496,7 @@ var require$$0$3 = Object.freeze({
 	        index: index,
 	        dropModel: dropModel
 	      });
-	      this.model.splice(index, 0, dropModel);
+	      return this.model.splice(index, 0, dropModel);
 	    }
 	  }, {
 	    key: 'move',
@@ -1501,7 +1510,7 @@ var require$$0$3 = Object.freeze({
 	        dropIndex: dropIndex
 	      });
 
-	      this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
+	      return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
 	    }
 	  }]);
 	  return ModelManager;
@@ -1550,7 +1559,7 @@ var require$$0$3 = Object.freeze({
 	  createClass(DragulaService, [{
 	    key: 'createModel',
 	    value: function createModel() {
-	      return modelManager.createModel();
+	      return this.modelManager.createModel();
 	    }
 	  }, {
 	    key: 'log',
@@ -2187,7 +2196,7 @@ var require$$0$3 = Object.freeze({
 	    }
 
 	    if (!drake.models) {
-	      drake.models = service.createModel();
+	      drake.models = [];
 	    }
 
 	    if (!vnode) {

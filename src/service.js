@@ -46,7 +46,7 @@ export class DragulaService {
   }
 
   createModel() {
-    return modelManager.createModel();
+    return this.modelManager.createModel();
   }
 
   log(event, ...args) {

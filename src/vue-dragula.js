@@ -286,7 +286,7 @@ export default function (Vue, options = {}) {
     }
 
     if (!drake.models) {
-      drake.models = service.createModel()
+      drake.models = []
     }
 
     if (!vnode) {

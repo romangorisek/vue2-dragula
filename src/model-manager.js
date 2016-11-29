@@ -3,9 +3,10 @@ export class ModelManager {
     this.log('create', opts)
     this.opts = opts
     this.name = opts.name
-    this.model = opts.model || this.createModel()
+    this.model = this.createModel(opts.model || [])
     this.history = opts.history || this.createHistory()
     this.logging = opts.logging
+    this.timeIndex = 0
   }
 
   log(event, ...args) {
@@ -21,20 +22,25 @@ export class ModelManager {
     this.log('redo', 'not yet implemented')
   }
 
-  at(index) {
-    return this.model[this.dragIndex]
+  addToHistory(model) {
+    this.history.push(model)
+    this.timeIndex++
   }
 
-  createModel() {
-    return this.model || [];
+  at(index) {
+    return this.model[index]
+  }
+
+  createModel(model) {
+    return this.model || model || [];
   }
 
   createHistory() {
     return this.history || [];
   }
 
-  createFor(model) {
-    return new ModelManager({ model })
+  createFor(opts = {}) {
+    return new ModelManager(opts)
   }
 
   removeAt(index) {
@@ -42,7 +48,7 @@ export class ModelManager {
       model: this.model,
       index
     })
-    this.model.splice(this.Index, 1)
+    return this.model.splice(index, 1)
   }
 
   insertAt(index, dropModel) {
@@ -51,7 +57,7 @@ export class ModelManager {
       index,
       dropModel
     })
-    this.model.splice(index, 0, dropModel)
+    return this.model.splice(index, 0, dropModel)
   }
 
   move({dragIndex, dropIndex}) {
@@ -61,6 +67,6 @@ export class ModelManager {
       dropIndex
     })
 
-    this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0])
+    return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0])
   }
 }
