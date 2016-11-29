@@ -27,8 +27,7 @@ export class DragHandler {
   }
 
   log(event, ...args) {
-    if (!this.logging) return
-    if (!this.logging.dragHandler) return
+    if (!(this.logging && this.logging.dragHandler)) return
     console.log(`DragHandler [${this.name}] :`, event, ...args)
   }
 
@@ -56,8 +55,10 @@ export class DragHandler {
   insertModel(targetModel, dropElmModel) {
     this.log('insertModel', {
       targetModel: targetModel,
+      dropIndex: this.dropIndex,
       dropElmModel: dropElmModel
     })
+
     targetModel.insertAt(this.dropIndex, dropElmModel)
   }
 
@@ -107,7 +108,10 @@ export class DragHandler {
   }
 
   getModel(location) {
-    return this.modelManager.createFor(this.findModelForContainer(location, this.drake))
+    return this.modelManager.createFor({
+      name: this.name,
+      model: this.findModelForContainer(location, this.drake)
+    })
   }
 
   remove (el, container, source) {

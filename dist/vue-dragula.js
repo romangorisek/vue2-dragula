@@ -1251,8 +1251,7 @@ var require$$0$3 = Object.freeze({
 	    value: function log(event) {
 	      var _console;
 
-	      if (!this.logging) return;
-	      if (!this.logging.dragHandler) return;
+	      if (!(this.logging && this.logging.dragHandler)) return;
 
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
@@ -1288,8 +1287,10 @@ var require$$0$3 = Object.freeze({
 	    value: function insertModel(targetModel, dropElmModel) {
 	      this.log('insertModel', {
 	        targetModel: targetModel,
+	        dropIndex: this.dropIndex,
 	        dropElmModel: dropElmModel
 	      });
+
 	      targetModel.insertAt(this.dropIndex, dropElmModel);
 	    }
 	  }, {
@@ -1348,7 +1349,10 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'getModel',
 	    value: function getModel(location) {
-	      return this.modelManager.createFor(this.findModelForContainer(location, this.drake));
+	      return this.modelManager.createFor({
+	        name: this.name,
+	        model: this.findModelForContainer(location, this.drake)
+	      });
 	    }
 	  }, {
 	    key: 'remove',
@@ -1411,43 +1415,91 @@ var require$$0$3 = Object.freeze({
 	}();
 
 	var ModelManager = function () {
-	  function ModelManager(opts) {
+	  function ModelManager() {
+	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    classCallCheck(this, ModelManager);
 
+	    this.log('create', opts);
 	    this.opts = opts;
+	    this.name = opts.name;
 	    this.model = opts.model || this.createModel();
+	    this.history = opts.history || this.createHistory();
+	    this.logging = opts.logging;
 	  }
 
 	  createClass(ModelManager, [{
-	    key: "at",
+	    key: 'log',
+	    value: function log(event) {
+	      var _console;
+
+	      if (!(this.logging && this.logging.modelManager)) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, ['ModelManager [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'undo',
+	    value: function undo() {
+	      this.log('undo', 'not yet implemented');
+	    }
+	  }, {
+	    key: 'redo',
+	    value: function redo() {
+	      this.log('redo', 'not yet implemented');
+	    }
+	  }, {
+	    key: 'at',
 	    value: function at(index) {
 	      return this.model[this.dragIndex];
 	    }
 	  }, {
-	    key: "createModel",
+	    key: 'createModel',
 	    value: function createModel() {
 	      return this.model || [];
 	    }
 	  }, {
-	    key: "createFor",
+	    key: 'createHistory',
+	    value: function createHistory() {
+	      return this.history || [];
+	    }
+	  }, {
+	    key: 'createFor',
 	    value: function createFor(model) {
 	      return new ModelManager({ model: model });
 	    }
 	  }, {
-	    key: "removeAt",
+	    key: 'removeAt',
 	    value: function removeAt(index) {
+	      this.log('removeAt', {
+	        model: this.model,
+	        index: index
+	      });
 	      this.model.splice(this.Index, 1);
 	    }
 	  }, {
-	    key: "insertAt",
+	    key: 'insertAt',
 	    value: function insertAt(index, dropModel) {
+	      this.log('insertAt', {
+	        model: this.model,
+	        index: index,
+	        dropModel: dropModel
+	      });
 	      this.model.splice(index, 0, dropModel);
 	    }
 	  }, {
-	    key: "move",
+	    key: 'move',
 	    value: function move(_ref) {
 	      var dragIndex = _ref.dragIndex,
 	          dropIndex = _ref.dropIndex;
+
+	      this.log('move', {
+	        model: this.model,
+	        dragIndex: dragIndex,
+	        dropIndex: dropIndex
+	      });
 
 	      this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
 	    }
