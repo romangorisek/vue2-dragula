@@ -10,13 +10,17 @@ export class ModelManager {
     this.log('CREATE', opts)
   }
 
+  get clazzName() {
+    return this.constructor.name || 'ModelManager'
+  }
+
   get shouldLog() {
     return this.logging && this.logging.modelManager
   }
 
   log(event, ...args) {
     if (!this.shouldLog) return
-    console.log(`ModelManager [${this.name}] :`, event, ...args)
+    console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
   undo() {

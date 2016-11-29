@@ -13,6 +13,10 @@ This library has been refactored, upgraded and extended with powerful new featur
 
 See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Changelog.md) for more details.
 
+### Known bugs
+
+Currently in `vue-dragula.js` (directive), the `drakesFor` only sets the `default` drake
+
 ## Install
 #### CommonJS
 

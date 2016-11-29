@@ -204,7 +204,10 @@ export default function (Vue, options = {}) {
       if (!this._serviceMap) return
 
       let found = this._serviceMap[name]
-      if (!found || !name) {
+      logServiceConfig('lookup service', name, found)
+
+      if (!found) {
+        logServiceConfig('not found by name, get default')
         let keys = this.serviceNames
         if (keys) {
           found = this._serviceMap[keys[0]]
@@ -260,6 +263,7 @@ export default function (Vue, options = {}) {
   }
 
   function updateDirective(container, binding, vnode, oldVnode) {
+    logDir('updateDirective');
     const newValue = vnode
       ? binding.value // Vue 2
       : container // Vue 1
@@ -274,10 +278,10 @@ export default function (Vue, options = {}) {
     // skip if has already been configured (same container in same drake)
     if (dc) {
       let found = dc.find(c => c === container)
-      if (found) {
-        logDir('already has drake container configured', drakeName, container)
-        return
-      }
+      // if (found) {
+      //   logDir('already has drake container configured', drakeName, container)
+      //   return
+      // }
     }
 
     if (!service) {
@@ -297,7 +301,7 @@ export default function (Vue, options = {}) {
 
     dc.push(container)
 
-    logDir({
+    logDir('DATA', {
       service: {
         name: serviceName,
         instance: service

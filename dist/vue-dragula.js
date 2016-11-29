@@ -1255,7 +1255,7 @@ var require$$0$3 = Object.freeze({
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      if (!this.shouldLog) (_console = console).log.apply(_console, ['DragHandler [' + this.name + '] :', event].concat(args));
+	      if (!this.shouldLog) (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
 	    }
 	  }, {
 	    key: 'removeModel',
@@ -1411,6 +1411,11 @@ var require$$0$3 = Object.freeze({
 	      return JSON.parse(JSON.stringify(model.model || model));
 	    }
 	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'DragHandler';
+	    }
+	  }, {
 	    key: 'shouldLog',
 	    get: function get() {
 	      return this.logging && this.logging.dragHandler;
@@ -1445,7 +1450,7 @@ var require$$0$3 = Object.freeze({
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      (_console = console).log.apply(_console, ['ModelManager [' + this.name + '] :', event].concat(args));
+	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
 	    }
 	  }, {
 	    key: 'undo',
@@ -1517,6 +1522,11 @@ var require$$0$3 = Object.freeze({
 	      });
 
 	      return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'ModelManager';
 	    }
 	  }, {
 	    key: 'shouldLog',
@@ -2114,7 +2124,10 @@ var require$$0$3 = Object.freeze({
 	        if (!this._serviceMap) return;
 
 	        var found = this._serviceMap[name];
-	        if (!found || !name) {
+	        logServiceConfig('lookup service', name, found);
+
+	        if (!found) {
+	          logServiceConfig('not found by name, get default');
 	          var keys = this.serviceNames;
 	          if (keys) {
 	            found = this._serviceMap[keys[0]];
@@ -2180,6 +2193,7 @@ var require$$0$3 = Object.freeze({
 	  }
 
 	  function updateDirective(container, binding, vnode, oldVnode) {
+	    logDir('updateDirective');
 	    var newValue = vnode ? binding.value // Vue 2
 	    : container; // Vue 1
 	    if (!newValue) {
@@ -2201,10 +2215,10 @@ var require$$0$3 = Object.freeze({
 	      var found = dc.find(function (c) {
 	        return c === container;
 	      });
-	      if (found) {
-	        logDir('already has drake container configured', drakeName, container);
-	        return;
-	      }
+	      // if (found) {
+	      //   logDir('already has drake container configured', drakeName, container)
+	      //   return
+	      // }
 	    }
 
 	    if (!service) {
@@ -2224,7 +2238,7 @@ var require$$0$3 = Object.freeze({
 
 	    dc.push(container);
 
-	    logDir({
+	    logDir('DATA', {
 	      service: {
 	        name: serviceName,
 	        instance: service

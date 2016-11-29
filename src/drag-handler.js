@@ -26,13 +26,17 @@ export class DragHandler {
     this.domIndexOf = ctx.domIndexOf.bind(ctx)
   }
 
+  get clazzName() {
+    return this.constructor.name || 'DragHandler'
+  }
+
   get shouldLog() {
     return this.logging && this.logging.dragHandler
   }
 
   log(event, ...args) {
     if (!this.shouldLog)
-    console.log(`DragHandler [${this.name}] :`, event, ...args)
+    console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
   removeModel() {
