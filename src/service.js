@@ -5,9 +5,14 @@ if (!dragula) {
 }
 
 import { DragHandler } from './drag-handler'
+import { ModelManager } from './model-manager'
 
 function createDragHandler({ctx, name, drake}) {
   return new DragHandler({ ctx, name, drake })
+}
+
+function createModelManager(opts) {
+  return new ModelManager(opts)
 }
 
 export class DragulaService {
@@ -21,6 +26,9 @@ export class DragulaService {
     this.drakes = drakes || {} // drake store
     this.eventBus = eventBus
     this.createDragHandler = options.createDragHandler || createDragHandler
+    this.createModelManager = options.createModelManager || createModelManager
+
+    this.modelManager = this.createModelManager(opts)
 
     this.events = [
       'cancel',
@@ -35,6 +43,10 @@ export class DragulaService {
       'dropModel',
       'removeModel'
     ]
+  }
+
+  createModel() {
+    return modelManager.createModel();
   }
 
   log(event, ...args) {

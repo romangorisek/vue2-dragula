@@ -280,17 +280,17 @@ export default function (Vue, options = {}) {
       }
     }
 
+    if (!service) {
+      logDir('no service found', name, drakeName)
+      return
+    }
+
     if (!drake.models) {
-      drake.models = []
+      drake.models = service.createModel()
     }
 
     if (!vnode) {
       container = this.el // Vue 1
-    }
-
-    if (!service) {
-      logDir('no service found', name, drakeName)
-      return
     }
 
     let modelContainer = service.findModelContainerByContainer(container, drake)

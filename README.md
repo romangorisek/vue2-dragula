@@ -198,17 +198,34 @@ Key model operation methods in `DragHandler`
 - on `drop` drag action: `dropModelSame` and `insertModel`
 
 ```js
-removeModel(el, container, source) {
-  this.sourceModel.splice(this.dragIndex, 1)
-}
+  removeModel() {
+    this.log('removeModel', {
+      sourceModel: this.sourceModel,
+      dragIndex: this.dragIndex
+    })
+    this.sourceModel.removeAt(this.dragIndex)
+  }
 
-dropModelSame(dropElm, target, source) {
-  this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
-}
+  dropModelSame() {
+    this.log('dropModelSame', {
+      sourceModel: this.sourceModel,
+      dragIndex: this.dragIndex,
+      dropIndex: this.dropIndex
+    })
 
-insertModel(targetModel, dropElmModel) {
-  targetModel.splice(this.dropIndex, 0, dropElmModel)
-}
+    this.sourceModel.move({
+      dropIndex: this.dropIndex,
+      dragIndex: this.dragIndex
+    })
+  }
+
+  insertModel(targetModel, dropElmModel) {
+    this.log('insertModel', {
+      targetModel: targetModel,
+      dropElmModel: dropElmModel
+    })
+    targetModel.insertAt(this.dropIndex, dropElmModel)
+  }
 ```
 
 The `DragHandler` class can be subclassed and the model operations customized as needed. You can pass a custom factory method `createDragHandler` as a service option. Let's assume we have a `MyDragHandler` class which extends `DragHandler` and overrides key methods with custom logic. Now lets use it!
@@ -242,6 +259,51 @@ export default {
 ```
 
 Note that you can set a drake to `true` as a convenience to configure it with default options. This is a shorthand for `third: {}`. You can also pass an array of drake names, ie `drakes: ['third', 'fourth']`
+
+### ModelManager to create and manage model
+
+The underlying model is controlled by a `ModelManager`. By default a simple Array is used, however you can substitute and customize the `ModelManager` just like the `DragHandler` to fit your needs. You could f.ex use a history stack to enalke undo/redo and history or you an immutable list or both in combination.
+
+```js
+import { ModelManager } from 'vue2-dragula'
+
+class MyModelManager {
+  constructor(opts) {
+    super(opts)
+  }
+
+  createModel() {
+    return new ImmutableList()
+  }
+
+  removeAt(index) {
+    //...
+  }
+
+  insertAt(index, item) {
+    //...
+  }
+
+  move({dragIndex, dropIndex})
+    //...
+  }
+}
+
+function createModelManager(opts) {
+  return new MyModelManager(opts)
+}
+```
+
+Then you can pass it as the `createModelManager` option when creating a service.
+
+```js
+this.$dragula.create({
+  name: 'myService',
+  createDragHandler,
+  createModelManager
+  // ...
+})
+```
 
 ### Binding models to draggable elements
 Please note that `vue-dragula` expects the `v-dragula` binding expression to point to a model in the VM of the component, ie. `v-dragula="items"`

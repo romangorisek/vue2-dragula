@@ -16,6 +16,7 @@ export const Vue2Dragula = plugin
 // make it possible to subclass service and drag handler
 export { DragulaService } from './service'
 export { DragHandler } from './drag-handler'
+export { ModelManager } from './model-manager'
 
 if (typeof define === 'function' && define.amd) { // eslint-disable-line
   define([], () => { plugin }) // eslint-disable-line
