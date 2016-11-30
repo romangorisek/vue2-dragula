@@ -13,6 +13,12 @@ This library has been refactored, upgraded and extended with powerful new featur
 
 See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Changelog.md) for more details.
 
+## Status
+
+We are currently implementing a [model-manager](https://github.com/kristianmandrup/vue2-dragula/tree/model-manager) feature. This will allow for hisory, undo/redo and custom model containers and operations. 
+
+A [time-travel](https://github.com/kristianmandrup/vue2-dragula-demo/tree/time-travel) demo is under development. Please help implement and test this feature. Cheers!
+
 ## Install
 #### CommonJS
 
