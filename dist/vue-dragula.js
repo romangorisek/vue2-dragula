@@ -1442,7 +1442,7 @@ var require$$0$3 = Object.freeze({
 	    this.history = opts.history || this.createHistory();
 
 	    this.model = this.createModel(opts.model || []);
-	    this.addToHistory(this.model);
+	    this.history.push(this.model);
 
 	    this.logging = opts.logging;
 	    this.timeIndex = 0;
