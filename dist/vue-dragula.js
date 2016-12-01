@@ -1408,7 +1408,8 @@ var require$$0$3 = Object.freeze({
 	    key: 'jsonDropElmModel',
 	    value: function jsonDropElmModel() {
 	      var model = this.sourceModel.at(this.dragIndex);
-	      return JSON.parse(JSON.stringify(model.model || model));
+	      var stringable = model ? model.model || model.stringable : model;
+	      return JSON.parse(JSON.stringify(stringable || model));
 	    }
 	  }, {
 	    key: 'clazzName',
@@ -1429,11 +1430,20 @@ var require$$0$3 = Object.freeze({
 	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    classCallCheck(this, ModelManager);
 
+	    if (Array.isArray(opts)) {
+	      opts = {
+	        model: opts
+	      };
+	    }
 	    this.opts = opts;
 	    this.name = opts.name;
 	    this.drake = opts.drake;
-	    this.model = this.createModel(opts.model || []);
+
 	    this.history = opts.history || this.createHistory();
+
+	    this.model = this.createModel(opts.model || []);
+	    this.addToHistory(this.model);
+
 	    this.logging = opts.logging;
 	    this.timeIndex = 0;
 	    this.log('CREATE', opts);
@@ -1465,13 +1475,16 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'addToHistory',
 	    value: function addToHistory(model) {
+	      if (Array.isArray(model)) {
+	        model = this.createFor({ model: model });
+	      }
 	      this.history.push(model);
 	      this.timeIndex++;
 	    }
 	  }, {
 	    key: 'at',
 	    value: function at(index) {
-	      return this.model[index];
+	      return this.model.get(index);
 	    }
 	  }, {
 	    key: 'createModel',
