@@ -95,6 +95,7 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 | :-------------: |:-------------:| -----|
 | dropModel | drakeName, el, target, source, dropIndex | model was synced, dropIndex exposed |
 | removeModel | drakeName, el, container, removeIndex | model was synced, removeIndex exposed |
+| insertAt | drakeName, el, container, removeIndex | model was synced, removeIndex exposed |
 
 [1]: https://github.com/bevacqua/dragula
 
@@ -310,7 +311,7 @@ Please note that `vue-dragula` expects the `v-dragula` binding expression to poi
 
 When you move the elements in the UI you also (by default) rearrange the underlying model list items (using `findModelForContainer` in the service). This is VERY powerful!
 
-Note that special Vue events `removeModel` and `dropModel` are emitted as model items are moved around (using [splice](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/splice) by default).
+Note that special Vue events `removeModel`, `dropModel` and `insertAt` are emitted as model items are moved around.
 
 ```js
 this.name, el, source, this.dragIndex
@@ -319,7 +320,10 @@ this.name, el, source, this.dragIndex
   },
   'my-first:dropModel': ({name, el, source, target, dropIndex, model}) => {
     // ...
-  }
+  },
+  'my-first:insertAt': ({dragIndex, dropIndex, model}) => {
+    // ...
+  },
 ```
 
 - `el` main DOM element of element (f.ex element being dropped on)

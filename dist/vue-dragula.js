@@ -1290,6 +1290,11 @@ var require$$0$3 = Object.freeze({
 	      });
 
 	      targetModel.insertAt(this.dropIndex, dropElmModel);
+	      this.emit('insertAt', {
+	        model: dropElmModel,
+	        dragIndex: this.dragIndex,
+	        dropIndex: this.dropIndex
+	      });
 	    }
 	  }, {
 	    key: 'notCopy',
@@ -1396,6 +1401,7 @@ var require$$0$3 = Object.freeze({
 	        target: target,
 	        source: source,
 	        el: dropEl,
+	        dragIndex: this.dragIndex,
 	        dropIndex: this.dropIndex
 	      });
 	    }

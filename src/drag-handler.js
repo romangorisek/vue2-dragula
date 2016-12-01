@@ -68,6 +68,11 @@ export class DragHandler {
     })
 
     targetModel.insertAt(this.dropIndex, dropElmModel)
+    this.emit('insertAt', {
+      model: dropElmModel,
+      dragIndex: this.dragIndex,
+      dropIndex: this.dropIndex
+    })
   }
 
   notCopy() {
@@ -162,6 +167,7 @@ export class DragHandler {
       target,
       source,
       el: dropEl,
+      dragIndex: this.dragIndex,
       dropIndex: this.dropIndex
     })
   }
