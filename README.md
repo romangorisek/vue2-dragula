@@ -19,6 +19,8 @@ We are currently implementing a [model-manager](https://github.com/kristianmandr
 
 A [time-travel](https://github.com/kristianmandrup/vue2-dragula-demo/tree/time-travel) demo is under development. Please help implement and test this feature. Cheers!
 
+The time travel is *very close* to fruition. The only missing part is handling it correctly on the VM side, all the infrastructure should be there. Just a matter of storing index/models for each action and then undo the actions by calling the Model Manager history actions and keep the local VM models correctly in sync.
+
 ## Install
 #### CommonJS
 
