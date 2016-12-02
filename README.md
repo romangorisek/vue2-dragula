@@ -88,17 +88,6 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 })
 ```
 
-
-## Special Events for vue-dragula
-
-| Event Name |      Listener Arguments      |  Event Description |
-| :-------------: |:-------------:| -----|
-| dropModel | drakeName, el, target, source, dropIndex | model was synced, dropIndex exposed |
-| removeModel | drakeName, el, container, removeIndex | model was synced, removeIndex exposed |
-| insertAt | drakeName, el, container, removeIndex | model was synced, removeIndex exposed |
-
-[1]: https://github.com/bevacqua/dragula
-
 ## Development
 `npm` scripts included:
 
@@ -315,13 +304,13 @@ Note that special Vue events `removeModel`, `dropModel` and `insertAt` are emitt
 
 ```js
 this.name, el, source, this.dragIndex
-  'my-first:removeModel': ({name, el, source, dragIndex, model}) => {
+  'my-first:removeModel': ({name, el, source, dragIndex, sourceModel}) => {
     // ...
   },
-  'my-first:dropModel': ({name, el, source, target, dropIndex, model}) => {
+  'my-first:dropModel': ({name, el, source, target, dropIndex, sourceModel}) => {
     // ...
   },
-  'my-first:insertAt': ({dragIndex, dropIndex, model}) => {
+  'my-first:insertAt': ({dragIndex, dropIndex, sourceModel, targetModel, transitModel}) => {
     // ...
   },
 ```

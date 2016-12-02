@@ -1291,7 +1291,8 @@ var require$$0$3 = Object.freeze({
 
 	      targetModel.insertAt(this.dropIndex, dropElmModel);
 	      this.emit('insertAt', {
-	        model: dropElmModel,
+	        targetModel: targetModel,
+	        transitModel: dropElmModel,
 	        dragIndex: this.dragIndex,
 	        dropIndex: this.dropIndex
 	      });
@@ -1341,7 +1342,7 @@ var require$$0$3 = Object.freeze({
 	    value: function emit(eventName) {
 	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	      opts.model = this.sourceModel;
+	      opts.sourceModel = this.sourceModel;
 	      opts.name = this.name;
 	      var serviceEventName = this.serviceName + ':' + eventName;
 

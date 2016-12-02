@@ -69,7 +69,8 @@ export class DragHandler {
 
     targetModel.insertAt(this.dropIndex, dropElmModel)
     this.emit('insertAt', {
-      model: dropElmModel,
+      targetModel,
+      transitModel: dropElmModel,
       dragIndex: this.dragIndex,
       dropIndex: this.dropIndex
     })
@@ -111,7 +112,7 @@ export class DragHandler {
   }
 
   emit(eventName, opts = {}) {
-    opts.model = this.sourceModel
+    opts.sourceModel = this.sourceModel
     opts.name = this.name
     let serviceEventName = `${this.serviceName}:${eventName}`
 
