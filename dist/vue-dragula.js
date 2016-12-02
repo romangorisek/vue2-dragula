@@ -1294,7 +1294,16 @@ var require$$0$3 = Object.freeze({
 	        targetModel: targetModel,
 	        transitModel: dropElmModel,
 	        dragIndex: this.dragIndex,
-	        dropIndex: this.dropIndex
+	        dropIndex: this.dropIndex,
+	        models: {
+	          source: this.sourceModel,
+	          target: targetModel,
+	          transit: dropElmModel
+	        },
+	        indexes: {
+	          source: this.dragIndex,
+	          target: this.dropIndex
+	        }
 	      });
 	    }
 	  }, {
