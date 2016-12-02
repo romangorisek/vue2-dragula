@@ -1446,14 +1446,10 @@ var require$$0$3 = Object.freeze({
 	    this.name = opts.name;
 	    this.drake = opts.drake;
 
-	    this.history = opts.history || this.createHistory();
-
 	    this.modelRef = opts.model || [];
 	    this.model = this.createModel(this.modelRef);
-	    this.history.push(this.model);
 
 	    this.logging = opts.logging;
-	    this.timeIndex = 0;
 	    this.log('CREATE', opts);
 	  }
 
@@ -1481,28 +1477,19 @@ var require$$0$3 = Object.freeze({
 	      this.log('redo', 'not yet implemented');
 	    }
 	  }, {
-	    key: 'addToHistory',
-	    value: function addToHistory(model) {
-	      if (Array.isArray(model)) {
-	        model = this.createFor({ model: model });
-	      }
-	      this.history.push(model);
-	      this.timeIndex++;
-	    }
-	  }, {
 	    key: 'at',
 	    value: function at(index) {
 	      return this.model.get(index);
 	    }
 	  }, {
+	    key: 'clear',
+	    value: function clear() {
+	      this.model = this.createModel();
+	    }
+	  }, {
 	    key: 'createModel',
 	    value: function createModel(model) {
 	      return this.model || model || [];
-	    }
-	  }, {
-	    key: 'createHistory',
-	    value: function createHistory() {
-	      return this.history || [];
 	    }
 	  }, {
 	    key: 'createFor',
