@@ -60,15 +60,17 @@ export class DragHandler {
     })
   }
 
-  insertModel(targetModel, dropElmModel) {
+  insertModel(targetModel, dropElmModel, elements) {
     this.log('insertModel', {
       targetModel: targetModel,
       dropIndex: this.dropIndex,
-      dropElmModel: dropElmModel
+      dropElmModel: dropElmModel,
+      elements
     })
 
     targetModel.insertAt(this.dropIndex, dropElmModel)
     this.emit('insertAt', {
+      elements,
       targetModel,
       transitModel: dropElmModel,
       dragIndex: this.dragIndex,
@@ -112,7 +114,13 @@ export class DragHandler {
       return this.cancelDrop(target)
     }
 
-    this.insertModel(targetModel, dropElmModel)
+    let elements = {
+      drop: dropElm,
+      target,
+      source
+    }
+
+    this.insertModel(targetModel, dropElmModel, elements)
   }
 
   dropModel(dropElm, target, source) {

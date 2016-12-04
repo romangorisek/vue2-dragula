@@ -1282,15 +1282,17 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'insertModel',
-	    value: function insertModel(targetModel, dropElmModel) {
+	    value: function insertModel(targetModel, dropElmModel, elements) {
 	      this.log('insertModel', {
 	        targetModel: targetModel,
 	        dropIndex: this.dropIndex,
-	        dropElmModel: dropElmModel
+	        dropElmModel: dropElmModel,
+	        elements: elements
 	      });
 
 	      targetModel.insertAt(this.dropIndex, dropElmModel);
 	      this.emit('insertAt', {
+	        elements: elements,
 	        targetModel: targetModel,
 	        transitModel: dropElmModel,
 	        dragIndex: this.dragIndex,
@@ -1338,7 +1340,13 @@ var require$$0$3 = Object.freeze({
 	        return this.cancelDrop(target);
 	      }
 
-	      this.insertModel(targetModel, dropElmModel);
+	      var elements = {
+	        drop: dropElm,
+	        target: target,
+	        source: source
+	      };
+
+	      this.insertModel(targetModel, dropElmModel, elements);
 	    }
 	  }, {
 	    key: 'dropModel',
