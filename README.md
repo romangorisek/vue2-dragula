@@ -96,16 +96,6 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 })
 ```
 
-
-## Special Events for vue-dragula
-
-| Event Name |      Listener Arguments      |  Event Description |
-| :-------------: |:-------------:| -----|
-| dropModel | drakeName, el, target, source, dropIndex | model was synced, dropIndex exposed |
-| removeModel | drakeName, el, container, removeIndex | model was synced, removeIndex exposed |
-
-[1]: https://github.com/bevacqua/dragula
-
 ## Development
 `npm` scripts included:
 
@@ -206,17 +196,34 @@ Key model operation methods in `DragHandler`
 - on `drop` drag action: `dropModelSame` and `insertModel`
 
 ```js
-removeModel(el, container, source) {
-  this.sourceModel.splice(this.dragIndex, 1)
-}
+  removeModel() {
+    this.log('removeModel', {
+      sourceModel: this.sourceModel,
+      dragIndex: this.dragIndex
+    })
+    this.sourceModel.removeAt(this.dragIndex)
+  }
 
-dropModelSame(dropElm, target, source) {
-  this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
-}
+  dropModelSame() {
+    this.log('dropModelSame', {
+      sourceModel: this.sourceModel,
+      dragIndex: this.dragIndex,
+      dropIndex: this.dropIndex
+    })
 
-insertModel(targetModel, dropElmModel) {
-  targetModel.splice(this.dropIndex, 0, dropElmModel)
-}
+    this.sourceModel.move({
+      dropIndex: this.dropIndex,
+      dragIndex: this.dragIndex
+    })
+  }
+
+  insertModel(targetModel, dropElmModel) {
+    this.log('insertModel', {
+      targetModel: targetModel,
+      dropElmModel: dropElmModel
+    })
+    targetModel.insertAt(this.dropIndex, dropElmModel)
+  }
 ```
 
 The `DragHandler` class can be subclassed and the model operations customized as needed. You can pass a custom factory method `createDragHandler` as a service option. Let's assume we have a `MyDragHandler` class which extends `DragHandler` and overrides key methods with custom logic. Now lets use it!
@@ -235,7 +242,7 @@ export default {
   },
   // setup services with drakes
   created () {
-    this.$dragula.create({
+    this.$dragula.createService({
       name: 'myService',
       createDragHandler,
       drakes: {
@@ -251,21 +258,71 @@ export default {
 
 Note that you can set a drake to `true` as a convenience to configure it with default options. This is a shorthand for `third: {}`. You can also pass an array of drake names, ie `drakes: ['third', 'fourth']`
 
+### ModelManager to create and manage model
+
+The underlying model is controlled by a `ModelManager`. By default a simple Array is used, however you can substitute and customize the `ModelManager` just like the `DragHandler` to fit your needs. You could f.ex use a history stack to enalke undo/redo and history or you an immutable list or both in combination.
+
+```js
+import { ModelManager } from 'vue2-dragula'
+
+class MyModelManager {
+  constructor(opts) {
+    super(opts)
+  }
+
+  createModel() {
+    return new ImmutableList()
+  }
+
+  removeAt(index) {
+    //...
+  }
+
+  insertAt(index, item) {
+    //...
+  }
+
+  move({dragIndex, dropIndex})
+    //...
+  }
+}
+
+function createModelManager(opts) {
+  return new MyModelManager(opts)
+}
+```
+
+Then you can pass it as the `createModelManager` option when creating a service.
+
+```js
+this.$dragula.createService({
+  name: 'myService',
+  createDragHandler,
+  createModelManager
+  // ...
+})
+```
+
+The demo app now contains an example demonstrating use of a custom ModelManager, `ImmutableModelManager` with a `TimeMachine` and `ActionManager` which maintains a history of transitions and enables undo/redo of drag and drop actions!!
+
 ### Binding models to draggable elements
 Please note that `vue-dragula` expects the `v-dragula` binding expression to point to a model in the VM of the component, ie. `v-dragula="items"`
 
 When you move the elements in the UI you also (by default) rearrange the underlying model list items (using `findModelForContainer` in the service). This is VERY powerful!
 
-Note that special Vue events `removeModel` and `dropModel` are emitted as model items are moved around (using [splice](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/splice) by default).
+Note that special Vue events `removeModel`, `dropModel` and `insertAt` are emitted as model items are moved around.
 
 ```js
 this.name, el, source, this.dragIndex
-  'my-first:removeModel': ({name, el, source, dragIndex, model}) => {
+  'my-first:removeModel': ({name, el, source, dragIndex, sourceModel}) => {
     // ...
   },
-  'my-first:dropModel': ({name, el, source, target, dropIndex, model}) => {
+  'my-first:dropModel': ({name, el, source, target, dropIndex, sourceModel}) => {
     // ...
-  }
+  },
+  'my-first:insertAt': ({indexes, models, elements}) => {
+    // ...
+  },
 ```
 
 - `el` main DOM element of element (f.ex element being dropped on)
@@ -382,7 +439,7 @@ Setup a service with one or more drakes ready for drag'n drop action
 
 ```js
 created () {
-  this.$dragula.create({
+  this.$dragula.createService({
     name: 'myService',
     drakes: {
       'first': {
@@ -431,7 +488,7 @@ If you simply specify the service name without a specific named drake configurat
 You can configure the `default` drake simply using the `drake` option on the service.
 
 ```js
-this.$dragula.create({
+this.$dragula.createService({
   name: 'myService',
   drake: {
   }
