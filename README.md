@@ -295,6 +295,8 @@ this.$dragula.createService({
 })
 ```
 
+The demo app now contains an example demonstrating use of a custom ModelManager, `ImmutableModelManager` with a `TimeMachine` and `ActionManager` which maintains a history of transitions and enables undo/redo of drag and drop actions!!
+
 ### Binding models to draggable elements
 Please note that `vue-dragula` expects the `v-dragula` binding expression to point to a model in the VM of the component, ie. `v-dragula="items"`
 
@@ -310,7 +312,7 @@ this.name, el, source, this.dragIndex
   'my-first:dropModel': ({name, el, source, target, dropIndex, sourceModel}) => {
     // ...
   },
-  'my-first:insertAt': ({dragIndex, dropIndex, sourceModel, targetModel, transitModel}) => {
+  'my-first:insertAt': ({indexes, models, elements}) => {
     // ...
   },
 ```
