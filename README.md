@@ -7,7 +7,7 @@ This library has been refactored, upgraded and extended with powerful new featur
 
 ## Overview
 - Works with [Vue 2](https://medium.com/the-vue-point/vue-2-0-is-here-ef1f26acf4b8#.c089dtgol)
-- Way more flexible and powerful than original (Vue 1) plugin
+- More flexible and powerful than original (Vue 1) plugin
 - Removed concept of bags. Reference named drakes directly
 - [Vue2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
@@ -15,11 +15,7 @@ See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Chan
 
 ## Status
 
-We are currently implementing a [model-manager](https://github.com/kristianmandrup/vue2-dragula/tree/model-manager) feature. This will allow for hisory, undo/redo and custom model containers and operations. 
-
-A [time-travel](https://github.com/kristianmandrup/vue2-dragula-demo/tree/time-travel) demo is under development. Please help implement and test this feature. Cheers!
-
-The time travel is *very close* to fruition. The only missing part is handling it correctly on the VM side, all the infrastructure should be there. Just a matter of storing index/models for each action and then undo the actions by calling the Model Manager history actions and keep the local VM models correctly in sync.
+All test pass. Now supports action history with time travel and undo/redo. See [demo](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 ## Install
 #### CommonJS
@@ -587,6 +583,55 @@ Sample effect styling with [CSS fade-in transition effect](http://www.chrisbutte
   padding: 2px
 }
 ```
+
+### Time travel
+
+The following classes are included:
+
+- `ImmutableModelManager`
+- `TimeMachine`
+- `ActionManager`
+
+See [time travel demo](https://github.com/kristianmandrup/vue2-dragula-demo/) for how to use these classes.
+
+```js
+import { 
+  ImmutableModelManager, 
+  TimeMachine, ActionManager 
+} from 'vue2-dragula'
+```
+
+The ImmutableModelManager should normally be subclassed, especially `createModel` which returns a normal `Array`
+
+```js
+  createModel (model) {
+    return model || []
+  }
+```
+
+Instead wrap the created model in an immutable of your choice, such as [seamless-immutable](https://www.npmjs.com/package/seamless-immutable) used in the demo.
+
+```js
+class SeamlessImmutableModelManager extends ImmutableModelManager {
+  constructor(opts) {
+    super(opts)
+  }
+
+  createModel (model) {
+    return Immutable(model || [])
+  }
+}
+```
+
+Note that you can pass a `createTimeMachine` factory method as an option in `opts`, otherwise the default time machine is used.
+
+```js
+const createDefaultTimeMachine = function (opts) {
+  return new TimeMachine(opts)
+}
+```
+
+The `ActionManager` can be used to manage actions at the VM level. If you have multiple draggable containers, register an ActionManager for each in a registry of sorts.
 
 ## Bonus Recipes
 

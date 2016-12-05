@@ -17,6 +17,9 @@ export const Vue2Dragula = plugin
 export { DragulaService } from './service'
 export { DragHandler } from './drag-handler'
 export { ModelManager } from './model-manager'
+export { ImmutableModelManager } from './imm-model-manager'
+export { TimeMachine } from './time-machine'
+export { ActionManager } from './action-manager'
 
 if (typeof define === 'function' && define.amd) { // eslint-disable-line
   define([], () => { plugin }) // eslint-disable-line

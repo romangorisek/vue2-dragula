@@ -1214,6 +1214,30 @@ var require$$0$3 = Object.freeze({
 	  };
 	}();
 
+	var inherits = function (subClass, superClass) {
+	  if (typeof superClass !== "function" && superClass !== null) {
+	    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+	  }
+
+	  subClass.prototype = Object.create(superClass && superClass.prototype, {
+	    constructor: {
+	      value: subClass,
+	      enumerable: false,
+	      writable: true,
+	      configurable: true
+	    }
+	  });
+	  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	};
+
+	var possibleConstructorReturn = function (self, call) {
+	  if (!self) {
+	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	  }
+
+	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+	};
+
 	var raf = window.requestAnimationFrame;
 	var waitForTransition = raf ? function (fn) {
 	  raf(function () {
@@ -2386,6 +2410,448 @@ var require$$0$3 = Object.freeze({
 	  });
 	}
 
+	var TimeMachine = function () {
+	  function TimeMachine(_ref) {
+	    var name = _ref.name,
+	        model = _ref.model,
+	        modelRef = _ref.modelRef,
+	        history = _ref.history,
+	        logging = _ref.logging;
+	    classCallCheck(this, TimeMachine);
+
+	    this.name = name || 'default';
+	    this.model = model;
+	    this.modelRef = modelRef;
+	    this.logging = logging;
+	    this.history = history || this.createHistory();
+	    this.history.push(this.model);
+	    this.timeIndex = 0;
+	  }
+
+	  createClass(TimeMachine, [{
+	    key: 'log',
+	    value: function log(event) {
+	      var _console;
+
+	      if (!this.shouldLog) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'createHistory',
+	    value: function createHistory() {
+	      return this.history || [];
+	    }
+	  }, {
+	    key: 'timeTravel',
+	    value: function timeTravel(index) {
+	      this.log('timeTravel to', index);
+	      this.model = this.history[index];
+	      this.updateModelRef();
+	      return this;
+	    }
+	  }, {
+	    key: 'updateModelRef',
+	    value: function updateModelRef() {
+	      // this.modelRef = mutable
+	      // this.log('set modelRef', this.modelRef, this.model)
+	      this.modelRef.splice(0, this.modelRef.length);
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = this.model[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var item = _step.value;
+
+	          this.modelRef.push(item);
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'undo',
+	    value: function undo() {
+	      this.log('undo timeIndex', this.timeIndex);
+	      if (this.timeIndex === 0) {
+	        return false;
+	      }
+	      this.timeIndex--;
+	      this.timeTravel(this.timeIndex);
+	      return this;
+	    }
+	  }, {
+	    key: 'redo',
+	    value: function redo() {
+	      this.log('redo timeIndex', this.timeIndex, this.history.length);
+	      if (this.timeIndex > this.history.length - 1) {
+	        return false;
+	      }
+	      this.timeIndex++;
+	      this.timeTravel(this.timeIndex);
+	      return this;
+	    }
+	  }, {
+	    key: 'addToHistory',
+	    value: function addToHistory(newModel) {
+	      this.log('addToHistory');
+	      this.log('old', this.model);
+	      this.log('new', newModel);
+	      this.model = newModel;
+	      this.log('model was set to', this.model);
+	      this.history.push(newModel);
+	      this.timeIndex++;
+	      this.updateModelRef();
+	      return this;
+	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.modelManager;
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'TimeMachine';
+	    }
+	  }]);
+	  return TimeMachine;
+	}();
+
+	var createDefaultTimeMachine = function createDefaultTimeMachine(opts) {
+	  return new TimeMachine(opts);
+	};
+
+	var ImmutableModelManager = function (_ModelManager) {
+	  inherits(ImmutableModelManager, _ModelManager);
+
+	  function ImmutableModelManager() {
+	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	    classCallCheck(this, ImmutableModelManager);
+
+	    var _this = possibleConstructorReturn(this, (ImmutableModelManager.__proto__ || Object.getPrototypeOf(ImmutableModelManager)).call(this, opts));
+
+	    _this.timeOut = opts.timeOut || 800;
+	    var createTimeMachine = opts.createTimeMachine || createDefaultTimeMachine;
+	    _this.timeMachine = createTimeMachine(Object.assign(opts, {
+	      model: _this.model,
+	      modelRef: _this.modelRef
+	    }));
+	    return _this;
+	  }
+
+	  createClass(ImmutableModelManager, [{
+	    key: 'timeTravel',
+	    value: function timeTravel(index) {
+	      return this.timeMachine.timeTravel(index);
+	    }
+	  }, {
+	    key: 'undo',
+	    value: function undo() {
+	      // this.log('UNDO', this.timeMachine)
+	      this.timeMachine.undo();
+	      return this;
+	    }
+	  }, {
+	    key: 'redo',
+	    value: function redo() {
+	      // this.log('REDO', this.timeMachine)
+	      this.timeMachine.redo();
+	      return this;
+	    }
+	  }, {
+	    key: 'addToHistory',
+	    value: function addToHistory(model) {
+	      this.timeMachine.addToHistory(model);
+	      return this;
+	    }
+
+	    // override with Immutable
+
+	  }, {
+	    key: 'createModel',
+	    value: function createModel(model) {
+	      return model || [];
+	    }
+
+	    // TODO: add to history!?
+
+	  }, {
+	    key: 'createFor',
+	    value: function createFor() {
+	      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      return new ImmutableModelManager(opts);
+	    }
+	  }, {
+	    key: 'at',
+	    value: function at(index) {
+	      console.log('find model at', index, this.model);
+	      return this.model[index];
+	    }
+	  }, {
+	    key: 'isEmpty',
+	    value: function isEmpty() {
+	      return this.model.length === 0;
+	    }
+	  }, {
+	    key: 'actionUpdateModel',
+	    value: function actionUpdateModel(newModel) {
+	      var _this2 = this;
+
+	      setTimeout(function () {
+	        _this2.addToHistory(newModel);
+	      }, this.timeOut || 800);
+	    }
+	  }, {
+	    key: 'removeAt',
+	    value: function removeAt(index) {
+	      this.log('removeAt', {
+	        model: this.model,
+	        index: index
+	      });
+	      // create new model with self excluded
+	      var before = this.model.slice(0, index);
+	      var exclAfter = this.model.slice(index + 1);
+
+	      this.log('removeAt: concat', before, exclAfter);
+	      var newModel = this.createModel().concat(before, exclAfter);
+
+	      this.actionUpdateModel(newModel);
+	      return newModel;
+	    }
+	  }, {
+	    key: 'insertAt',
+	    value: function insertAt(index, dropModel) {
+	      this.log('insertAt', {
+	        model: this.model,
+	        index: index,
+	        dropModel: dropModel
+	      });
+	      // create new model with new inserted
+	      var before = this.model.slice(0, index);
+	      var inclAfter = this.model.slice(index);
+	      this.log('insertAt: concat', before, dropModel, inclAfter);
+
+	      var newModel = this.createModel().concat(before, dropModel, inclAfter);
+
+	      this.actionUpdateModel(newModel);
+	      return newModel;
+	    }
+	  }, {
+	    key: 'move',
+	    value: function move(_ref) {
+	      var dragIndex = _ref.dragIndex,
+	          dropIndex = _ref.dropIndex;
+
+	      this.log('move', {
+	        model: this.model,
+	        dragIndex: dragIndex,
+	        dropIndex: dropIndex
+	      });
+	      this.timeMachine.undo();
+	      return this;
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'ImmutableModelManager';
+	    }
+	  }, {
+	    key: 'model',
+	    get: function get() {
+	      return this.timeMachine ? this.timeMachine.model : this._model;
+	    }
+	  }, {
+	    key: 'history',
+	    get: function get() {
+	      return this.timeMachine.history;
+	    }
+	  }, {
+	    key: 'timeIndex',
+	    get: function get() {
+	      return this.timeMachine.timeIndex;
+	    }
+	  }, {
+	    key: 'first',
+	    get: function get() {
+	      return this.at(0);
+	    }
+	  }, {
+	    key: 'last',
+	    get: function get() {
+	      return this.at(this.model.length - 1);
+	    }
+	  }]);
+	  return ImmutableModelManager;
+	}(ModelManager);
+
+	var ActionManager = function () {
+	  function ActionManager() {
+	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	    classCallCheck(this, ActionManager);
+
+	    this.name = opts.name || 'default';
+	    this.logging = opts.logging;
+	    this.observer = {
+	      undo: function undo(action) {},
+	      redo: function redo(action) {}
+	    };
+
+	    this.actions = {
+	      // stack of actions to undo
+	      done: [],
+	      // stack of actions undone to be redone(via. redo)
+	      undone: []
+	    };
+	  }
+
+	  createClass(ActionManager, [{
+	    key: 'log',
+	    value: function log(event) {
+	      var _console;
+
+	      if (!this.shouldLog) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'clear',
+	    value: function clear() {
+	      this.actions.done = [];
+	      this.actions.undone = [];
+	    }
+
+	    // perform undo/redo on model (container)
+
+	  }, {
+	    key: 'doAct',
+	    value: function doAct(container, action) {
+	      var actFun = container[action].bind(container);
+	      // this.log('doAct', actFun, container, action)
+	      if (!actFun) {
+	        throw new Error(container, 'missing', action, 'method');
+	      }
+	      actFun();
+	    }
+	  }, {
+	    key: 'do',
+	    value: function _do(_ref) {
+	      var name = _ref.name,
+	          container = _ref.container;
+
+	      // this.log(name)
+	      var cDo = container.do;
+	      var cUndo = container.undo;
+	      if (!cDo.length) {
+	        // this.log('actions empty', cDo)
+	        return;
+	      }
+	      var action = cDo.pop();
+	      // TODO: use elements, indexes to create visual transition/animation effect
+	      var models = action.models;
+
+	      this.log(name, action);
+
+	      var source = models.source,
+	          target = models.target;
+
+	      // this.log(name, 'actions', source, target)
+
+	      this.doAct(source, name);
+	      this.doAct(target, name);
+
+	      this.emitAction(name, action);
+
+	      cUndo.push(action);
+	      // this.log('actions undo', cUndo)
+	    }
+	  }, {
+	    key: 'emitAction',
+	    value: function emitAction(name, action) {
+	      var fun = this.observer[name];
+	      if (typeof fun === 'function') fun(action);
+	    }
+	  }, {
+	    key: 'onUndo',
+	    value: function onUndo(fun) {
+	      this.observer.undo = fun;
+	    }
+	  }, {
+	    key: 'onRedo',
+	    value: function onRedo(fun) {
+	      this.observer.redo = fun;
+	    }
+	  }, {
+	    key: 'undo',
+	    value: function undo() {
+	      this.do({
+	        name: 'undo',
+	        container: {
+	          do: this.actions.done,
+	          undo: this.actions.undone
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'redo',
+	    value: function redo() {
+	      this.do({
+	        name: 'redo',
+	        container: {
+	          do: this.actions.undone,
+	          undo: this.actions.done
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'act',
+	    value: function act(_ref2) {
+	      var name = _ref2.name,
+	          models = _ref2.models,
+	          indexes = _ref2.indexes,
+	          elements = _ref2.elements;
+
+	      this.actions.done.push({
+	        models: models,
+	        indexes: indexes,
+	        elements: elements
+	      });
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'ActionManager';
+	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging;
+	    }
+	  }]);
+	  return ActionManager;
+	}();
+
 	function plugin(Vue) {
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -2414,5 +2880,8 @@ var require$$0$3 = Object.freeze({
 	exports.DragulaService = DragulaService;
 	exports.DragHandler = DragHandler;
 	exports.ModelManager = ModelManager;
+	exports.ImmutableModelManager = ImmutableModelManager;
+	exports.TimeMachine = TimeMachine;
+	exports.ActionManager = ActionManager;
 
 }));
