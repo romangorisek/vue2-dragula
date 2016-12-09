@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.3.0
+ * vue-dragula v2.4.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1214,6 +1214,31 @@ var require$$0$3 = Object.freeze({
 	  };
 	}();
 
+	var get = function get(object, property, receiver) {
+	  if (object === null) object = Function.prototype;
+	  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+	  if (desc === undefined) {
+	    var parent = Object.getPrototypeOf(object);
+
+	    if (parent === null) {
+	      return undefined;
+	    } else {
+	      return get(parent, property, receiver);
+	    }
+	  } else if ("value" in desc) {
+	    return desc.value;
+	  } else {
+	    var getter = desc.get;
+
+	    if (getter === undefined) {
+	      return undefined;
+	    }
+
+	    return getter.call(receiver);
+	  }
+	};
+
 	var inherits = function (subClass, superClass) {
 	  if (typeof superClass !== "function" && superClass !== null) {
 	    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
@@ -1520,7 +1545,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'at',
 	    value: function at(index) {
-	      return this.model.get(index);
+	      return this.model.get ? this.model.get(index) : this.model[index];
 	    }
 	  }, {
 	    key: 'clear',
@@ -2603,7 +2628,7 @@ var require$$0$3 = Object.freeze({
 	    key: 'at',
 	    value: function at(index) {
 	      console.log('find model at', index, this.model);
-	      return this.model[index];
+	      return get(ImmutableModelManager.prototype.__proto__ || Object.getPrototypeOf(ImmutableModelManager.prototype), 'at', this).call(this, index);
 	    }
 	  }, {
 	    key: 'isEmpty',

@@ -38,7 +38,7 @@ export class ModelManager {
   }
 
   at (index) {
-    return this.model.get(index)
+    return this.model.get ? this.model.get(index) : this.model[index]
   }
 
   clear () {

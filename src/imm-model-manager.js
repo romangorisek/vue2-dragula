@@ -65,7 +65,7 @@ export class ImmutableModelManager extends ModelManager {
 
   at (index) {
     console.log('find model at', index, this.model)
-    return this.model[index]
+    return super.at(index)
   }
 
   isEmpty () {
