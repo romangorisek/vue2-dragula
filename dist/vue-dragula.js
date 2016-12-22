@@ -1319,10 +1319,12 @@ var require$$0$3 = Object.freeze({
 
 	var Dragula = function () {
 	  function Dragula(_ref) {
-	    var appService = _ref.appService,
-	        createService = _ref.createService,
+	    var serviceManager = _ref.serviceManager,
 	        log = _ref.log;
 	    classCallCheck(this, Dragula);
+	    var appService = serviceManager.appService,
+	        createService = serviceManager.createService;
+
 
 	    this.appService = appService;
 	    this.log = this.log;
@@ -2214,7 +2216,7 @@ var require$$0$3 = Object.freeze({
 	    // global service
 	    this.appService = this.createService({
 	      name: 'global.dragula',
-	      eventBus: eventBus,
+	      eventBus: this.eventBus,
 	      drakes: options.drakes,
 	      options: options
 	    });
@@ -2281,7 +2283,7 @@ var require$$0$3 = Object.freeze({
 	        log = _ref.log;
 	    classCallCheck(this, Updater);
 
-	    this.log = this.log;
+	    this.log = log.dir;
 	    this.globalName = name;
 	    this.drakeContainers = {};
 	    this.serviceManager = serviceManager;

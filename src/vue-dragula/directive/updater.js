@@ -2,7 +2,7 @@ import { calcNames } from './utils'
 
 export default class Updater {
   constructor ({serviceManager, name, log}) {
-    this.log = this.log
+    this.log = log.dir
     this.globalName = name
     this.drakeContainers = {}
     this.serviceManager = serviceManager

@@ -1,5 +1,7 @@
 export default class Dragula {
-  constructor ({appService, createService, log}) {
+  constructor ({serviceManager, log}) {
+    const { appService, createService } = serviceManager
+
     this.appService = appService
     this.log = this.log
     this.options = appService.options

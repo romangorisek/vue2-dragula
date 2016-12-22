@@ -11,7 +11,7 @@ export default class ServiceManager {
     // global service
     this.appService = this.createService({
       name: 'global.dragula',
-      eventBus,
+      eventBus: this.eventBus,
       drakes: options.drakes,
       options
     })
