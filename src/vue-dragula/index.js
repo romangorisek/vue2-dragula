@@ -19,7 +19,7 @@ export default function (Vue, options = {}) {
   }
   const logFactory = options.createLogger || defaults.createLogger
   const log = logFactory(options)
-  log.plugin('Initializing vue-dragula plugin', options)
+  log.plugin('Init: vue-dragula plugin', options)
 
   const serviceManagerFactory = options.createServiceManager || defaults.createServiceManager
   const serviceManager = serviceManagerFactory({Vue, options, log})

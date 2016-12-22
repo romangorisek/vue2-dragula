@@ -5,9 +5,9 @@ function isObject (obj) {
 export class Dragula {
   constructor ({serviceManager, log}) {
     const { appService, createService } = serviceManager
-
+    console.log('Dragula', {serviceManager, log})
     this.appService = appService
-    this.log = this.log
+    this.log = log.serviceConfig
     this.options = appService.options
     this.createService = createService
 

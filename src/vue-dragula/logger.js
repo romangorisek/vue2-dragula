@@ -1,7 +1,8 @@
 export class Logger {
   constructor (options) {
+    console.log('Logger', options)
     this.options = options
-    this.logging = options.logging
+    this.logging = options.logging || options
   }
 
   plugin (...args) {

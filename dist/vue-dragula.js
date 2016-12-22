@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.4.1
+ * vue-dragula v3.0.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1632,6 +1632,7 @@ var require$$0$3 = Object.freeze({
 	        drakes = opts.drakes,
 	        options = opts.options;
 
+	    this.opts = opts;
 	    options = options || {};
 	    this.options = options;
 	    this.logging = options.logging;
@@ -1647,9 +1648,26 @@ var require$$0$3 = Object.freeze({
 	    this.modelManager = this.createModelManager(options);
 
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
+
+	    this.validate();
 	  }
 
 	  createClass(DragulaService, [{
+	    key: 'validate',
+	    value: function validate() {
+	      if (!this.eventBus) {
+	        this.error('Missing eventBus', this.opts);
+	      }
+
+	      if (!this.modelManager) {
+	        this.error('Missing modelManager', this.opts);
+	      }
+
+	      if (!this.drakes) {
+	        this.error('Missing drakes', this.opts);
+	      }
+	    }
+	  }, {
 	    key: 'createModel',
 	    value: function createModel() {
 	      return this.modelManager.createModel();
@@ -1670,7 +1688,13 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'error',
 	    value: function error(msg) {
-	      console.error(msg);
+	      var _console2;
+
+	      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+	        args[_key2 - 1] = arguments[_key2];
+	      }
+
+	      (_console2 = console).error.apply(_console2, [msg].concat(args));
 	      throw new Error(msg);
 	    }
 	  }, {
@@ -1913,8 +1937,8 @@ var require$$0$3 = Object.freeze({
 	  createClass(ServiceManager, [{
 	    key: 'createEventbus',
 	    value: function createEventbus() {
-	      var createEventBus = this.options.createEventBus || defaults.createEventBus || new this.Vue();
-	      this.eventBus = createEventBus(this.Vue, this.options);
+	      var eventBusFactory = this.options.createEventBus || defaults.createEventBus;
+	      this.eventBus = eventBusFactory(this.Vue, this.options) || new this.Vue();
 	      if (!this.eventBus) {
 	        console.warn('Eventbus could not be created');
 	        throw new Error('Eventbus could not be created');
@@ -1955,9 +1979,9 @@ var require$$0$3 = Object.freeze({
 	    var appService = serviceManager.appService,
 	        createService = serviceManager.createService;
 
-
+	    console.log('Dragula', { serviceManager: serviceManager, log: log });
 	    this.appService = appService;
-	    this.log = this.log;
+	    this.log = log.serviceConfig;
 	    this.options = appService.options;
 	    this.createService = createService;
 
@@ -2543,8 +2567,9 @@ var require$$0$3 = Object.freeze({
 	  function Logger(options) {
 	    classCallCheck(this, Logger);
 
+	    console.log('Logger', options);
 	    this.options = options;
-	    this.logging = options.logging;
+	    this.logging = options.logging || options;
 	  }
 
 	  createClass(Logger, [{
@@ -2593,6 +2618,12 @@ var require$$0$3 = Object.freeze({
 	  return Logger;
 	}();
 
+	function log() {
+	  var _console;
+
+	  (_console = console).log.apply(_console, arguments);
+	}
+
 	var defaults = {
 	  createService: function createService(_ref) {
 	    var name = _ref.name,
@@ -2600,6 +2631,7 @@ var require$$0$3 = Object.freeze({
 	        drakes = _ref.drakes,
 	        options = _ref.options;
 
+	    log('default createService', { name: name, eventBus: eventBus, drakes: drakes, options: options });
 	    return new DragulaService({
 	      name: name,
 	      eventBus: eventBus,
@@ -2608,6 +2640,7 @@ var require$$0$3 = Object.freeze({
 	    });
 	  },
 	  createEventBus: function createEventBus(Vue) {
+	    log('default createEventBus', Vue);
 	    return new Vue();
 	  },
 	  createServiceManager: function createServiceManager(_ref2) {
@@ -2655,7 +2688,7 @@ var require$$0$3 = Object.freeze({
 	  }
 	  var logFactory = options.createLogger || defaults.createLogger;
 	  var log = logFactory(options);
-	  log.plugin('Initializing vue-dragula plugin', options);
+	  log.plugin('Init: vue-dragula plugin', options);
 
 	  var serviceManagerFactory = options.createServiceManager || defaults.createServiceManager;
 	  var serviceManager = serviceManagerFactory({ Vue: Vue, options: options, log: log });
@@ -3123,7 +3156,7 @@ var require$$0$3 = Object.freeze({
 	  VueDragula(Vue, options);
 	}
 
-	plugin.version = '2.4.1';
+	plugin.version = '3.0.0';
 
 	var Vue2Dragula = plugin;
 

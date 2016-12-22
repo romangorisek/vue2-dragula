@@ -18,6 +18,7 @@ function createModelManager (opts) {
 export class DragulaService {
   constructor (opts = {}) {
     let { name, eventBus, drakes, options } = opts
+    this.opts = opts
     options = options || {}
     this.options = options
     this.logging = options.logging
@@ -45,6 +46,22 @@ export class DragulaService {
       'dropModel',
       'removeModel'
     ]
+
+    this.validate()
+  }
+
+  validate () {
+    if (!this.eventBus) {
+      this.error('Missing eventBus', this.opts)
+    }
+
+    if (!this.modelManager) {
+      this.error('Missing modelManager', this.opts)
+    }
+
+    if (!this.drakes) {
+      this.error('Missing drakes', this.opts)
+    }
   }
 
   createModel () {
@@ -60,8 +77,8 @@ export class DragulaService {
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 
-  error (msg) {
-    console.error(msg)
+  error (msg, ...args) {
+    console.error(msg, ...args)
     throw new Error(msg)
   }
 

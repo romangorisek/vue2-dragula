@@ -4,8 +4,14 @@ import { Dragula } from './dragula'
 import { Creator } from './directive'
 import { Logger } from './logger'
 
+
+function log (...msg) {
+  console.log(...msg)
+}
+
 export const defaults = {
   createService: ({name, eventBus, drakes, options}) => {
+    log('default createService', {name, eventBus, drakes, options})
     return new DragulaService({
       name,
       eventBus,
@@ -13,7 +19,8 @@ export const defaults = {
       options
     })
   },
-  createEventBus: (Vue) => {
+  createEventBus: Vue => {
+    log('default createEventBus', Vue)
     return new Vue()
   },
   createServiceManager: ({Vue, options, log}) => {

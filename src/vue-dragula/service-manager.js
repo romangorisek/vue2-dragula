@@ -18,8 +18,8 @@ export class ServiceManager {
   }
 
   createEventbus () {
-    let createEventBus = this.options.createEventBus || defaults.createEventBus || new this.Vue()
-    this.eventBus = createEventBus(this.Vue, this.options)
+    let eventBusFactory = this.options.createEventBus || defaults.createEventBus
+    this.eventBus = eventBusFactory(this.Vue, this.options) || new this.Vue()
     if (!this.eventBus) {
       console.warn('Eventbus could not be created')
       throw new Error('Eventbus could not be created')
