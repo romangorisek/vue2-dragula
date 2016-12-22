@@ -10,7 +10,7 @@ const waitForTransition = raf
   }
 
 export class DragHandler {
-  constructor({ctx, name, drake, options}) {
+  constructor ({ctx, name, drake, options}) {
     this.dragElm = null
     this.dragIndex = null
     this.dropIndex = null
@@ -26,20 +26,20 @@ export class DragHandler {
     this.domIndexOf = ctx.domIndexOf.bind(ctx)
   }
 
-  get clazzName() {
+  get clazzName () {
     return this.constructor.name || 'DragHandler'
   }
 
-  get shouldLog() {
+  get shouldLog () {
     return this.logging && this.logging.dragHandler
   }
 
-  log(event, ...args) {
-    if (!this.shouldLog)
+  log (event, ...args) {
+    if (!this.shouldLog) return
     console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
-  removeModel() {
+  removeModel () {
     this.log('removeModel', {
       sourceModel: this.sourceModel,
       dragIndex: this.dragIndex
@@ -47,7 +47,7 @@ export class DragHandler {
     this.sourceModel.removeAt(this.dragIndex)
   }
 
-  dropModelSame() {
+  dropModelSame () {
     this.log('dropModelSame', {
       sourceModel: this.sourceModel,
       dragIndex: this.dragIndex,
@@ -60,7 +60,7 @@ export class DragHandler {
     })
   }
 
-  insertModel(targetModel, dropElmModel, elements) {
+  insertModel (targetModel, dropElmModel, elements) {
     this.log('insertModel', {
       targetModel: targetModel,
       dropIndex: this.dropIndex,
@@ -87,20 +87,20 @@ export class DragHandler {
     })
   }
 
-  notCopy() {
+  notCopy () {
     waitForTransition(() => {
       this.sourceModel.removeAt(this.dragIndex)
     })
   }
 
-  cancelDrop(target) {
+  cancelDrop (target) {
     this.log('No targetModel could be found for target:', target)
     this.log('in drake:', this.drake)
     this.drake.cancel(true)
   }
 
 
-  dropModelTarget(dropElm, target, source) {
+  dropModelTarget (dropElm, target, source) {
     this.log('dropModelTarget', dropElm, target, source)
     let notCopy = this.dragElm === dropElm
     let targetModel = this.getModel(target)
@@ -123,12 +123,12 @@ export class DragHandler {
     this.insertModel(targetModel, dropElmModel, elements)
   }
 
-  dropModel(dropElm, target, source) {
+  dropModel (dropElm, target, source) {
     this.log('dropModel', dropElm, target, source)
     target === source ? this.dropModelSame() : this.dropModelTarget(dropElm, target, source)
   }
 
-  emit(eventName, opts = {}) {
+  emit (eventName, opts = {}) {
     opts.sourceModel = this.sourceModel
     opts.name = this.name
     let serviceEventName = `${this.serviceName}:${eventName}`
@@ -138,7 +138,7 @@ export class DragHandler {
     this.eventBus.$emit(serviceEventName, opts)
   }
 
-  getModel(location) {
+  getModel (location) {
     return this.modelManager.createFor({
       name: this.name,
       drake: this.drake,
@@ -190,11 +190,11 @@ export class DragHandler {
     })
   }
 
-  dropElmModel() {
+  dropElmModel () {
     return this.sourceModel.at(this.dragIndex)
   }
 
-  jsonDropElmModel() {
+  jsonDropElmModel () {
     let model = this.sourceModel.at(this.dragIndex)
     let stringable = model ? model.model || model.stringable : model
     return JSON.parse(JSON.stringify(stringable || model))

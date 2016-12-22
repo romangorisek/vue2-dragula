@@ -7,18 +7,18 @@ if (!dragula) {
 import { DragHandler } from './drag-handler'
 import { ModelManager } from './model-manager'
 
-function createDragHandler({ctx, name, drake}) {
+function createDragHandler ({ctx, name, drake}) {
   return new DragHandler({ ctx, name, drake })
 }
 
-function createModelManager(opts) {
+function createModelManager (opts) {
   return new ModelManager(opts)
 }
 
 export class DragulaService {
   constructor (opts = {}) {
-    let {name, eventBus, drakes, options } = opts
-    options  = options || {}
+    let { name, eventBus, drakes, options } = opts
+    options = options || {}
     this.options = options
     this.logging = options.logging
 
@@ -47,31 +47,31 @@ export class DragulaService {
     ]
   }
 
-  createModel() {
-    return this.modelManager.createModel();
+  createModel () {
+    return this.modelManager.createModel()
   }
 
-  get shouldLog() {
+  get shouldLog () {
     return this.logging && this.logging.service
   }
 
-  log(event, ...args) {
+  log (event, ...args) {
     if (!this.shouldLog) return
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 
-  error(msg) {
+  error (msg) {
     console.error(msg)
     throw new Error(msg)
   }
 
-  _validate(method, name) {
+  _validate (method, name) {
     if (!name) {
       this.error(`${method} must take a drake name as the first argument`)
     }
   }
 
-  get drakeNames() {
+  get drakeNames () {
     return Object.keys(this.drakes)
   }
 
@@ -80,10 +80,10 @@ export class DragulaService {
     this._validate('add', name)
     if (this.find(name)) {
       this.log('existing drakes', this.drakeNames)
-      let errMsg = `Drake named: "${name}" already exists for this service [${this.name}]. 
-      Most likely this error in cause by a race condition evaluating multiple template elements with 
+      let errMsg = `Drake named: "${name}" already exists for this service [${this.name}].
+      Most likely this error in cause by a race condition evaluating multiple template elements with
       the v-dragula directive having the same drake name. Please initialise the drake in the created() life cycle hook of the VM to fix this problem.`
-      this.error(msg)
+      this.error(errMsg)
     }
 
     this.drakes[name] = drake
@@ -141,7 +141,7 @@ export class DragulaService {
     this._delete(name)
   }
 
-  _delete(name) {
+  _delete (name) {
     delete this.drakes[name]
   }
 
@@ -159,7 +159,7 @@ export class DragulaService {
     drake.initEvents = true
     let _this = this
 
-    function calcOpts(name, args) {
+    function calcOpts (name, args) {
       switch (name) {
         case 'cloned':
           return { clone: args[0], original: args[1], type: args[2] }
@@ -192,7 +192,7 @@ export class DragulaService {
 
       function replicate () {
         let args = Array.prototype.slice.call(arguments)
-        let sendArgs = [name].concat(args)
+        // let sendArgs = [name].concat(args)
         let opts = calcOpts(name, args)
         opts.name = name
         opts.service = this
