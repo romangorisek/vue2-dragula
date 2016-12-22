@@ -1,6 +1,6 @@
-import defaults from './defaults'
+import { defaults } from './defaults'
 
-export default class ServiceManager {
+export class ServiceManager {
   constructor ({Vue, options, eventBus, log}) {
     this.log = log.dir
     this.Vue = Vue

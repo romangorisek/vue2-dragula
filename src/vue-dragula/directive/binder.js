@@ -4,6 +4,7 @@ import dragula from 'dragula'
 export default class Binder extends BaseBinder {
   constructor ({serviceManager, name, log}) {
     super({serviceManager, name, log})
+    this.execute = this['bind'].bind(this)
   }
 
   bind ({container, vnode}) {

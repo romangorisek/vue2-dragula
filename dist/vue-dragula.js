@@ -1071,12 +1071,6 @@ var require$$0$3 = Object.freeze({
 
 	var dragula$1 = interopDefault(dragula);
 
-	var typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-	  return typeof obj;
-	} : function (obj) {
-	  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-	};
-
 	var asyncGenerator = function () {
 	  function AwaitValue(value) {
 	    this.value = value;
@@ -1262,293 +1256,6 @@ var require$$0$3 = Object.freeze({
 
 	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
 	};
-
-	var Logger = function () {
-	  function Logger(options) {
-	    classCallCheck(this, Logger);
-
-	    this.options = options;
-	    this.logging = options.logging;
-	  }
-
-	  createClass(Logger, [{
-	    key: 'plugin',
-	    value: function plugin() {
-	      var _console;
-
-	      if (!this.logging) return;
-	      if (!this.logging.plugin) return;
-
-	      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	        args[_key] = arguments[_key];
-	      }
-
-	      (_console = console).log.apply(_console, ['vue-dragula plugin'].concat(args));
-	    }
-	  }, {
-	    key: 'serviceConfig',
-	    value: function serviceConfig() {
-	      var _console2;
-
-	      if (!this.logging) return;
-	      if (!this.logging.service) return;
-
-	      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	        args[_key2] = arguments[_key2];
-	      }
-
-	      (_console2 = console).log.apply(_console2, ['vue-dragula service config: '].concat(args));
-	    }
-	  }, {
-	    key: 'dir',
-	    value: function dir() {
-	      var _console3;
-
-	      if (!this.logging) return;
-	      if (!this.logging.directive) return;
-
-	      for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-	        args[_key3] = arguments[_key3];
-	      }
-
-	      (_console3 = console).log.apply(_console3, ['v-dragula directive'].concat(args));
-	    }
-	  }]);
-	  return Logger;
-	}();
-
-	var Dragula = function () {
-	  function Dragula(_ref) {
-	    var serviceManager = _ref.serviceManager,
-	        log = _ref.log;
-	    classCallCheck(this, Dragula);
-	    var appService = serviceManager.appService,
-	        createService = serviceManager.createService;
-
-
-	    this.appService = appService;
-	    this.log = this.log;
-	    this.options = appService.options;
-	    this.createService = createService;
-
-	    // convenience functions on global service
-	    this.$service = {
-	      options: appService.setOptions.bind(appService),
-	      find: appService.find.bind(appService),
-	      eventBus: appService.eventBus
-	    };
-	    // add default drake on global app service
-	    this.$service.options('default', {});
-
-	    // alias
-	    this.createServices = this.createService;
-	  }
-
-	  createClass(Dragula, [{
-	    key: 'optionsFor',
-	    value: function optionsFor(name) {
-	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	      this.service(name).setOptions(opts);
-	      return this;
-	    }
-	  }, {
-	    key: 'createService',
-	    value: function createService() {
-	      var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-	      this.log('createService', serviceOpts);
-
-	      this._serviceMap = this._serviceMap || {};
-
-	      var names = serviceOpts.names || [];
-	      var name = serviceOpts.name || [];
-	      var drakes = serviceOpts.drakes || {};
-	      var drake = serviceOpts.drake;
-	      var opts = Object.assign({}, this.options, serviceOpts);
-	      names = names.length > 0 ? names : [name];
-	      var eventBus = serviceOpts.eventBus || this.appService.eventBus;
-	      if (!eventBus) {
-	        console.warn('Eventbus could not be created', eventBus);
-	      }
-
-	      this.log('names', names);
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-
-	      try {
-	        for (var _iterator = names[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var _name = _step.value;
-
-	          var createOpts = {
-	            name: _name,
-	            eventBus: eventBus,
-	            options: opts
-	          };
-	          this.log('create DragulaService', _name, createOpts);
-	          this._serviceMap[_name] = this.createService(createOpts);
-
-	          // use 'default' drakes if none specified
-	          if (!drakes.default) {
-	            drakes.default = drake || true;
-	          }
-
-	          this.drakesFor(_name, drakes);
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-
-	      return this;
-	    }
-	  }, {
-	    key: 'drakesFor',
-	    value: function drakesFor(name) {
-	      var drakes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	      this.log('drakesFor', name, drakes);
-	      var service = this.service(name);
-
-	      if (Array.isArray(drakes)) {
-	        // turn Array into object of [name]: true
-	        drakes = drakes.reduce(function (obj, name) {
-	          obj[name] = true;
-	          return obj;
-	        }, {});
-	      }
-
-	      var drakeNames = Object.keys(drakes);
-	      var _iteratorNormalCompletion2 = true;
-	      var _didIteratorError2 = false;
-	      var _iteratorError2 = undefined;
-
-	      try {
-	        for (var _iterator2 = drakeNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          var drakeName = _step2.value;
-
-	          var drakeOpts = drakes[drakeName];
-	          if (drakeOpts === true) {
-	            drakeOpts = {};
-	          }
-
-	          service.setOptions(drakeName, drakeOpts);
-	        }
-	      } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	            _iterator2.return();
-	          }
-	        } finally {
-	          if (_didIteratorError2) {
-	            throw _iteratorError2;
-	          }
-	        }
-	      }
-
-	      return this;
-	    }
-	  }, {
-	    key: 'on',
-	    value: function on(name) {
-	      var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	      this.log('on', name, handlerConfig);
-	      if ((typeof name === 'undefined' ? 'undefined' : typeof(name)) === 'object') {
-	        handlerConfig = name;
-	        // add event handlers for all services
-	        var serviceNames = this.serviceNames;
-
-	        if (!serviceNames || serviceNames.length < 1) {
-	          console.warn('vue-dragula: No services found to add events handlers for', this._serviceMap);
-	          return this;
-	        }
-
-	        this.log('add event handlers for', serviceNames);
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
-
-	        try {
-	          for (var _iterator3 = serviceNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	            var serviceName = _step3.value;
-
-	            this.on(serviceName, handlerConfig);
-	          }
-	        } catch (err) {
-	          _didIteratorError3 = true;
-	          _iteratorError3 = err;
-	        } finally {
-	          try {
-	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	              _iterator3.return();
-	            }
-	          } finally {
-	            if (_didIteratorError3) {
-	              throw _iteratorError3;
-	            }
-	          }
-	        }
-
-	        return this;
-	      }
-
-	      var service = this.service(name);
-	      if (!service) {
-	        console.warn('vue-dragula: no service ' + name + ' to add event handlers for');
-	        return this;
-	      }
-	      this.log('service.on', service, handlerConfig);
-	      service.on(handlerConfig);
-	      return this;
-	    }
-	  }, {
-	    key: 'service',
-
-
-	    // return named service or first service
-	    value: function service(name) {
-	      if (!this._serviceMap) return;
-
-	      var found = this._serviceMap[name];
-	      this.log('lookup service', name, found);
-
-	      if (!found) {
-	        this.log('not found by name, get default');
-	        var keys = this.serviceNames;
-	        if (keys) {
-	          found = this._serviceMap[keys[0]];
-	        }
-	      }
-	      return found;
-	    }
-	  }, {
-	    key: 'serviceNames',
-	    get: function get() {
-	      return Object.keys(this._serviceMap);
-	    }
-	  }, {
-	    key: 'services',
-	    get: function get() {
-	      return Object.values(this._serviceMap);
-	    }
-	  }]);
-	  return Dragula;
-	}();
 
 	var raf = window.requestAnimationFrame;
 	var waitForTransition = raf ? function (fn) {
@@ -2180,25 +1887,6 @@ var require$$0$3 = Object.freeze({
 	  return DragulaService;
 	}();
 
-	var defaults$1 = {
-	  createService: function createService(_ref) {
-	    var name = _ref.name,
-	        eventBus = _ref.eventBus,
-	        drakes = _ref.drakes,
-	        options = _ref.options;
-
-	    return new DragulaService({
-	      name: name,
-	      eventBus: eventBus,
-	      drakes: drakes,
-	      options: options
-	    });
-	  },
-	  createEventBus: function createEventBus(Vue) {
-	    return new Vue();
-	  }
-	};
-
 	var ServiceManager = function () {
 	  function ServiceManager(_ref) {
 	    var Vue = _ref.Vue,
@@ -2210,7 +1898,7 @@ var require$$0$3 = Object.freeze({
 	    this.log = log.dir;
 	    this.Vue = Vue;
 	    this.options = options;
-	    this.createService = options.createService || defaults$1.createService;
+	    this.createService = options.createService || defaults.createService;
 	    this.createEventbus();
 
 	    // global service
@@ -2225,7 +1913,7 @@ var require$$0$3 = Object.freeze({
 	  createClass(ServiceManager, [{
 	    key: 'createEventbus',
 	    value: function createEventbus() {
-	      var createEventBus = this.options.createEventBus || defaults$1.createEventBus || new this.Vue();
+	      var createEventBus = this.options.createEventBus || defaults.createEventBus || new this.Vue();
 	      this.eventBus = createEventBus(this.Vue, this.options);
 	      if (!this.eventBus) {
 	        console.warn('Eventbus could not be created');
@@ -2253,6 +1941,243 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }]);
 	  return ServiceManager;
+	}();
+
+	function isObject(obj) {
+	  return obj === Object(obj);
+	}
+
+	var Dragula = function () {
+	  function Dragula(_ref) {
+	    var serviceManager = _ref.serviceManager,
+	        log = _ref.log;
+	    classCallCheck(this, Dragula);
+	    var appService = serviceManager.appService,
+	        createService = serviceManager.createService;
+
+
+	    this.appService = appService;
+	    this.log = this.log;
+	    this.options = appService.options;
+	    this.createService = createService;
+
+	    // convenience functions on global service
+	    this.$service = {
+	      options: appService.setOptions.bind(appService),
+	      find: appService.find.bind(appService),
+	      eventBus: appService.eventBus
+	    };
+	    // add default drake on global app service
+	    this.$service.options('default', {});
+
+	    // alias
+	    this.createServices = this.createService;
+	  }
+
+	  createClass(Dragula, [{
+	    key: 'optionsFor',
+	    value: function optionsFor(name) {
+	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	      this.service(name).setOptions(opts);
+	      return this;
+	    }
+	  }, {
+	    key: 'createService',
+	    value: function createService() {
+	      var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      this.log('createService', serviceOpts);
+
+	      this._serviceMap = this._serviceMap || {};
+
+	      var names = serviceOpts.names || [];
+	      var name = serviceOpts.name || [];
+	      var drakes = serviceOpts.drakes || {};
+	      var drake = serviceOpts.drake;
+	      var opts = Object.assign({}, this.options, serviceOpts);
+	      names = names.length > 0 ? names : [name];
+	      var eventBus = serviceOpts.eventBus || this.appService.eventBus;
+	      if (!eventBus) {
+	        console.warn('Eventbus could not be created', eventBus);
+	      }
+
+	      this.log('names', names);
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = names[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var _name = _step.value;
+
+	          var createOpts = {
+	            name: _name,
+	            eventBus: eventBus,
+	            options: opts
+	          };
+	          this.log('create DragulaService', _name, createOpts);
+	          this._serviceMap[_name] = this.createService(createOpts);
+
+	          // use 'default' drakes if none specified
+	          if (!drakes.default) {
+	            drakes.default = drake || true;
+	          }
+
+	          this.drakesFor(_name, drakes);
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+
+	      return this;
+	    }
+	  }, {
+	    key: 'drakesFor',
+	    value: function drakesFor(name) {
+	      var drakes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	      this.log('drakesFor', name, drakes);
+	      var service = this.service(name);
+
+	      if (Array.isArray(drakes)) {
+	        // turn Array into object of [name]: true
+	        drakes = drakes.reduce(function (obj, name) {
+	          obj[name] = true;
+	          return obj;
+	        }, {});
+	      }
+
+	      var drakeNames = Object.keys(drakes);
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+
+	      try {
+	        for (var _iterator2 = drakeNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          var drakeName = _step2.value;
+
+	          var drakeOpts = drakes[drakeName];
+	          if (drakeOpts === true) {
+	            drakeOpts = {};
+	          }
+
+	          service.setOptions(drakeName, drakeOpts);
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
+	          }
+	        }
+	      }
+
+	      return this;
+	    }
+	  }, {
+	    key: 'on',
+	    value: function on(name) {
+	      var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	      this.log('on', name, handlerConfig);
+	      if (isObject(name)) {
+	        handlerConfig = name;
+	        // add event handlers for all services
+	        var serviceNames = this.serviceNames;
+
+	        if (!serviceNames || serviceNames.length < 1) {
+	          console.warn('vue-dragula: No services found to add events handlers for', this._serviceMap);
+	          return this;
+	        }
+
+	        this.log('add event handlers for', serviceNames);
+	        var _iteratorNormalCompletion3 = true;
+	        var _didIteratorError3 = false;
+	        var _iteratorError3 = undefined;
+
+	        try {
+	          for (var _iterator3 = serviceNames[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	            var serviceName = _step3.value;
+
+	            this.on(serviceName, handlerConfig);
+	          }
+	        } catch (err) {
+	          _didIteratorError3 = true;
+	          _iteratorError3 = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	              _iterator3.return();
+	            }
+	          } finally {
+	            if (_didIteratorError3) {
+	              throw _iteratorError3;
+	            }
+	          }
+	        }
+
+	        return this;
+	      }
+
+	      var service = this.service(name);
+	      if (!service) {
+	        console.warn('vue-dragula: no service ' + name + ' to add event handlers for');
+	        return this;
+	      }
+	      this.log('service.on', service, handlerConfig);
+	      service.on(handlerConfig);
+	      return this;
+	    }
+	  }, {
+	    key: 'service',
+
+
+	    // return named service or first service
+	    value: function service(name) {
+	      if (!this._serviceMap) return;
+
+	      var found = this._serviceMap[name];
+	      this.log('lookup service', name, found);
+
+	      if (!found) {
+	        this.log('not found by name, get default');
+	        var keys = this.serviceNames;
+	        if (keys) {
+	          found = this._serviceMap[keys[0]];
+	        }
+	      }
+	      return found;
+	    }
+	  }, {
+	    key: 'serviceNames',
+	    get: function get() {
+	      return Object.keys(this._serviceMap);
+	    }
+	  }, {
+	    key: 'services',
+	    get: function get() {
+	      return Object.values(this._serviceMap);
+	    }
+	  }]);
+	  return Dragula;
 	}();
 
 	function isEmpty(str) {
@@ -2398,7 +2323,11 @@ var require$$0$3 = Object.freeze({
 	        name = _ref.name,
 	        log = _ref.log;
 	    classCallCheck(this, Binder);
-	    return possibleConstructorReturn(this, (Binder.__proto__ || Object.getPrototypeOf(Binder)).call(this, { serviceManager: serviceManager, name: name, log: log }));
+
+	    var _this = possibleConstructorReturn(this, (Binder.__proto__ || Object.getPrototypeOf(Binder)).call(this, { serviceManager: serviceManager, name: name, log: log }));
+
+	    _this.execute = _this['bind'].bind(_this);
+	    return _this;
 	  }
 
 	  createClass(Binder, [{
@@ -2453,7 +2382,11 @@ var require$$0$3 = Object.freeze({
 	        name = _ref.name,
 	        log = _ref.log;
 	    classCallCheck(this, UnBinder);
-	    return possibleConstructorReturn(this, (UnBinder.__proto__ || Object.getPrototypeOf(UnBinder)).call(this, { serviceManager: serviceManager, name: name, log: log }));
+
+	    var _this = possibleConstructorReturn(this, (UnBinder.__proto__ || Object.getPrototypeOf(UnBinder)).call(this, { serviceManager: serviceManager, name: name, log: log }));
+
+	    _this.execute = _this.unbind.bind(_this);
+	    return _this;
 	  }
 
 	  createClass(UnBinder, [{
@@ -2517,6 +2450,7 @@ var require$$0$3 = Object.freeze({
 	    this.Vue = Vue;
 	    this.log = log.dir;
 	    this.options = options;
+	    this.execute = this.create.bind(this);
 
 	    this.default = {
 	      args: { serviceManager: serviceManager, name: name, log: log },
@@ -2557,7 +2491,7 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 
-	      this.updater.update({ container: container, vnode: vnode, binding: binding, newValue: newValue, oldVnode: oldVnode });
+	      this.updater.execute({ container: container, vnode: vnode, binding: binding, newValue: newValue, oldVnode: oldVnode });
 	    }
 	  }, {
 	    key: 'create',
@@ -2568,7 +2502,7 @@ var require$$0$3 = Object.freeze({
 	        bind: function bind(container, binding, vnode) {
 	          this.log('BIND', container, binding, vnode);
 
-	          this.binder.bind({ container: container, binding: binding, vnode: vnode });
+	          this.binder.execute({ container: container, binding: binding, vnode: vnode });
 	        },
 	        update: function update(container, binding, vnode, oldVnode) {
 	          this.log('UPDATE', container, binding, vnode);
@@ -2587,13 +2521,120 @@ var require$$0$3 = Object.freeze({
 	        },
 	        unbind: function unbind(container, binding, vnode) {
 	          this.log('UNBIND', container, binding, vnode);
-	          this.unbinder.unbind({ container: container, binding: binding, vnode: vnode });
+	          this.unbinder.execute({ container: container, binding: binding, vnode: vnode });
 	        }
 	      });
 	    }
 	  }]);
 	  return Creator;
 	}();
+
+
+
+	var directive = Object.freeze({
+		Updater: Updater,
+		BaseBinder: BaseBinder,
+		Binder: Binder,
+		UnBinder: UnBinder,
+		Creator: Creator
+	});
+
+	var Logger = function () {
+	  function Logger(options) {
+	    classCallCheck(this, Logger);
+
+	    this.options = options;
+	    this.logging = options.logging;
+	  }
+
+	  createClass(Logger, [{
+	    key: 'plugin',
+	    value: function plugin() {
+	      var _console;
+
+	      if (!this.logging) return;
+	      if (!this.logging.plugin) return;
+
+	      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, ['vue-dragula plugin'].concat(args));
+	    }
+	  }, {
+	    key: 'serviceConfig',
+	    value: function serviceConfig() {
+	      var _console2;
+
+	      if (!this.logging) return;
+	      if (!this.logging.service) return;
+
+	      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	        args[_key2] = arguments[_key2];
+	      }
+
+	      (_console2 = console).log.apply(_console2, ['vue-dragula service config: '].concat(args));
+	    }
+	  }, {
+	    key: 'dir',
+	    value: function dir() {
+	      var _console3;
+
+	      if (!this.logging) return;
+	      if (!this.logging.directive) return;
+
+	      for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+	        args[_key3] = arguments[_key3];
+	      }
+
+	      (_console3 = console).log.apply(_console3, ['v-dragula directive'].concat(args));
+	    }
+	  }]);
+	  return Logger;
+	}();
+
+	var defaults = {
+	  createService: function createService(_ref) {
+	    var name = _ref.name,
+	        eventBus = _ref.eventBus,
+	        drakes = _ref.drakes,
+	        options = _ref.options;
+
+	    return new DragulaService({
+	      name: name,
+	      eventBus: eventBus,
+	      drakes: drakes,
+	      options: options
+	    });
+	  },
+	  createEventBus: function createEventBus(Vue) {
+	    return new Vue();
+	  },
+	  createServiceManager: function createServiceManager(_ref2) {
+	    var Vue = _ref2.Vue,
+	        options = _ref2.options,
+	        log = _ref2.log;
+
+	    return new ServiceManager({ Vue: Vue, options: options, log: log });
+	  },
+	  createLogger: function createLogger(options) {
+	    return new Logger(options);
+	  },
+	  createDragula: function createDragula(_ref3) {
+	    var serviceManager = _ref3.serviceManager,
+	        log = _ref3.log;
+
+	    return new Dragula({ serviceManager: serviceManager, log: log });
+	  },
+	  createDirectiveCreator: function createDirectiveCreator(_ref4) {
+	    var Vue = _ref4.Vue,
+	        serviceManager = _ref4.serviceManager,
+	        options = _ref4.options,
+	        log = _ref4.log;
+
+	    return new Creator({ Vue: Vue, serviceManager: serviceManager, options: options, log: log });
+	  }
+	};
 
 	if (!dragula$1) {
 	  throw new Error('[vue-dragula] cannot locate dragula.');
@@ -2604,24 +2645,29 @@ var require$$0$3 = Object.freeze({
 
 	  // set full fine-grained logging if true
 	  if (options.logging === true) {
-	    options.logging = {
+	    options.logging = options.defaultLogsOn || {
 	      plugin: true,
 	      directive: true,
 	      service: true,
-	      dragHandler: true
+	      dragHandler: true,
+	      modelManager: true
 	    };
 	  }
-	  var log = new Logger(options);
+	  var logFactory = options.createLogger || defaults.createLogger;
+	  var log = logFactory(options);
 	  log.plugin('Initializing vue-dragula plugin', options);
 
-	  var serviceManager = new ServiceManager({ Vue: Vue, options: options, log: log });
+	  var serviceManagerFactory = options.createServiceManager || defaults.createServiceManager;
+	  var serviceManager = serviceManagerFactory({ Vue: Vue, options: options, log: log });
 
-	  Vue.$dragula = new Dragula({ serviceManager: serviceManager, log: log });
+	  var dragulaFactory = options.createDragula || defaults.createDragula;
+	  Vue.$dragula = dragulaFactory({ serviceManager: serviceManager, log: log });
 
 	  Vue.prototype.$dragula = Vue.$dragula;
 
-	  var creator = new Creator({ Vue: Vue, serviceManager: serviceManager, options: options, log: log });
-	  creator.create();
+	  var creatorFactory = options.createDirectiveCreator || defaults.createDirectiveCreator;
+	  var creator = creatorFactory({ Vue: Vue, serviceManager: serviceManager, options: options, log: log });
+	  creator.execute();
 	}
 
 	var TimeMachine = function () {
@@ -3070,14 +3116,14 @@ var require$$0$3 = Object.freeze({
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	  if (plugin.installed) {
-	    console.warn('[vue-dragula] already installed.');
+	    console.warn('[vue2-dragula] already installed.');
 	  }
 
 	  console.log('Add Dragula plugin:', options);
 	  VueDragula(Vue, options);
 	}
 
-	plugin.version = '2.0.1';
+	plugin.version = '2.4.1';
 
 	var Vue2Dragula = plugin;
 
@@ -3091,11 +3137,16 @@ var require$$0$3 = Object.freeze({
 	}
 
 	exports.Vue2Dragula = Vue2Dragula;
+	exports.directive = directive;
 	exports.DragulaService = DragulaService;
 	exports.DragHandler = DragHandler;
 	exports.ModelManager = ModelManager;
 	exports.ImmutableModelManager = ImmutableModelManager;
 	exports.TimeMachine = TimeMachine;
 	exports.ActionManager = ActionManager;
+	exports.defaults = defaults;
+	exports.Dragula = Dragula;
+	exports.Logger = Logger;
+	exports.ServiceManager = ServiceManager;
 
 }));

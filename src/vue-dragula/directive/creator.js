@@ -7,6 +7,7 @@ export default class Creator {
     this.Vue = Vue
     this.log = log.dir
     this.options = options
+    this.execute = this.create.bind(this)
 
     this.default = {
       args: {serviceManager, name, log},
@@ -37,7 +38,7 @@ export default class Creator {
       : container // Vue 1
     if (!newValue) { return }
 
-    this.updater.update({container, vnode, binding, newValue, oldVnode})
+    this.updater.execute({container, vnode, binding, newValue, oldVnode})
   }
 
   create () {
@@ -47,7 +48,7 @@ export default class Creator {
       bind (container, binding, vnode) {
         this.log('BIND', container, binding, vnode)
 
-        this.binder.bind({container, binding, vnode})
+        this.binder.execute({container, binding, vnode})
       },
 
       update (container, binding, vnode, oldVnode) {
@@ -70,7 +71,7 @@ export default class Creator {
 
       unbind (container, binding, vnode) {
         this.log('UNBIND', container, binding, vnode)
-        this.unbinder.unbind({container, binding, vnode})
+        this.unbinder.execute({container, binding, vnode})
       }
     })
   }

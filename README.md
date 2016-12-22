@@ -7,7 +7,7 @@ This library has been refactored, upgraded and extended with powerful new featur
 
 ## Overview
 - Works with [Vue 2](https://medium.com/the-vue-point/vue-2-0-is-here-ef1f26acf4b8#.c089dtgol)
-- More flexible and powerful than original (Vue 1) plugin
+- More flexible and powerful than original plugin
 - Removed concept of bags. Reference named drakes directly
 - [Vue2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
@@ -18,7 +18,6 @@ See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Chan
 All test pass. Now supports action history with time travel and undo/redo. See [demo](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 ## Install
-#### CommonJS
 
 *npm*
 
@@ -102,7 +101,7 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 [Vue 2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 ## The API in depth
-Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive. 
+Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive.
 Add named service(s) via `this.$dragula.createService` and initialise with the drakes you want to use.
 
 ### $dragula
@@ -118,7 +117,7 @@ Add named service(s) via `this.$dragula.createService` and initialise with the d
 
 ### DragulaService
 The `DragulaService` constructor takes the following deconstructed arguments.
-Only `name` and `eventBus` are required. 
+Only `name` and `eventBus` are required.
 
 Note: You don't normally need to create the `DragulaService` yourself. Use the API to handle this for you.
 
@@ -136,7 +135,7 @@ Drakes are indexed by name in the `drakes` Object of the service. Each key is th
 ## Model mechanics
 The `drake` event handlers have default mechanics for how to operate on the underlyng models. These can be customized as needed.
 
-A common scenario is to have a tree of node objects, where each node has 
+A common scenario is to have a tree of node objects, where each node has
 a `children` key. You'd want to be able to drag elements to modify the node tree stucture.
 
 ```js
@@ -169,7 +168,7 @@ a `children` key. You'd want to be able to drag elements to modify the node tree
 }
 ```
 
-In this example we should be able to move a form input specification object from one form container node to another. This is possible simply by 
+In this example we should be able to move a form input specification object from one form container node to another. This is possible simply by
 setting `<template>` elements with `v-dragula` directives to point to `children[0].children` and `children[1].children` respectively. We can use the rest of the node tree data to visualize the various different nodes. This could form the basis for a visual editor!
 
 ### DragHandler for fine-grained control
@@ -346,9 +345,23 @@ Vue.use(VueDragula, {
 });
 ```
 
+Which by default will set the following log options:
+
+```js
+{
+  plugin: true,
+  directive: true,
+  service: true,
+  dragHandler: true,
+  modelManager: true
+}
+```
+
+Override `true` default settings via `defaultLogsOn` option.
+
 *Fine grained logging*
 
-You can also specify more fine grained logging as follows:
+You can also specify fine grained logging as follows:
 
 ```js
 Vue.use(VueDragula, {
@@ -386,7 +399,7 @@ Vue.use(VueDragula, { createService });
 ```
 
 ### Custom event bus
-You can customize the event bus used via the `createEventBus` option. 
+You can customize the event bus used via the `createEventBus` option.
 You could f.ex create an event bus factory method to always log events emitted if logging is turned on.
 
 ```js
@@ -595,9 +608,9 @@ The following classes are included:
 See [time travel demo](https://github.com/kristianmandrup/vue2-dragula-demo/) for how to use these classes.
 
 ```js
-import { 
-  ImmutableModelManager, 
-  TimeMachine, ActionManager 
+import {
+  ImmutableModelManager,
+  TimeMachine, ActionManager
 } from 'vue2-dragula'
 ```
 
@@ -633,11 +646,55 @@ const createDefaultTimeMachine = function (opts) {
 
 The `ActionManager` can be used to manage actions at the VM level. If you have multiple draggable containers, register an ActionManager for each in a registry of sorts.
 
-## Bonus Recipes
+## Custom Directive
 
-#### Auto-sorted lists
+You can customize the directive callback handlers by passing one or more of the following options:
+- `updater`
+- `binder`
+- `unbinder`
 
-Add an Rx `Observable` or a `watch` to your model (list) which triggers a `sort` of a derived (ie. immutable) model whenever it is updated. You should then display the derived model in your view. Otherwise each sort operation would trigger a new sort.
+Each of these should point to a function with the signature `({serviceManager, name, log})` that returns an object
+with an `execute` function. You can sublclass any of the default classes available on `directive` to reuse core functionality as you see fit.
+
+*Example*
+
+```js
+import { directive } from 'vue2-dragula'
+const { Updater } = directive
+
+class CustomUpdater extends Updater {
+  constructor({serviceManager, name, log}) {
+    super(({serviceManager, name, log}))
+    // customization ...
+  }
+
+  // customized methods
+}
+
+const opts = {
+  updater: ({serviceManager, name, log}) => {
+    return new CustomUpdater({serviceManager, name, log})
+  }
+}
+
+Vue.use(VueDragula, opts);
+```
+
+### Exports
+
+Full list of exports:
+
+- `DragulaService`
+- `DragHandler`
+- `ModelManager`
+- `ImmutableModelManager`
+- `TimeMachine`
+- `ActionManager`
+- `directive`
+- `defaults` - default factory methods
+- `Dragula`
+- `Logger`
+- `ServiceManager`
 
 ## License
 

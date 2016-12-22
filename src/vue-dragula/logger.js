@@ -1,4 +1,4 @@
-export default class Logger {
+export class Logger {
   constructor (options) {
     this.options = options
     this.logging = options.logging

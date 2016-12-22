@@ -1,4 +1,8 @@
-export default class Dragula {
+function isObject (obj) {
+  return obj === Object(obj)
+}
+
+export class Dragula {
   constructor ({serviceManager, log}) {
     const { appService, createService } = serviceManager
 
@@ -87,7 +91,7 @@ export default class Dragula {
 
   on (name, handlerConfig = {}) {
     this.log('on', name, handlerConfig)
-    if (typeof name === 'object') {
+    if (isObject(name)) {
       handlerConfig = name
       // add event handlers for all services
       let serviceNames = this.serviceNames

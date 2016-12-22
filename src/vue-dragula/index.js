@@ -4,30 +4,32 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-import Logger from './logger'
-import Dragula from './dragula'
-import ServiceManager from './service-manager'
-import { Creator } from './directive'
+import { defaults } from './defaults'
 
 export default function (Vue, options = {}) {
   // set full fine-grained logging if true
   if (options.logging === true) {
-    options.logging = {
+    options.logging = options.defaultLogsOn || {
       plugin: true,
       directive: true,
       service: true,
-      dragHandler: true
+      dragHandler: true,
+      modelManager: true
     }
   }
-  const log = new Logger(options)
+  const logFactory = options.createLogger || defaults.createLogger
+  const log = logFactory(options)
   log.plugin('Initializing vue-dragula plugin', options)
 
-  const serviceManager = new ServiceManager({Vue, options, log})
+  const serviceManagerFactory = options.createServiceManager || defaults.createServiceManager
+  const serviceManager = serviceManagerFactory({Vue, options, log})
 
-  Vue.$dragula = new Dragula({serviceManager, log})
+  const dragulaFactory = options.createDragula || defaults.createDragula
+  Vue.$dragula = dragulaFactory({serviceManager, log})
 
   Vue.prototype.$dragula = Vue.$dragula
 
-  const creator = new Creator({Vue, serviceManager, options, log})
-  creator.create()
+  const creatorFactory = options.createDirectiveCreator || defaults.createDirectiveCreator
+  const creator = creatorFactory({Vue, serviceManager, options, log})
+  creator.execute()
 }
