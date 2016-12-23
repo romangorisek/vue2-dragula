@@ -10,6 +10,8 @@ const { createDragHandler, createModelManager } = defaults
 export { defaults } from './defaults'
 export { DragHandler } from './drag-handler'
 export { ModelManager } from './model-manager'
+export { ModelHandler } from './model-handler'
+export { DragulaEventHandler } from './dragula-event-handler'
 
 export class DragulaService {
   constructor (opts = {}) {
@@ -229,12 +231,12 @@ export class DragulaService {
 
   findModelForContainer (container, drake) {
     this.log('findModelForContainer', container, drake)
-    return (this.findModelContainerByContainer(container, drake) || {}).model
+    return (this.findModelContainer(container, drake) || {}).model
   }
 
-  findModelContainerByContainer (container, drake) {
+  findModelContainer (container, drake) {
     if (!drake.models) {
-      this.log('findModelContainerByContainer', 'warning: no models found')
+      this.log('findModelContainer', 'warning: no models found')
       return
     }
     let found = drake.models.find(model => model.container === container)

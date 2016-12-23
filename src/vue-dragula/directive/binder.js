@@ -1,7 +1,7 @@
-import { BaseBinder } from './base-binder'
+import { Base } from './base'
 import dragula from 'dragula'
 
-export class Binder extends BaseBinder {
+export class Binder extends Base {
   constructor ({serviceManager, name, log}) {
     super({serviceManager, name, log})
     this.execute = this['bind'].bind(this)

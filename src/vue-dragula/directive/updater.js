@@ -1,32 +1,18 @@
-import { calcNames } from './utils'
+import { Base } from './base'
 
-export class Updater {
+export class Updater extends Base {
   constructor ({serviceManager, name, log}) {
-    this.log = log.dir
-    this.globalName = name
+    super({serviceManager, name, log})
     this.drakeContainers = {}
-    this.serviceManager = serviceManager
     this.execute = this.update.bind(this)
   }
 
   update ({newValue, container, vnode, ctx}) {
-    this.newValue = newValue
-    this.container = container
-    this.vnode = vnode
-
     this.log('updateDirective')
-
-    const { name, drakeName, serviceName } = calcNames(this.globalName, vnode, ctx)
-    const service = this.serviceManager.findService(name, vnode, serviceName)
-    const drake = service.find(drakeName, vnode)
+    const { service, drake, drakeName, serviceName } = super.extractAll({vnode, ctx})
 
     this.drakeContainers[drakeName] = this.drakeContainers[drakeName] || []
-    let dc = this.drakeContainers[drakeName]
-
-    if (!service) {
-      this.log('no service found', name, drakeName)
-      return
-    }
+    let drakeContainer = this.drakeContainers[drakeName]
 
     if (!drake.models) {
       drake.models = []
@@ -36,9 +22,9 @@ export class Updater {
       container = this.el // Vue 1
     }
 
-    let modelContainer = service.findModelContainerByContainer(container, drake)
+    let modelContainer = service.findModelContainer(container, drake)
 
-    dc.push(container)
+    drakeContainer.push(container)
 
     this.log('DATA', {
       service: {

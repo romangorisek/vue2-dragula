@@ -14,11 +14,11 @@ plugin.version = '3.0.0'
 export const Vue2Dragula = plugin
 
 // make it possible to subclass service and drag handler
-export { DragulaService, DragHandler, ModelManager } from './service'
 export { ImmutableModelManager } from './imm-model-manager'
 export { TimeMachine } from './time-machine'
 export { ActionManager } from './action-manager'
 export * from './vue-dragula'
+export * from './service'
 
 import { defaults as serviceDefaults } from './service'
 import { defaults as commonDefaults } from './defaults'

@@ -686,6 +686,8 @@ Full list of exported classes:
 - `DragulaService`
 - `DragHandler`
 - `ModelManager`
+- `ModelHandler` - used by `DragHandler` to interact with `ModelManager`
+- `DragulaEventHandler` - Handles dragula events such as `drag`, `drop` and `remove`
 - `ImmutableModelManager`
 - `TimeMachine`
 - `ActionManager`
@@ -710,6 +712,8 @@ objects
 - `createEventBus` : eventBus builder
 - `createDragHandler` : dragHandler builder
 - `createModelManager` : modelManager builder
+- `createModelHandler` : modelHandler builder
+- `createDragulaEventHandler` : dragulaEventHandler builder
 
 *Directive*
 
