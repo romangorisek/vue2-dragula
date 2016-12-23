@@ -697,6 +697,7 @@ function createModelManager(opts) {
 }
 this.$dragula.createService({
   name: 'grouped',
+  groupProp: 'category',
   // ...
   createModelManager
 })
