@@ -697,10 +697,22 @@ function createModelManager(opts) {
 }
 this.$dragula.createService({
   name: 'grouped',
-  groupProp: 'category',
+  groupProp: 'grp', // default: group
   // ...
   createModelManager
 })
+```
+
+As suggested by @andrisi, see [Issue #1](https://github.com/kristianmandrup/vue2-dragula/issues/1#issuecomment-268767563)
+
+In the VM you would then need a single model:
+
+`[ {name: John", grp: 0 }, { name: "Steve", grp: 1 }, { name: "Carla", grp: 1 } ]`
+
+And in the template display filtered by group
+
+```html
+<ul v-for="employee in employees" v-if="user.grp = 0"><li>{{ user.name }}</li></ul>
 ```
 
 ### Exports
