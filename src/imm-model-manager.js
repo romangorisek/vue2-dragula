@@ -1,16 +1,13 @@
-import { ModelManager } from './model-manager'
-import { TimeMachine } from './time-machine'
-
-const createDefaultTimeMachine = function (opts) {
-  return new TimeMachine(opts)
-}
+import { ModelManager } from './service/model-manager'
+import { defaults } from './defaults'
+const { createTimeMachine } = defaults
 
 export class ImmutableModelManager extends ModelManager {
   constructor (opts = {}) {
     super(opts)
     this.timeOut = opts.timeOut || 800
-    let createTimeMachine = opts.createTimeMachine || createDefaultTimeMachine
-    this.timeMachine = createTimeMachine(Object.assign(opts, {
+    let createTimeMachineFac = opts.createTimeMachine || createTimeMachine
+    this.timeMachine = createTimeMachineFac(Object.assign(opts, {
       model: this.model,
       modelRef: this.modelRef
     }))

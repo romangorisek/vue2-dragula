@@ -4,16 +4,12 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-import { DragHandler } from './drag-handler'
-import { ModelManager } from './model-manager'
+import { defaults } from './defaults'
+const { createDragHandler, createModelManager } = defaults
 
-function createDragHandler ({ctx, name, drake}) {
-  return new DragHandler({ ctx, name, drake })
-}
-
-function createModelManager (opts) {
-  return new ModelManager(opts)
-}
+export { defaults } from './defaults'
+export { DragHandler } from './drag-handler'
+export { ModelManager } from './model-manager'
 
 export class DragulaService {
   constructor (opts = {}) {

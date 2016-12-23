@@ -4,12 +4,12 @@ function isObject (obj) {
 
 export class Dragula {
   constructor ({serviceManager, log}) {
-    const { appService, createService } = serviceManager
+    const { appService, buildService } = serviceManager
     console.log('Dragula', {serviceManager, log})
     this.appService = appService
+    this.buildService = buildService
     this.log = log.serviceConfig
     this.options = appService.options
-    this.createService = createService
 
     // convenience functions on global service
     this.$service = {
@@ -53,7 +53,7 @@ export class Dragula {
         options: opts
       }
       this.log('create DragulaService', name, createOpts)
-      this._serviceMap[name] = this.createService(createOpts)
+      this._serviceMap[name] = this.buildService(createOpts)
 
       // use 'default' drakes if none specified
       if (!drakes.default) {

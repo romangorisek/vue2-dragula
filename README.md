@@ -682,20 +682,51 @@ Vue.use(VueDragula, opts);
 
 ### Exports
 
-Full list of exports:
-
+Full list of exported classes:
 - `DragulaService`
 - `DragHandler`
 - `ModelManager`
 - `ImmutableModelManager`
 - `TimeMachine`
 - `ActionManager`
-- `directive`
-- `defaults` - default factory methods
 - `Dragula`
 - `Logger`
 - `ServiceManager`
 
+objects
+- `directive`
+- `defaults` - default factory methods
+
+
+### Plugin options
+
+- `logging` : `true` or fine grained logging object
+
+*builders*
+- `createLogger` : logger builder
+- `createServiceManager` : serviceManager builder
+- `createDragula` : dragula builder
+- `createService` : service builder
+- `createEventBus` : eventBus builder
+- `createDragHandler` : dragHandler builder
+- `createModelManager` : modelManager builder
+
+*Directive*
+
+`options.directive`
+
+- `createCreator` : directive creator builder
+- `createUpdater` : directive updater builder (*)
+- `createBinder` : directive binder builder (*)
+- `createUnBinder` : directive unbinder builder (*)
+
+*ImmutableModelManager*
+- `timeOut` : timeOut for display update effect
+
+### Defaults
+
+All the default builder functions except those marked with (*) can be found in the exported `defaults` object
+
 ## License
 
-MIT Kristian Mandrup 2016
+MIT Kristian Mandrup 2016 - 2017

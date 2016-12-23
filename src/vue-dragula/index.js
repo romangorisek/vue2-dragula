@@ -6,7 +6,13 @@ if (!dragula) {
 
 import { defaults } from './defaults'
 
-export default function (Vue, options = {}) {
+export * from './directive'
+export { defaults }
+export { Dragula } from './dragula'
+export { Logger } from './logger'
+export { ServiceManager } from './service-manager'
+
+export function VueDragula (Vue, options = {}) {
   // set full fine-grained logging if true
   if (options.logging === true) {
     options.logging = options.defaultLogsOn || {
@@ -29,7 +35,8 @@ export default function (Vue, options = {}) {
 
   Vue.prototype.$dragula = Vue.$dragula
 
-  const creatorFactory = options.createDirectiveCreator || defaults.createDirectiveCreator
+  const customFacFun = options.directive ? options.directive.createCreator : null
+  const creatorFactory = customFacFun || defaults.createCreator
   const creator = creatorFactory({Vue, serviceManager, options, log})
   creator.execute()
 }

@@ -1,6 +1,10 @@
 import { UnBinder, Binder, Updater } from './'
 
-export default class Creator {
+function capitalize (string) {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+export class Creator {
   // TODO: Allow for customisation via options containing factory methods
   constructor ({Vue, serviceManager, name = 'globalDrake', options, log}) {
     this.name = name
@@ -28,50 +32,54 @@ export default class Creator {
   createDirClass (name, options) {
     const DefaultClazz = this.default[name]
     const defaultCreator = () => { return new DefaultClazz(this.default.args) }
-    const updaterClazz = this.options[name] || defaultCreator
+    const factoryFunctionName = 'create' + capitalize(name)
+    const customFun = this.options.directive ? this.options.directive[factoryFunctionName] : null
+    const updaterClazz = customFun || defaultCreator
     return updaterClazz(this.default.args)
   }
 
-  updateDirective (container, binding, vnode, oldVnode) {
+  updateDirective ({container, binding, vnode, oldVnode, ctx}) {
     const newValue = vnode
       ? binding.value // Vue 2
       : container // Vue 1
     if (!newValue) { return }
 
-    this.updater.execute({container, vnode, binding, newValue, oldVnode})
+    this.updater.execute({container, vnode, binding, newValue, oldVnode, ctx})
   }
 
   create () {
+    const that = this
+
     this.Vue.directive('dragula', {
       params: ['drake', 'service'],
 
       bind (container, binding, vnode) {
-        this.log('BIND', container, binding, vnode)
+        that.log('BIND', container, binding, vnode)
 
-        this.binder.execute({container, binding, vnode})
+        that.binder.execute({container, binding, vnode, ctx: that})
       },
 
       update (container, binding, vnode, oldVnode) {
-        this.log('UPDATE', container, binding, vnode)
+        that.log('UPDATE', container, binding, vnode)
         // Vue 1
-        if (this.Vue.version === 1) {
-          this.updateDirective(container, binding, vnode, oldVnode)
+        if (that.Vue.version === 1) {
+          that.updateDirective({container, binding, vnode, oldVnode, ctx: that})
         }
       },
 
       componentUpdated (container, binding, vnode, oldVnode) {
-        this.log('COMPONENT UPDATED', container, binding, vnode)
+        that.log('COMPONENT UPDATED', container, binding, vnode)
       },
 
       inserted (container, binding, vnode, oldVnode) {
-        this.log('INSERTED', container, binding, vnode)
+        that.log('INSERTED', container, binding, vnode)
         // Vue 2
-        this.updateDirective(container, binding, vnode, oldVnode)
+        that.updateDirective({container, binding, vnode, oldVnode, ctx: that})
       },
 
       unbind (container, binding, vnode) {
-        this.log('UNBIND', container, binding, vnode)
-        this.unbinder.execute({container, binding, vnode})
+        that.log('UNBIND', container, binding, vnode)
+        that.unbinder.execute({container, binding, vnode, ctx: that})
       }
     })
   }

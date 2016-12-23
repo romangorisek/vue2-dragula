@@ -1,4 +1,4 @@
-import VueDragula from './vue-dragula'
+import { VueDragula, defaults as dirDefaults } from './vue-dragula'
 
 function plugin (Vue, options = {}) {
   if (plugin.installed) {
@@ -14,20 +14,20 @@ plugin.version = '3.0.0'
 export const Vue2Dragula = plugin
 
 // make it possible to subclass service and drag handler
-export { DragulaService } from './service'
-export { DragHandler } from './drag-handler'
-export { ModelManager } from './model-manager'
+export { DragulaService, DragHandler, ModelManager } from './service'
 export { ImmutableModelManager } from './imm-model-manager'
 export { TimeMachine } from './time-machine'
 export { ActionManager } from './action-manager'
+export * from './vue-dragula'
 
-import * as directive from './vue-dragula/directive'
-export { directive }
+import { defaults as serviceDefaults } from './service'
+import { defaults as commonDefaults } from './defaults'
 
-export { defaults } from './vue-dragula/defaults'
-export { Dragula } from './vue-dragula/dragula'
-export { Logger } from './vue-dragula/logger'
-export { ServiceManager } from './vue-dragula/service-manager'
+export const defaults = {
+  service: serviceDefaults,
+  directive: dirDefaults,
+  commonDefaults
+}
 
 if (typeof define === 'function' && define.amd) { // eslint-disable-line
   define([], () => { plugin }) // eslint-disable-line

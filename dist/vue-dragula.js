@@ -1607,22 +1607,25 @@ var require$$0$3 = Object.freeze({
 	  return ModelManager;
 	}();
 
+	var defaults$2 = {
+	  createDragHandler: function createDragHandler(_ref) {
+	    var ctx = _ref.ctx,
+	        name = _ref.name,
+	        drake = _ref.drake;
+
+	    return new DragHandler({ ctx: ctx, name: name, drake: drake });
+	  },
+	  createModelManager: function createModelManager(opts) {
+	    return new ModelManager(opts);
+	  }
+	};
+
 	if (!dragula$1) {
 	  throw new Error('[vue-dragula] cannot locate dragula.');
 	}
 
-	function createDragHandler(_ref) {
-	  var ctx = _ref.ctx,
-	      name = _ref.name,
-	      drake = _ref.drake;
-
-	  return new DragHandler({ ctx: ctx, name: name, drake: drake });
-	}
-
-	function createModelManager(opts) {
-	  return new ModelManager(opts);
-	}
-
+	var createDragHandler = defaults$2.createDragHandler;
+	var createModelManager = defaults$2.createModelManager;
 	var DragulaService = function () {
 	  function DragulaService() {
 	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -1911,6 +1914,150 @@ var require$$0$3 = Object.freeze({
 	  return DragulaService;
 	}();
 
+	var TimeMachine = function () {
+	  function TimeMachine(_ref) {
+	    var name = _ref.name,
+	        model = _ref.model,
+	        modelRef = _ref.modelRef,
+	        history = _ref.history,
+	        logging = _ref.logging;
+	    classCallCheck(this, TimeMachine);
+
+	    this.name = name || 'default';
+	    this.model = model;
+	    this.modelRef = modelRef;
+	    this.logging = logging;
+	    this.history = history || this.createHistory();
+	    this.history.push(this.model);
+	    this.timeIndex = 0;
+	  }
+
+	  createClass(TimeMachine, [{
+	    key: 'log',
+	    value: function log(event) {
+	      var _console;
+
+	      if (!this.shouldLog) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'createHistory',
+	    value: function createHistory() {
+	      return this.history || [];
+	    }
+	  }, {
+	    key: 'timeTravel',
+	    value: function timeTravel(index) {
+	      this.log('timeTravel to', index);
+	      this.model = this.history[index];
+	      this.updateModelRef();
+	      return this;
+	    }
+	  }, {
+	    key: 'updateModelRef',
+	    value: function updateModelRef() {
+	      // this.modelRef = mutable
+	      // this.log('set modelRef', this.modelRef, this.model)
+	      this.modelRef.splice(0, this.modelRef.length);
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = this.model[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var item = _step.value;
+
+	          this.modelRef.push(item);
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'undo',
+	    value: function undo() {
+	      this.log('undo timeIndex', this.timeIndex);
+	      if (this.timeIndex === 0) {
+	        return false;
+	      }
+	      this.timeIndex--;
+	      this.timeTravel(this.timeIndex);
+	      return this;
+	    }
+	  }, {
+	    key: 'redo',
+	    value: function redo() {
+	      this.log('redo timeIndex', this.timeIndex, this.history.length);
+	      if (this.timeIndex > this.history.length - 1) {
+	        return false;
+	      }
+	      this.timeIndex++;
+	      this.timeTravel(this.timeIndex);
+	      return this;
+	    }
+	  }, {
+	    key: 'addToHistory',
+	    value: function addToHistory(newModel) {
+	      this.log('addToHistory');
+	      this.log('old', this.model);
+	      this.log('new', newModel);
+	      this.model = newModel;
+	      this.log('model was set to', this.model);
+	      this.history.push(newModel);
+	      this.timeIndex++;
+	      this.updateModelRef();
+	      return this;
+	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.modelManager;
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'TimeMachine';
+	    }
+	  }]);
+	  return TimeMachine;
+	}();
+
+	var defaults$1 = {
+	  createTimeMachine: function createTimeMachine(opts) {
+	    return new TimeMachine(opts);
+	  },
+	  createService: function createService(_ref) {
+	    var name = _ref.name,
+	        eventBus = _ref.eventBus,
+	        drakes = _ref.drakes,
+	        options = _ref.options;
+
+	    // log('default createService', {name, eventBus, drakes, options})
+	    return new DragulaService({
+	      name: name,
+	      eventBus: eventBus,
+	      drakes: drakes,
+	      options: options
+	    });
+	  }
+	};
+
 	var ServiceManager = function () {
 	  function ServiceManager(_ref) {
 	    var Vue = _ref.Vue,
@@ -1922,11 +2069,11 @@ var require$$0$3 = Object.freeze({
 	    this.log = log.dir;
 	    this.Vue = Vue;
 	    this.options = options;
-	    this.createService = options.createService || defaults.createService;
+	    this.buildService = options.createService || defaults$1.createService;
 	    this.createEventbus();
 
 	    // global service
-	    this.appService = this.createService({
+	    this.appService = this.buildService({
 	      name: 'global.dragula',
 	      eventBus: this.eventBus,
 	      drakes: options.drakes,
@@ -1937,7 +2084,7 @@ var require$$0$3 = Object.freeze({
 	  createClass(ServiceManager, [{
 	    key: 'createEventbus',
 	    value: function createEventbus() {
-	      var eventBusFactory = this.options.createEventBus || defaults.createEventBus;
+	      var eventBusFactory = this.options.createEventBus || dirDefaults.createEventBus;
 	      this.eventBus = eventBusFactory(this.Vue, this.options) || new this.Vue();
 	      if (!this.eventBus) {
 	        console.warn('Eventbus could not be created');
@@ -1951,7 +2098,7 @@ var require$$0$3 = Object.freeze({
 	      if (vnode) {
 	        var dragula = vnode.context.$dragula;
 	        if (dragula) {
-	          this.logDir('trying to find and use component service');
+	          this.log('trying to find and use component service');
 
 	          var componentService = dragula.service(serviceName);
 	          if (componentService) {
@@ -1977,13 +2124,13 @@ var require$$0$3 = Object.freeze({
 	        log = _ref.log;
 	    classCallCheck(this, Dragula);
 	    var appService = serviceManager.appService,
-	        createService = serviceManager.createService;
+	        buildService = serviceManager.buildService;
 
 	    console.log('Dragula', { serviceManager: serviceManager, log: log });
 	    this.appService = appService;
+	    this.buildService = buildService;
 	    this.log = log.serviceConfig;
 	    this.options = appService.options;
-	    this.createService = createService;
 
 	    // convenience functions on global service
 	    this.$service = {
@@ -2041,7 +2188,7 @@ var require$$0$3 = Object.freeze({
 	            options: opts
 	          };
 	          this.log('create DragulaService', _name, createOpts);
-	          this._serviceMap[_name] = this.createService(createOpts);
+	          this._serviceMap[_name] = this.buildService(createOpts);
 
 	          // use 'default' drakes if none specified
 	          if (!drakes.default) {
@@ -2212,10 +2359,10 @@ var require$$0$3 = Object.freeze({
 
 	function calcNames(name, vnode, ctx) {
 	  var drakeName = vnode ? vnode.data.attrs.drake // Vue 2
-	  : this.params.drake; // Vue 1
+	  : ctx.params.drake; // Vue 1
 
 	  var serviceName = vnode ? vnode.data.attrs.service // Vue 2
-	  : this.params.service; // Vue 1
+	  : ctx.params.service; // Vue 1
 
 	  if (drakeName !== undefined && drakeName.length !== 0) {
 	    name = drakeName;
@@ -2236,6 +2383,7 @@ var require$$0$3 = Object.freeze({
 	    this.globalName = name;
 	    this.drakeContainers = {};
 	    this.serviceManager = serviceManager;
+	    this.execute = this.update.bind(this);
 	  }
 
 	  createClass(Updater, [{
@@ -2243,7 +2391,8 @@ var require$$0$3 = Object.freeze({
 	    value: function update(_ref2) {
 	      var newValue = _ref2.newValue,
 	          container = _ref2.container,
-	          vnode = _ref2.vnode;
+	          vnode = _ref2.vnode,
+	          ctx = _ref2.ctx;
 
 	      this.newValue = newValue;
 	      this.container = container;
@@ -2251,7 +2400,7 @@ var require$$0$3 = Object.freeze({
 
 	      this.log('updateDirective');
 
-	      var _calcNames = calcNames(this.globalName, vnode, this),
+	      var _calcNames = calcNames(this.globalName, vnode, ctx),
 	          name = _calcNames.name,
 	          drakeName = _calcNames.drakeName,
 	          serviceName = _calcNames.serviceName;
@@ -2323,9 +2472,10 @@ var require$$0$3 = Object.freeze({
 	    key: 'extractAll',
 	    value: function extractAll(_ref2) {
 	      var container = _ref2.container,
-	          vnode = _ref2.vnode;
+	          vnode = _ref2.vnode,
+	          ctx = _ref2.ctx;
 
-	      var _calcNames = calcNames(this.globalName, vnode, this),
+	      var _calcNames = calcNames(this.globalName, vnode, ctx),
 	          name = _calcNames.name,
 	          drakeName = _calcNames.drakeName,
 	          serviceName = _calcNames.serviceName;
@@ -2358,9 +2508,10 @@ var require$$0$3 = Object.freeze({
 	    key: 'bind',
 	    value: function bind(_ref2) {
 	      var container = _ref2.container,
-	          vnode = _ref2.vnode;
+	          vnode = _ref2.vnode,
+	          ctx = _ref2.ctx;
 
-	      var _babelHelpers$get$cal = get(Binder.prototype.__proto__ || Object.getPrototypeOf(Binder.prototype), 'extractAll', this).call(this, { vnode: vnode }),
+	      var _babelHelpers$get$cal = get(Binder.prototype.__proto__ || Object.getPrototypeOf(Binder.prototype), 'extractAll', this).call(this, { vnode: vnode, ctx: ctx }),
 	          service = _babelHelpers$get$cal.service,
 	          drake = _babelHelpers$get$cal.drake,
 	          name = _babelHelpers$get$cal.name,
@@ -2418,9 +2569,10 @@ var require$$0$3 = Object.freeze({
 	    value: function unbind(_ref2) {
 	      var container = _ref2.container,
 	          binding = _ref2.binding,
-	          vnode = _ref2.vnode;
+	          vnode = _ref2.vnode,
+	          ctx = _ref2.ctx;
 
-	      var _babelHelpers$get$cal = get(UnBinder.prototype.__proto__ || Object.getPrototypeOf(UnBinder.prototype), 'extractAll', this).call(this, vnode),
+	      var _babelHelpers$get$cal = get(UnBinder.prototype.__proto__ || Object.getPrototypeOf(UnBinder.prototype), 'extractAll', this).call(this, { vnode: vnode, ctx: ctx }),
 	          service = _babelHelpers$get$cal.service,
 	          drake = _babelHelpers$get$cal.drake,
 	          name = _babelHelpers$get$cal.name,
@@ -2458,6 +2610,10 @@ var require$$0$3 = Object.freeze({
 	  }]);
 	  return UnBinder;
 	}(BaseBinder);
+
+	function capitalize(string) {
+	  return string.charAt(0).toUpperCase() + string.slice(1);
+	}
 
 	var Creator = function () {
 	  // TODO: Allow for customisation via options containing factory methods
@@ -2503,65 +2659,65 @@ var require$$0$3 = Object.freeze({
 	      var defaultCreator = function defaultCreator() {
 	        return new DefaultClazz(_this.default.args);
 	      };
-	      var updaterClazz = this.options[name] || defaultCreator;
+	      var factoryFunctionName = 'create' + capitalize(name);
+	      var customFun = this.options.directive ? this.options.directive[factoryFunctionName] : null;
+	      var updaterClazz = customFun || defaultCreator;
 	      return updaterClazz(this.default.args);
 	    }
 	  }, {
 	    key: 'updateDirective',
-	    value: function updateDirective(container, binding, vnode, oldVnode) {
+	    value: function updateDirective(_ref2) {
+	      var container = _ref2.container,
+	          binding = _ref2.binding,
+	          vnode = _ref2.vnode,
+	          oldVnode = _ref2.oldVnode,
+	          ctx = _ref2.ctx;
+
 	      var newValue = vnode ? binding.value // Vue 2
 	      : container; // Vue 1
 	      if (!newValue) {
 	        return;
 	      }
 
-	      this.updater.execute({ container: container, vnode: vnode, binding: binding, newValue: newValue, oldVnode: oldVnode });
+	      this.updater.execute({ container: container, vnode: vnode, binding: binding, newValue: newValue, oldVnode: oldVnode, ctx: ctx });
 	    }
 	  }, {
 	    key: 'create',
 	    value: function create() {
+	      var that = this;
+
 	      this.Vue.directive('dragula', {
 	        params: ['drake', 'service'],
 
 	        bind: function bind(container, binding, vnode) {
-	          this.log('BIND', container, binding, vnode);
+	          that.log('BIND', container, binding, vnode);
 
-	          this.binder.execute({ container: container, binding: binding, vnode: vnode });
+	          that.binder.execute({ container: container, binding: binding, vnode: vnode, ctx: that });
 	        },
 	        update: function update(container, binding, vnode, oldVnode) {
-	          this.log('UPDATE', container, binding, vnode);
+	          that.log('UPDATE', container, binding, vnode);
 	          // Vue 1
-	          if (this.Vue.version === 1) {
-	            this.updateDirective(container, binding, vnode, oldVnode);
+	          if (that.Vue.version === 1) {
+	            that.updateDirective({ container: container, binding: binding, vnode: vnode, oldVnode: oldVnode, ctx: that });
 	          }
 	        },
 	        componentUpdated: function componentUpdated(container, binding, vnode, oldVnode) {
-	          this.log('COMPONENT UPDATED', container, binding, vnode);
+	          that.log('COMPONENT UPDATED', container, binding, vnode);
 	        },
 	        inserted: function inserted(container, binding, vnode, oldVnode) {
-	          this.log('INSERTED', container, binding, vnode);
+	          that.log('INSERTED', container, binding, vnode);
 	          // Vue 2
-	          this.updateDirective(container, binding, vnode, oldVnode);
+	          that.updateDirective({ container: container, binding: binding, vnode: vnode, oldVnode: oldVnode, ctx: that });
 	        },
 	        unbind: function unbind(container, binding, vnode) {
-	          this.log('UNBIND', container, binding, vnode);
-	          this.unbinder.execute({ container: container, binding: binding, vnode: vnode });
+	          that.log('UNBIND', container, binding, vnode);
+	          that.unbinder.execute({ container: container, binding: binding, vnode: vnode, ctx: that });
 	        }
 	      });
 	    }
 	  }]);
 	  return Creator;
 	}();
-
-
-
-	var directive = Object.freeze({
-		Updater: Updater,
-		BaseBinder: BaseBinder,
-		Binder: Binder,
-		UnBinder: UnBinder,
-		Creator: Creator
-	});
 
 	var Logger = function () {
 	  function Logger(options) {
@@ -2618,52 +2774,36 @@ var require$$0$3 = Object.freeze({
 	  return Logger;
 	}();
 
-	function log() {
-	  var _console;
+	// function log (...msg) {
+	//   console.log(...msg)
+	// }
 
-	  (_console = console).log.apply(_console, arguments);
-	}
-
-	var defaults = {
-	  createService: function createService(_ref) {
-	    var name = _ref.name,
-	        eventBus = _ref.eventBus,
-	        drakes = _ref.drakes,
-	        options = _ref.options;
-
-	    log('default createService', { name: name, eventBus: eventBus, drakes: drakes, options: options });
-	    return new DragulaService({
-	      name: name,
-	      eventBus: eventBus,
-	      drakes: drakes,
-	      options: options
-	    });
-	  },
+	var dirDefaults = {
 	  createEventBus: function createEventBus(Vue) {
-	    log('default createEventBus', Vue);
+	    // log('default createEventBus', Vue)
 	    return new Vue();
 	  },
-	  createServiceManager: function createServiceManager(_ref2) {
-	    var Vue = _ref2.Vue,
-	        options = _ref2.options,
-	        log = _ref2.log;
+	  createServiceManager: function createServiceManager(_ref) {
+	    var Vue = _ref.Vue,
+	        options = _ref.options,
+	        log = _ref.log;
 
 	    return new ServiceManager({ Vue: Vue, options: options, log: log });
 	  },
 	  createLogger: function createLogger(options) {
 	    return new Logger(options);
 	  },
-	  createDragula: function createDragula(_ref3) {
-	    var serviceManager = _ref3.serviceManager,
-	        log = _ref3.log;
+	  createDragula: function createDragula(_ref2) {
+	    var serviceManager = _ref2.serviceManager,
+	        log = _ref2.log;
 
 	    return new Dragula({ serviceManager: serviceManager, log: log });
 	  },
-	  createDirectiveCreator: function createDirectiveCreator(_ref4) {
-	    var Vue = _ref4.Vue,
-	        serviceManager = _ref4.serviceManager,
-	        options = _ref4.options,
-	        log = _ref4.log;
+	  createCreator: function createCreator(_ref3) {
+	    var Vue = _ref3.Vue,
+	        serviceManager = _ref3.serviceManager,
+	        options = _ref3.options,
+	        log = _ref3.log;
 
 	    return new Creator({ Vue: Vue, serviceManager: serviceManager, options: options, log: log });
 	  }
@@ -2673,7 +2813,7 @@ var require$$0$3 = Object.freeze({
 	  throw new Error('[vue-dragula] cannot locate dragula.');
 	}
 
-	function VueDragula (Vue) {
+	function VueDragula(Vue) {
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	  // set full fine-grained logging if true
@@ -2686,150 +2826,26 @@ var require$$0$3 = Object.freeze({
 	      modelManager: true
 	    };
 	  }
-	  var logFactory = options.createLogger || defaults.createLogger;
+	  var logFactory = options.createLogger || dirDefaults.createLogger;
 	  var log = logFactory(options);
 	  log.plugin('Init: vue-dragula plugin', options);
 
-	  var serviceManagerFactory = options.createServiceManager || defaults.createServiceManager;
+	  var serviceManagerFactory = options.createServiceManager || dirDefaults.createServiceManager;
 	  var serviceManager = serviceManagerFactory({ Vue: Vue, options: options, log: log });
 
-	  var dragulaFactory = options.createDragula || defaults.createDragula;
+	  var dragulaFactory = options.createDragula || dirDefaults.createDragula;
 	  Vue.$dragula = dragulaFactory({ serviceManager: serviceManager, log: log });
 
 	  Vue.prototype.$dragula = Vue.$dragula;
 
-	  var creatorFactory = options.createDirectiveCreator || defaults.createDirectiveCreator;
+	  var customFacFun = options.directive ? options.directive.createCreator : null;
+	  var creatorFactory = customFacFun || dirDefaults.createCreator;
 	  var creator = creatorFactory({ Vue: Vue, serviceManager: serviceManager, options: options, log: log });
 	  creator.execute();
 	}
 
-	var TimeMachine = function () {
-	  function TimeMachine(_ref) {
-	    var name = _ref.name,
-	        model = _ref.model,
-	        modelRef = _ref.modelRef,
-	        history = _ref.history,
-	        logging = _ref.logging;
-	    classCallCheck(this, TimeMachine);
+	var createTimeMachine = defaults$1.createTimeMachine;
 
-	    this.name = name || 'default';
-	    this.model = model;
-	    this.modelRef = modelRef;
-	    this.logging = logging;
-	    this.history = history || this.createHistory();
-	    this.history.push(this.model);
-	    this.timeIndex = 0;
-	  }
-
-	  createClass(TimeMachine, [{
-	    key: 'log',
-	    value: function log(event) {
-	      var _console;
-
-	      if (!this.shouldLog) return;
-
-	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	        args[_key - 1] = arguments[_key];
-	      }
-
-	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
-	    }
-	  }, {
-	    key: 'createHistory',
-	    value: function createHistory() {
-	      return this.history || [];
-	    }
-	  }, {
-	    key: 'timeTravel',
-	    value: function timeTravel(index) {
-	      this.log('timeTravel to', index);
-	      this.model = this.history[index];
-	      this.updateModelRef();
-	      return this;
-	    }
-	  }, {
-	    key: 'updateModelRef',
-	    value: function updateModelRef() {
-	      // this.modelRef = mutable
-	      // this.log('set modelRef', this.modelRef, this.model)
-	      this.modelRef.splice(0, this.modelRef.length);
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-
-	      try {
-	        for (var _iterator = this.model[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var item = _step.value;
-
-	          this.modelRef.push(item);
-	        }
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'undo',
-	    value: function undo() {
-	      this.log('undo timeIndex', this.timeIndex);
-	      if (this.timeIndex === 0) {
-	        return false;
-	      }
-	      this.timeIndex--;
-	      this.timeTravel(this.timeIndex);
-	      return this;
-	    }
-	  }, {
-	    key: 'redo',
-	    value: function redo() {
-	      this.log('redo timeIndex', this.timeIndex, this.history.length);
-	      if (this.timeIndex > this.history.length - 1) {
-	        return false;
-	      }
-	      this.timeIndex++;
-	      this.timeTravel(this.timeIndex);
-	      return this;
-	    }
-	  }, {
-	    key: 'addToHistory',
-	    value: function addToHistory(newModel) {
-	      this.log('addToHistory');
-	      this.log('old', this.model);
-	      this.log('new', newModel);
-	      this.model = newModel;
-	      this.log('model was set to', this.model);
-	      this.history.push(newModel);
-	      this.timeIndex++;
-	      this.updateModelRef();
-	      return this;
-	    }
-	  }, {
-	    key: 'shouldLog',
-	    get: function get() {
-	      return this.logging && this.logging.modelManager;
-	    }
-	  }, {
-	    key: 'clazzName',
-	    get: function get() {
-	      return this.constructor.name || 'TimeMachine';
-	    }
-	  }]);
-	  return TimeMachine;
-	}();
-
-	var createDefaultTimeMachine = function createDefaultTimeMachine(opts) {
-	  return new TimeMachine(opts);
-	};
 
 	var ImmutableModelManager = function (_ModelManager) {
 	  inherits(ImmutableModelManager, _ModelManager);
@@ -2841,8 +2857,8 @@ var require$$0$3 = Object.freeze({
 	    var _this = possibleConstructorReturn(this, (ImmutableModelManager.__proto__ || Object.getPrototypeOf(ImmutableModelManager)).call(this, opts));
 
 	    _this.timeOut = opts.timeOut || 800;
-	    var createTimeMachine = opts.createTimeMachine || createDefaultTimeMachine;
-	    _this.timeMachine = createTimeMachine(Object.assign(opts, {
+	    var createTimeMachineFac = opts.createTimeMachine || createTimeMachine;
+	    _this.timeMachine = createTimeMachineFac(Object.assign(opts, {
 	      model: _this.model,
 	      modelRef: _this.modelRef
 	    }));
@@ -3160,6 +3176,12 @@ var require$$0$3 = Object.freeze({
 
 	var Vue2Dragula = plugin;
 
+	var defaults = {
+	  service: defaults$2,
+	  directive: dirDefaults,
+	  commonDefaults: defaults$1
+	};
+
 	if (typeof define === 'function' && define.amd) {
 	  // eslint-disable-line
 	  define([], function () {
@@ -3170,16 +3192,21 @@ var require$$0$3 = Object.freeze({
 	}
 
 	exports.Vue2Dragula = Vue2Dragula;
-	exports.directive = directive;
+	exports.defaults = defaults;
 	exports.DragulaService = DragulaService;
 	exports.DragHandler = DragHandler;
 	exports.ModelManager = ModelManager;
 	exports.ImmutableModelManager = ImmutableModelManager;
 	exports.TimeMachine = TimeMachine;
 	exports.ActionManager = ActionManager;
-	exports.defaults = defaults;
+	exports.VueDragula = VueDragula;
 	exports.Dragula = Dragula;
 	exports.Logger = Logger;
 	exports.ServiceManager = ServiceManager;
+	exports.Updater = Updater;
+	exports.BaseBinder = BaseBinder;
+	exports.Binder = Binder;
+	exports.UnBinder = UnBinder;
+	exports.Creator = Creator;
 
 }));

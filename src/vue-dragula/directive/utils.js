@@ -7,11 +7,11 @@ export function isEmpty (str) {
 export function calcNames (name, vnode, ctx) {
   let drakeName = vnode
     ? vnode.data.attrs.drake // Vue 2
-    : this.params.drake // Vue 1
+    : ctx.params.drake // Vue 1
 
   const serviceName = vnode
     ? vnode.data.attrs.service // Vue 2
-    : this.params.service // Vue 1
+    : ctx.params.service // Vue 1
 
   if (drakeName !== undefined && drakeName.length !== 0) {
     name = drakeName

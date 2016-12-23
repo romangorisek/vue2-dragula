@@ -1,14 +1,14 @@
-import BaseBinder from './base-binder'
+import { BaseBinder } from './base-binder'
 import dragula from 'dragula'
 
-export default class Binder extends BaseBinder {
+export class Binder extends BaseBinder {
   constructor ({serviceManager, name, log}) {
     super({serviceManager, name, log})
     this.execute = this['bind'].bind(this)
   }
 
-  bind ({container, vnode}) {
-    const { service, drake, name, drakeName, serviceName } = super.extractAll({vnode})
+  bind ({container, vnode, ctx}) {
+    const { service, drake, name, drakeName, serviceName } = super.extractAll({vnode, ctx})
 
     if (!vnode) {
       container = this.el // Vue 1

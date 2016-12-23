@@ -1,13 +1,13 @@
-import BaseBinder from './base-binder'
+import { BaseBinder } from './base-binder'
 
-export default class UnBinder extends BaseBinder {
+export class UnBinder extends BaseBinder {
   constructor ({serviceManager, name, log}) {
     super({serviceManager, name, log})
     this.execute = this.unbind.bind(this)
   }
 
-  unbind ({container, binding, vnode}) {
-    const { service, drake, name, drakeName, serviceName } = super.extractAll(vnode)
+  unbind ({container, binding, vnode, ctx}) {
+    const { service, drake, name, drakeName, serviceName } = super.extractAll({vnode, ctx})
 
     this.log({
       service: {

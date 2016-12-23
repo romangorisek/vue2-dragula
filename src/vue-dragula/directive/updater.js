@@ -1,21 +1,22 @@
 import { calcNames } from './utils'
 
-export default class Updater {
+export class Updater {
   constructor ({serviceManager, name, log}) {
     this.log = log.dir
     this.globalName = name
     this.drakeContainers = {}
     this.serviceManager = serviceManager
+    this.execute = this.update.bind(this)
   }
 
-  update ({newValue, container, vnode}) {
+  update ({newValue, container, vnode, ctx}) {
     this.newValue = newValue
     this.container = container
     this.vnode = vnode
 
     this.log('updateDirective')
 
-    const { name, drakeName, serviceName } = calcNames(this.globalName, vnode, this)
+    const { name, drakeName, serviceName } = calcNames(this.globalName, vnode, ctx)
     const service = this.serviceManager.findService(name, vnode, serviceName)
     const drake = service.find(drakeName, vnode)
 
