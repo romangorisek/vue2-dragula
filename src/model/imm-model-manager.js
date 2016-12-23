@@ -83,7 +83,8 @@ export class ImmutableModelManager extends ModelManager {
     }, this.timeOut || 800)
   }
 
-  removeAt (index) {
+  removeAt ({indexes}) {
+    const index = indexes.drag
     this.log('removeAt', {
       model: this.model,
       index
@@ -99,7 +100,10 @@ export class ImmutableModelManager extends ModelManager {
     return newModel
   }
 
-  insertAt (index, dropModel) {
+  insertAt ({indexes, models}) {
+    const index = indexes.drop
+    const dropModel = models.transit
+
     this.log('insertAt', {
       model: this.model,
       index,
@@ -116,11 +120,10 @@ export class ImmutableModelManager extends ModelManager {
     return newModel
   }
 
-  move ({dragIndex, dropIndex}) {
+  move ({indexes}) {
     this.log('move', {
       model: this.model,
-      dragIndex,
-      dropIndex
+      indexes
     })
     this.timeMachine.undo()
     return this

@@ -9,7 +9,6 @@ const { createDragHandler, createModelManager } = defaults
 
 export { defaults } from './defaults'
 export { DragHandler } from './drag-handler'
-export { ModelManager } from './model-manager'
 export { ModelHandler } from './model-handler'
 export { DragulaEventHandler } from './dragula-event-handler'
 

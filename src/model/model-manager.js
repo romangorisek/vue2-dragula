@@ -8,6 +8,7 @@ export class ModelManager {
     this.opts = opts
     this.name = opts.name
     this.drake = opts.drake
+    this.groupProp = opts.groupProp || 'group'
 
     this.modelRef = opts.model || []
     this.model = this.createModel(this.modelRef)
@@ -53,7 +54,8 @@ export class ModelManager {
     return new ModelManager(opts)
   }
 
-  removeAt (index) {
+  removeAt ({indexes}) {
+    const index = indexes.drag
     this.log('removeAt', {
       model: this.model,
       index
@@ -61,7 +63,9 @@ export class ModelManager {
     return this.model.splice(index, 1)
   }
 
-  insertAt (index, dropModel) {
+  insertAt ({indexes, models}) {
+    const index = indexes.drop
+    const dropModel = models.transit
     this.log('insertAt', {
       model: this.model,
       index,
@@ -70,13 +74,12 @@ export class ModelManager {
     return this.model.splice(index, 0, dropModel)
   }
 
-  move ({dragIndex, dropIndex}) {
+  move ({indexes}) {
     this.log('move', {
       model: this.model,
-      dragIndex,
-      dropIndex
+      indexes
     })
-
-    return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0])
+    const insertModel = this.model.splice(indexes.drag, 1)[0]
+    return this.model.splice(indexes.drop, 0, insertModel)
   }
 }

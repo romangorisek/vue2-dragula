@@ -1,5 +1,5 @@
 import { DragHandler } from './drag-handler'
-import { ModelManager } from './model-manager'
+import { ModelManager } from '../model/model-manager'
 import { ModelHandler } from './model-handler'
 
 export const defaults = {

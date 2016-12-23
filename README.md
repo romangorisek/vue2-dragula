@@ -680,6 +680,28 @@ const opts = {
 Vue.use(VueDragula, opts);
 ```
 
+### Grouped models
+
+You can now extend a class with the `GroupOps` mixin to add override methods on a `ModelManager` for working with arrays that have
+items with a "group" attribute. When you drag, an item from one container to another, the item simply changes the group it
+belongs to and the underlying array (model) structure remains unaffected.
+
+For this to work you need to define and pass a custom `createModelManager` method as a plugin or service option.
+
+```js
+import { ModelManager, GroupOps } from 'vue2-dragula'
+
+function createModelManager(opts) {
+  const GroupedModelManager = Object.assign(ModelManager, GroupOps)
+  return new GroupedModelManager(opts)
+}
+this.$dragula.createService({
+  name: 'grouped',
+  // ...
+  createModelManager
+})
+```
+
 ### Exports
 
 Full list of exported classes:
