@@ -1,13 +1,24 @@
 export class BaseHandler {
-  constructor ({dh, ctx, options}) {
+  constructor ({dh, ctx, options = {}}) {
     this.dh = dh
     this.logging = ctx.logging
     this.ctx = ctx
+    this.logger = options.logger || console
     this.options = options
+
+    this.delegateCtx(ctx)
+
     this.configDelegates({
-      props: ['drake', 'dragIndex', 'dropIndex', 'sourceModel', 'eventBus'],
+      props: ['drake', 'dragIndex', 'dropIndex', 'sourceModel', 'targetModel', 'eventBus'],
       methods: ['getModel']
     })
+  }
+
+  delegateCtx (ctx) {
+    this.eventBus = ctx.eventBus
+    this.serviceName = ctx.name
+    this.modelManager = ctx.modelManager
+    this.findModelForContainer = ctx.findModelForContainer.bind(ctx)
   }
 
   configDelegates ({props = [], methods = []}) {
@@ -34,7 +45,7 @@ export class BaseHandler {
 
   log (event, ...args) {
     if (!this.shouldLog) return
-    console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
+    this.logger.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
   createCtx ({el, source, target, models}) {

@@ -22,6 +22,14 @@ export class ModelHandler extends BaseHandler {
     return Object.assign(ctx, this.models, this.indexes)
   }
 
+  dropModel (ctx) {
+    const { containers } = ctx
+    this.log('dropModel', ctx)
+    ctx = Object.assign(ctx, this.indexes)
+
+    containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx)
+  }
+
   removeModel (ctx) {
     ctx = this.context(ctx)
     this.log('removeModel', ctx)
@@ -30,20 +38,19 @@ export class ModelHandler extends BaseHandler {
 
   dropModelSame (ctx) {
     ctx = this.context(ctx)
-
     this.log('dropModelSame', ctx)
     this.sourceModel.move(ctx)
   }
 
   insertModel (ctx) {
     ctx = this.context(ctx)
-
     this.log('insertModel', ctx)
-    ctx.models.target.insertAt(ctx)
+    this.targetModel.insertAt(ctx)
     this.emit('insertAt', ctx)
   }
 
-  notCopy (ctx) {
+  notCopy ({ctx}) {
+    if (!ctx.noCopy) return
     waitForTransition(() => {
       ctx = this.context(ctx)
       this.sourceModel.removeAt(ctx)

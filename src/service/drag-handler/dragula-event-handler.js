@@ -3,8 +3,10 @@ import { BaseHandler } from './base-handler'
 export class DragulaEventHandler extends BaseHandler {
   constructor ({dh, ctx, options}) {
     super({dh, ctx, options})
+    this.domIndexOf = ctx.domIndexOf.bind(ctx)
     this.configDelegates({
-      methods: ['removeModel', 'dropModel', 'domIndexOf']
+      props: ['dragElm'],
+      methods: ['removeModel', 'dropModel']
     })
   }
 

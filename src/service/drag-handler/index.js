@@ -1,3 +1,4 @@
+import { DropModelHandler } from './drop-model/handler'
 import { BaseHandler } from './base-handler'
 import { defaults } from './defaults'
 
@@ -19,13 +20,8 @@ export class DragHandler extends BaseHandler {
     this.sourceModel = null
 
     this.dragElm = null
-    this.serviceName = ctx.name
-    this.modelManager = ctx.modelManager
     this.drake = drake
     this.name = name
-    this.eventBus = ctx.eventBus
-    this.findModelForContainer = ctx.findModelForContainer.bind(ctx)
-    this.domIndexOf = ctx.domIndexOf.bind(ctx)
 
     const args = {dh: this, ctx, options}
     this.modelHandler = createModelHandler(args)
@@ -56,50 +52,13 @@ export class DragHandler extends BaseHandler {
   }
 
   cancelDrop (ctx) {
+    if (this.targetModel) return
     this.log('No targetModel could be found for target:', ctx.containers.target, ctx)
     this.log('in drake:', this.drake)
     this.drake.cancel(true)
   }
 
   dropModelTarget (ctx) {
-    this.log('dropModelTarget', ctx)
-    let notCopy = this.dragElm === ctx.element
-    let targetModel = this.getModel(ctx.containers.target)
-    let dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel()
-
-    ctx = Object.assign(ctx, {
-      models: {
-        target: targetModel,
-        drop: dropElmModel
-      }
-    })
-
-    if (notCopy) {
-      this.notCopy(ctx)
-    }
-
-    if (!targetModel) {
-      return this.cancelDrop(ctx)
-    }
-
-    this.insertModel(ctx)
-  }
-
-  dropModel (ctx) {
-    const { containers } = ctx
-    this.log('dropModel', ctx)
-    ctx = Object.assign(ctx, this.indexes)
-
-    containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx)
-  }
-
-  dropElmModel () {
-    return this.sourceModel.at(this.dragIndex)
-  }
-
-  jsonDropElmModel () {
-    let model = this.sourceModel.at(this.dragIndex)
-    let stringable = model ? model.model || model.stringable : model
-    return JSON.parse(JSON.stringify(stringable || model))
+    new DropModelHandler({dh: this, ctx}).handle()
   }
 }
