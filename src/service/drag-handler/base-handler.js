@@ -1,42 +1,40 @@
-export class BaseHandler {
-  constructor ({dh, ctx, options = {}}) {
+import { Delegator } from './delegator'
+
+export class BaseHandler extends Delegator {
+  constructor ({dh, service, dragModel, options = {}}) {
+    super()
     this.dh = dh
-    this.logging = ctx.logging
-    this.ctx = ctx
+    this.dragModel = dragModel
+    this.logging = service.logging
+    this.service = service
     this.logger = options.logger || console
     this.options = options
 
-    this.delegateCtx(ctx)
+    this.delegateCtx(service)
+    this.delegateMdl(dragModel)
 
     this.configDelegates({
-      props: ['drake', 'dragIndex', 'dropIndex', 'sourceModel', 'targetModel', 'eventBus'],
+      props: ['drake', 'eventBus'],
       methods: ['getModel']
     })
   }
 
-  delegateCtx (ctx) {
-    this.eventBus = ctx.eventBus
-    this.serviceName = ctx.name
-    this.modelManager = ctx.modelManager
-    this.findModelForContainer = ctx.findModelForContainer.bind(ctx)
+  delegateMdl (dragModel) {
+    this.delegateProps('dragModel', ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex'])
+  }
+
+  delegateCtx (service) {
+    this.delegateFor('dh', {props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer']})
   }
 
   configDelegates ({props = [], methods = []}) {
     if (!this.dh) return
-
-    // delegate properties
-    for (let name of props) {
-      this[name] = this.dh[name]
-    }
-
-    // delegate methods (incl getters/setters)
-    for (let name of methods) {
-      this[name] = this.dh[name].bind(this.dh)
-    }
+    this.delegateFor('dh', {methods, props})
   }
 
   get clazzName () {
-    throw new Error('BaseHandler Subclass must override clazzName getter')
+    return this.constructor.name
+    // throw new Error('BaseHandler Subclass must override clazzName getter')
   }
 
   get shouldLog () {

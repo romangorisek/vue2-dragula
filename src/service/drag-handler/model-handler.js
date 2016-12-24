@@ -1,9 +1,10 @@
 import { BaseHandler } from './base-handler'
 import { waitForTransition } from '../utils'
+import { DropModelHandler } from './drop-model/handler'
 
 export class ModelHandler extends BaseHandler {
-  constructor ({dh, ctx, options}) {
-    super({dh, ctx, options})
+  constructor ({dh, service, dragModel, options}) {
+    super({dh, service, dragModel, options})
   }
 
   get clazzName () {
@@ -22,24 +23,18 @@ export class ModelHandler extends BaseHandler {
     return Object.assign(ctx, this.models, this.indexes)
   }
 
-  dropModel (ctx) {
-    const { containers } = ctx
-    this.log('dropModel', ctx)
-    ctx = Object.assign(ctx, this.indexes)
-
-    containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx)
+  notCopy ({ctx}) {
+    if (!ctx.noCopy) return
+    waitForTransition(() => {
+      ctx = this.context(ctx)
+      this.sourceModel.removeAt(ctx)
+    })
   }
 
   removeModel (ctx) {
     ctx = this.context(ctx)
     this.log('removeModel', ctx)
     this.sourceModel.removeAt(ctx)
-  }
-
-  dropModelSame (ctx) {
-    ctx = this.context(ctx)
-    this.log('dropModelSame', ctx)
-    this.sourceModel.move(ctx)
   }
 
   insertModel (ctx) {
@@ -49,11 +44,21 @@ export class ModelHandler extends BaseHandler {
     this.emit('insertAt', ctx)
   }
 
-  notCopy ({ctx}) {
-    if (!ctx.noCopy) return
-    waitForTransition(() => {
-      ctx = this.context(ctx)
-      this.sourceModel.removeAt(ctx)
-    })
+  dropModel (ctx) {
+    const { containers } = ctx
+    this.log('dropModel', ctx)
+    ctx = Object.assign(ctx, this.indexes)
+
+    containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx)
+  }
+
+  dropModelSame (ctx) {
+    ctx = this.context(ctx)
+    this.log('dropModelSame', ctx)
+    this.sourceModel.move(ctx)
+  }
+
+  dropModelTarget (ctx) {
+    new DropModelHandler({dh: this.dh, service: this.service, ctx}).handle()
   }
 }

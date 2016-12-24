@@ -20,6 +20,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "delegates": "^1.0.0",
     "dragula": "3.7.2",
     "lodash.merge": "^4.6.0"
   },

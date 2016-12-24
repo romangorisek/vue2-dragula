@@ -1,15 +1,17 @@
-import { DragHandler } from './drag-handler'
 import { ModelManager } from '../model/model-manager'
-import { ModelHandler } from './drag-handler/model-handler'
+import { DragHandler, ModelHandler, DragulaEventHandler } from './drag-handler'
 
 export const defaults = {
-  createDragHandler ({ctx, name, drake}) {
-    return new DragHandler({ ctx, name, drake })
+  createDragHandler ({service, name, drake}) {
+    return new DragHandler({ service, name, drake })
+  },
+  createModelHandler ({dh, service, options}) {
+    return new ModelHandler({service, dh, options})
+  },
+  createDragulaEventHandler ({dh, service, options}) {
+    return new DragulaEventHandler({service, dh, options})
   },
   createModelManager (opts) {
     return new ModelManager(opts)
-  },
-  createModelHandler ({ctx, name, drake, options}) {
-    return new ModelHandler({ctx, name, drake, options})
   }
 }

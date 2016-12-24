@@ -2,13 +2,16 @@ import { BaseHandler } from '../base-handler'
 import { DropModelBuilder } from './builder'
 
 export class DropModelHandler extends BaseHandler {
-  constructor ({dh, ctx}) {
-    super({dh, ctx})
+  constructor ({dh, service, ctx}) {
+    super({dh, service})
+    this.ctx = ctx
 
     // delegate methods to modelHandler
-    for (let name of ['notCopy', 'insertModel', 'cancelDrop']) {
-      this[name] = this.dh[name].bind(this.dh)
-    }
+    this.delegateFor('dh', {methods: ['notCopy', 'insertModel', 'cancelDrop']})
+  }
+
+  get clazzName () {
+    return this.constructor.name || 'DropModelHandler'
   }
 
   setNoCopy () {

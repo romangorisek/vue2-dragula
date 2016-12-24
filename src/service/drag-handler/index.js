@@ -1,23 +1,25 @@
-import { DropModelHandler } from './drop-model/handler'
 import { BaseHandler } from './base-handler'
+import { DragModel } from './drag-model'
 import { defaults } from '../defaults'
 
 export { DragulaEventHandler } from './dragula-event-handler'
 export { ModelHandler } from './model-handler'
 
-function createModelHandler ({dh, options}) {
+function createModelHandler ({dh, service, options = {}}) {
+  // console.log('createModelHandler', dh, options, defaults)
   const factory = options.createModelHandler || defaults.createModelHandler
-  return factory(dh, options)
+  return factory({dh, service, options})
 }
 
-function createDragulaEventHandler ({dh, options}) {
-  const factory = options.createDragulaEventHandler || defaults.DragulaEventHandler
-  return factory(dh, options)
+function createDragulaEventHandler ({dh, service, options = {}}) {
+  // console.log('createDragulaEventHandler', dh, options, defaults)
+  const factory = options.createDragulaEventHandler || defaults.createDragulaEventHandler
+  return factory({dh, service, options})
 }
 
 export class DragHandler extends BaseHandler {
-  constructor ({ctx, name, drake, options}) {
-    super({ctx, options})
+  constructor ({service, name, drake, options = {}}) {
+    super({service, options})
     this.dragIndex = null
     this.dropIndex = null
     this.sourceModel = null
@@ -26,14 +28,17 @@ export class DragHandler extends BaseHandler {
     this.drake = drake
     this.name = name
 
-    const args = {dh: this, ctx, options}
+    const dragModel = new DragModel()
+
+    const args = {dh: this, service, dragModel, options}
     this.modelHandler = createModelHandler(args)
-    this.dragulaEventHandler = createDragulaEventHandler(args)
 
     // delegate methods to modelHandler
-    for (let name of ['removeModel', 'insertModel', 'notCopy', 'dropModelSame']) {
+    for (let name of ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame']) {
       this[name] = this.modelHandler[name].bind(this.modelHandler)
     }
+
+    this.dragulaEventHandler = createDragulaEventHandler(args)
 
     // delegate methods to dragulaEventHandler
     for (let name of ['remove', 'drag', 'drop']) {
@@ -59,9 +64,5 @@ export class DragHandler extends BaseHandler {
     this.log('No targetModel could be found for target:', ctx.containers.target, ctx)
     this.log('in drake:', this.drake)
     this.drake.cancel(true)
-  }
-
-  dropModelTarget (ctx) {
-    new DropModelHandler({dh: this, ctx}).handle()
   }
 }

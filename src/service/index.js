@@ -122,7 +122,7 @@ export class DragulaService {
       return
     }
 
-    const dragHandler = this.createDragHandler({ ctx: this, name, drake })
+    const dragHandler = this.createDragHandler({ service: this, name, drake })
     this.log('created dragHandler for service', dragHandler)
 
     drake.on('remove', dragHandler.remove.bind(dragHandler))

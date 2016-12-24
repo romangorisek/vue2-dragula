@@ -1257,523 +1257,6 @@ var require$$0$3 = Object.freeze({
 	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
 	};
 
-	var BaseHandler = function () {
-	  function BaseHandler(_ref) {
-	    var dh = _ref.dh,
-	        ctx = _ref.ctx,
-	        _ref$options = _ref.options,
-	        options = _ref$options === undefined ? {} : _ref$options;
-	    classCallCheck(this, BaseHandler);
-
-	    this.dh = dh;
-	    this.logging = ctx.logging;
-	    this.ctx = ctx;
-	    this.logger = options.logger || console;
-	    this.options = options;
-
-	    this.delegateCtx(ctx);
-
-	    this.configDelegates({
-	      props: ['drake', 'dragIndex', 'dropIndex', 'sourceModel', 'targetModel', 'eventBus'],
-	      methods: ['getModel']
-	    });
-	  }
-
-	  createClass(BaseHandler, [{
-	    key: 'delegateCtx',
-	    value: function delegateCtx(ctx) {
-	      this.eventBus = ctx.eventBus;
-	      this.serviceName = ctx.name;
-	      this.modelManager = ctx.modelManager;
-	      this.findModelForContainer = ctx.findModelForContainer.bind(ctx);
-	    }
-	  }, {
-	    key: 'configDelegates',
-	    value: function configDelegates(_ref2) {
-	      var _ref2$props = _ref2.props,
-	          props = _ref2$props === undefined ? [] : _ref2$props,
-	          _ref2$methods = _ref2.methods,
-	          methods = _ref2$methods === undefined ? [] : _ref2$methods;
-
-	      if (!this.dh) return;
-
-	      // delegate properties
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-
-	      try {
-	        for (var _iterator = props[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var name = _step.value;
-
-	          this[name] = this.dh[name];
-	        }
-
-	        // delegate methods (incl getters/setters)
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-
-	      var _iteratorNormalCompletion2 = true;
-	      var _didIteratorError2 = false;
-	      var _iteratorError2 = undefined;
-
-	      try {
-	        for (var _iterator2 = methods[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          var _name = _step2.value;
-
-	          this[_name] = this.dh[_name].bind(this.dh);
-	        }
-	      } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	            _iterator2.return();
-	          }
-	        } finally {
-	          if (_didIteratorError2) {
-	            throw _iteratorError2;
-	          }
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'log',
-	    value: function log(event) {
-	      var _logger;
-
-	      if (!this.shouldLog) return;
-
-	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-	        args[_key - 1] = arguments[_key];
-	      }
-
-	      (_logger = this.logger).log.apply(_logger, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
-	    }
-	  }, {
-	    key: 'createCtx',
-	    value: function createCtx(_ref3) {
-	      var el = _ref3.el,
-	          source = _ref3.source,
-	          target = _ref3.target,
-	          models = _ref3.models;
-
-	      return {
-	        element: el,
-	        containers: {
-	          source: source,
-	          target: target
-	        },
-	        indexes: this.indexes,
-	        models: models
-	      };
-	    }
-	  }, {
-	    key: 'emit',
-	    value: function emit(eventName) {
-	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	      opts.sourceModel = this.sourceModel;
-	      opts.name = this.name;
-	      var serviceEventName = this.serviceName + ':' + eventName;
-
-	      this.log('emit', serviceEventName, eventName, opts);
-	      this.eventBus.$emit(eventName, opts);
-	      this.eventBus.$emit(serviceEventName, opts);
-	    }
-	  }, {
-	    key: 'clazzName',
-	    get: function get() {
-	      throw new Error('BaseHandler Subclass must override clazzName getter');
-	    }
-	  }, {
-	    key: 'shouldLog',
-	    get: function get() {
-	      return this.logging && this.logging.dragHandler;
-	    }
-	  }, {
-	    key: 'indexes',
-	    get: function get() {
-	      return {
-	        indexes: {
-	          source: this.dragIndex,
-	          target: this.dropIndex
-	        }
-	      };
-	    }
-	  }]);
-	  return BaseHandler;
-	}();
-
-	var DropModelBuilder = function () {
-	  function DropModelBuilder(_ref) {
-	    var dh = _ref.dh,
-	        noCopy = _ref.noCopy;
-	    classCallCheck(this, DropModelBuilder);
-
-	    this.dh = dh;
-	    this.noCopy = noCopy;
-	    this.sourceModel = dh.sourceModel;
-	    this.dragIndex = dh.dragIndex;
-	  }
-
-	  createClass(DropModelBuilder, [{
-	    key: "dropElmModel",
-	    value: function dropElmModel() {
-	      return this.sourceModel.at(this.dragIndex);
-	    }
-	  }, {
-	    key: "jsonDropElmModel",
-	    value: function jsonDropElmModel() {
-	      var model = this.dropElmModel();
-	      var stringable = model ? model.model || model.stringable : model;
-	      return JSON.parse(JSON.stringify(stringable || model));
-	    }
-	  }, {
-	    key: "model",
-	    get: function get() {
-	      return this.noCopy ? this.dropElmModel() : this.jsonDropElmModel();
-	    }
-	  }]);
-	  return DropModelBuilder;
-	}();
-
-	var DropModelHandler = function (_BaseHandler) {
-	  inherits(DropModelHandler, _BaseHandler);
-
-	  function DropModelHandler(_ref) {
-	    var dh = _ref.dh,
-	        ctx = _ref.ctx;
-	    classCallCheck(this, DropModelHandler);
-
-	    // delegate methods to modelHandler
-	    var _this = possibleConstructorReturn(this, (DropModelHandler.__proto__ || Object.getPrototypeOf(DropModelHandler)).call(this, { dh: dh, ctx: ctx }));
-
-	    var _arr = ['notCopy', 'insertModel', 'cancelDrop'];
-	    for (var _i = 0; _i < _arr.length; _i++) {
-	      var name = _arr[_i];
-	      _this[name] = _this.dh[name].bind(_this.dh);
-	    }
-	    return _this;
-	  }
-
-	  createClass(DropModelHandler, [{
-	    key: 'setNoCopy',
-	    value: function setNoCopy() {
-	      this.noCopy = this.dragElm === this.ctx.element;
-	    }
-	  }, {
-	    key: 'setTargetModel',
-	    value: function setTargetModel() {
-	      this.targetModel = this.getModel(this.ctx.containers.target);
-	    }
-	  }, {
-	    key: 'setDropModel',
-	    value: function setDropModel() {
-	      this.dropModel = new DropModelBuilder({
-	        dh: this.dh,
-	        noCopy: this.noCopy
-	      }).model;
-	    }
-	  }, {
-	    key: 'models',
-	    value: function models() {
-	      this.setTargetModel();
-	      this.setDropModel();
-	      return {
-	        models: {
-	          target: this.targetModel,
-	          drop: this.dropModel
-	        }
-	      };
-	    }
-	  }, {
-	    key: 'handle',
-	    value: function handle() {
-	      this.log('dropModelTarget', this.ctx);
-	      this.setNoCopy();
-
-	      var ctx = Object.assign(this.ctx, this.models(), { noCopy: this.noCopy });
-
-	      this.notCopy({ ctx: ctx });
-	      this.cancelDrop(ctx);
-	      this.insertModel(ctx);
-	    }
-	  }]);
-	  return DropModelHandler;
-	}(BaseHandler);
-
-	var DragulaEventHandler = function (_BaseHandler) {
-	  inherits(DragulaEventHandler, _BaseHandler);
-
-	  function DragulaEventHandler(_ref) {
-	    var dh = _ref.dh,
-	        ctx = _ref.ctx,
-	        options = _ref.options;
-	    classCallCheck(this, DragulaEventHandler);
-
-	    var _this = possibleConstructorReturn(this, (DragulaEventHandler.__proto__ || Object.getPrototypeOf(DragulaEventHandler)).call(this, { dh: dh, ctx: ctx, options: options }));
-
-	    _this.domIndexOf = ctx.domIndexOf.bind(ctx);
-	    _this.configDelegates({
-	      props: ['dragElm'],
-	      methods: ['removeModel', 'dropModel']
-	    });
-	    return _this;
-	  }
-
-	  createClass(DragulaEventHandler, [{
-	    key: 'remove',
-
-
-	    // :: dragula event handler
-	    // el was being dragged but it got nowhere and it was removed from the DOM
-	    // Its last stable parent was container
-	    // originally came from source
-	    value: function remove(el, container, source) {
-	      this.log('remove', el, container, source);
-	      if (!this.drake.models) {
-	        this.log('Warning: Can NOT remove it. Must have models:', this.drake.models);
-	        return;
-	      }
-
-	      var ctx = this.createCtx({ el: el, source: source });
-	      this.sourceModel = this.getModel(source); // container
-	      this.removeModel(ctx);
-	      this.drake.cancel(true);
-
-	      this.emit('removeModel', ctx);
-	    }
-
-	    // :: dragula event handler
-	    // el was lifted from source
-
-	  }, {
-	    key: 'drag',
-	    value: function drag(el, source) {
-	      this.log('drag', el, source);
-	      this.dragElm = el;
-	      this.dragIndex = this.domIndexOf(el, source);
-	    }
-
-	    // :: dragula event handler
-	    // el was dropped into target before a sibling element, and originally came from source
-
-	  }, {
-	    key: 'drop',
-	    value: function drop(el, target, source, sibling) {
-	      this.log('drop', el, target, source);
-	      if (!this.drake.models || !target) {
-	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
-	        return;
-	      }
-	      this.dropIndex = this.domIndexOf(el, target);
-	      this.sourceModel = this.getModel(source); // container
-
-	      var ctx = this.createCtx({ el: el, target: target, source: source });
-	      this.dropModel(ctx);
-
-	      this.emit('dropModel', ctx);
-	    }
-	  }, {
-	    key: 'clazzName',
-	    get: function get() {
-	      return this.constructor.name || 'DragulaEventHandler';
-	    }
-	  }]);
-	  return DragulaEventHandler;
-	}(BaseHandler);
-
-	var raf = window.requestAnimationFrame;
-	var waitForTransition = raf ? function (fn) {
-	  raf(function () {
-	    raf(fn);
-	  });
-	} : function (fn) {
-	  window.setTimeout(fn, 50);
-	};
-
-	var ModelHandler = function (_BaseHandler) {
-	  inherits(ModelHandler, _BaseHandler);
-
-	  function ModelHandler(_ref) {
-	    var dh = _ref.dh,
-	        ctx = _ref.ctx,
-	        options = _ref.options;
-	    classCallCheck(this, ModelHandler);
-	    return possibleConstructorReturn(this, (ModelHandler.__proto__ || Object.getPrototypeOf(ModelHandler)).call(this, { dh: dh, ctx: ctx, options: options }));
-	  }
-
-	  createClass(ModelHandler, [{
-	    key: 'context',
-	    value: function context(ctx) {
-	      return Object.assign(ctx, this.models, this.indexes);
-	    }
-	  }, {
-	    key: 'dropModel',
-	    value: function dropModel(ctx) {
-	      var _ctx = ctx,
-	          containers = _ctx.containers;
-
-	      this.log('dropModel', ctx);
-	      ctx = Object.assign(ctx, this.indexes);
-
-	      containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx);
-	    }
-	  }, {
-	    key: 'removeModel',
-	    value: function removeModel(ctx) {
-	      ctx = this.context(ctx);
-	      this.log('removeModel', ctx);
-	      this.sourceModel.removeAt(ctx);
-	    }
-	  }, {
-	    key: 'dropModelSame',
-	    value: function dropModelSame(ctx) {
-	      ctx = this.context(ctx);
-	      this.log('dropModelSame', ctx);
-	      this.sourceModel.move(ctx);
-	    }
-	  }, {
-	    key: 'insertModel',
-	    value: function insertModel(ctx) {
-	      ctx = this.context(ctx);
-	      this.log('insertModel', ctx);
-	      this.targetModel.insertAt(ctx);
-	      this.emit('insertAt', ctx);
-	    }
-	  }, {
-	    key: 'notCopy',
-	    value: function notCopy(_ref2) {
-	      var _this2 = this;
-
-	      var ctx = _ref2.ctx;
-
-	      if (!ctx.noCopy) return;
-	      waitForTransition(function () {
-	        ctx = _this2.context(ctx);
-	        _this2.sourceModel.removeAt(ctx);
-	      });
-	    }
-	  }, {
-	    key: 'clazzName',
-	    get: function get() {
-	      return this.constructor.name || 'ModelHandler';
-	    }
-	  }, {
-	    key: 'models',
-	    get: function get() {
-	      return {
-	        models: {
-	          source: this.sourceModel
-	        }
-	      };
-	    }
-	  }]);
-	  return ModelHandler;
-	}(BaseHandler);
-
-	function createModelHandler(_ref) {
-	  var dh = _ref.dh,
-	      options = _ref.options;
-
-	  var factory = options.createModelHandler || defaults$2.createModelHandler;
-	  return factory(dh, options);
-	}
-
-	function createDragulaEventHandler(_ref2) {
-	  var dh = _ref2.dh,
-	      options = _ref2.options;
-
-	  var factory = options.createDragulaEventHandler || defaults$2.DragulaEventHandler;
-	  return factory(dh, options);
-	}
-
-	var DragHandler = function (_BaseHandler) {
-	  inherits(DragHandler, _BaseHandler);
-
-	  function DragHandler(_ref3) {
-	    var ctx = _ref3.ctx,
-	        name = _ref3.name,
-	        drake = _ref3.drake,
-	        options = _ref3.options;
-	    classCallCheck(this, DragHandler);
-
-	    var _this = possibleConstructorReturn(this, (DragHandler.__proto__ || Object.getPrototypeOf(DragHandler)).call(this, { ctx: ctx, options: options }));
-
-	    _this.dragIndex = null;
-	    _this.dropIndex = null;
-	    _this.sourceModel = null;
-
-	    _this.dragElm = null;
-	    _this.drake = drake;
-	    _this.name = name;
-
-	    var args = { dh: _this, ctx: ctx, options: options };
-	    _this.modelHandler = createModelHandler(args);
-	    _this.dragulaEventHandler = createDragulaEventHandler(args);
-
-	    // delegate methods to modelHandler
-	    var _arr = ['removeModel', 'insertModel', 'notCopy', 'dropModelSame'];
-	    for (var _i = 0; _i < _arr.length; _i++) {
-	      var _name = _arr[_i];
-	      _this[_name] = _this.modelHandler[_name].bind(_this.modelHandler);
-	    }
-
-	    // delegate methods to dragulaEventHandler
-	    var _arr2 = ['remove', 'drag', 'drop'];
-	    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-	      var _name2 = _arr2[_i2];
-	      _this[_name2] = _this.dragulaEventHandler[_name2].bind(_this.dragulaEventHandler);
-	    }
-	    return _this;
-	  }
-
-	  createClass(DragHandler, [{
-	    key: 'getModel',
-	    value: function getModel(container) {
-	      return this.modelManager.createFor({
-	        name: this.name,
-	        drake: this.drake,
-	        logging: this.logging,
-	        model: this.findModelForContainer(container, this.drake)
-	      });
-	    }
-	  }, {
-	    key: 'cancelDrop',
-	    value: function cancelDrop(ctx) {
-	      if (this.targetModel) return;
-	      this.log('No targetModel could be found for target:', ctx.containers.target, ctx);
-	      this.log('in drake:', this.drake);
-	      this.drake.cancel(true);
-	    }
-	  }, {
-	    key: 'dropModelTarget',
-	    value: function dropModelTarget(ctx) {
-	      new DropModelHandler({ dh: this, ctx: ctx }).handle();
-	    }
-	  }, {
-	    key: 'clazzName',
-	    get: function get() {
-	      return this.constructor.name || 'DragHandler';
-	    }
-	  }]);
-	  return DragHandler;
-	}(BaseHandler);
-
 	var ModelManager = function () {
 	  function ModelManager() {
 	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -1894,24 +1377,572 @@ var require$$0$3 = Object.freeze({
 	  return ModelManager;
 	}();
 
+	var BaseHandler = function () {
+	  function BaseHandler(_ref) {
+	    var dh = _ref.dh,
+	        service = _ref.service,
+	        _ref$options = _ref.options,
+	        options = _ref$options === undefined ? {} : _ref$options;
+	    classCallCheck(this, BaseHandler);
+
+	    this.dh = dh;
+	    this.logging = service.logging;
+	    this.service = service;
+	    this.logger = options.logger || console;
+	    this.options = options;
+
+	    this.delegateCtx(service);
+
+	    this.configDelegates({
+	      props: ['drake', 'dragIndex', 'dropIndex', 'sourceModel', 'targetModel', 'eventBus'],
+	      methods: ['getModel']
+	    });
+	  }
+
+	  createClass(BaseHandler, [{
+	    key: 'delegateCtx',
+	    value: function delegateCtx(service) {
+	      this.eventBus = service.eventBus;
+	      this.serviceName = service.name;
+	      this.modelManager = service.modelManager;
+	      console.log('findModelForContainer', service.findModelForContainer);
+	      this.findModelForContainer = service.findModelForContainer.bind(service);
+	    }
+	  }, {
+	    key: 'configDelegates',
+	    value: function configDelegates(_ref2) {
+	      var _ref2$props = _ref2.props,
+	          props = _ref2$props === undefined ? [] : _ref2$props,
+	          _ref2$methods = _ref2.methods,
+	          methods = _ref2$methods === undefined ? [] : _ref2$methods;
+
+	      if (!this.dh) return;
+
+	      // delegate properties
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = props[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var name = _step.value;
+
+	          // console.log('prop', name)
+	          this[name] = this.dh[name];
+	        }
+
+	        // delegate methods (incl getters/setters)
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+
+	      try {
+	        for (var _iterator2 = methods[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          var _name = _step2.value;
+
+	          // console.log('meth', name)
+	          this[_name] = this.dh[_name].bind(this.dh);
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'log',
+	    value: function log(event) {
+	      var _logger;
+
+	      if (!this.shouldLog) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_logger = this.logger).log.apply(_logger, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'createCtx',
+	    value: function createCtx(_ref3) {
+	      var el = _ref3.el,
+	          source = _ref3.source,
+	          target = _ref3.target,
+	          models = _ref3.models;
+
+	      return {
+	        element: el,
+	        containers: {
+	          source: source,
+	          target: target
+	        },
+	        indexes: this.indexes,
+	        models: models
+	      };
+	    }
+	  }, {
+	    key: 'emit',
+	    value: function emit(eventName) {
+	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	      opts.sourceModel = this.sourceModel;
+	      opts.name = this.name;
+	      var serviceEventName = this.serviceName + ':' + eventName;
+
+	      this.log('emit', serviceEventName, eventName, opts);
+	      this.eventBus.$emit(eventName, opts);
+	      this.eventBus.$emit(serviceEventName, opts);
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name;
+	      // throw new Error('BaseHandler Subclass must override clazzName getter')
+	    }
+	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.dragHandler;
+	    }
+	  }, {
+	    key: 'indexes',
+	    get: function get() {
+	      return {
+	        indexes: {
+	          source: this.dragIndex,
+	          target: this.dropIndex
+	        }
+	      };
+	    }
+	  }]);
+	  return BaseHandler;
+	}();
+
+	var DragulaEventHandler = function (_BaseHandler) {
+	  inherits(DragulaEventHandler, _BaseHandler);
+
+	  function DragulaEventHandler(_ref) {
+	    var dh = _ref.dh,
+	        service = _ref.service,
+	        options = _ref.options;
+	    classCallCheck(this, DragulaEventHandler);
+
+	    var _this = possibleConstructorReturn(this, (DragulaEventHandler.__proto__ || Object.getPrototypeOf(DragulaEventHandler)).call(this, { dh: dh, service: service, options: options }));
+
+	    _this.domIndexOf = service.domIndexOf.bind(service);
+
+	    console.log('DragulaEventHandler: dh', _this.dh);
+	    _this.configDelegates({
+	      props: ['dragElm', 'drake'],
+	      methods: ['removeModel', 'dropModel']
+	    });
+	    return _this;
+	  }
+
+	  createClass(DragulaEventHandler, [{
+	    key: 'remove',
+
+
+	    // :: dragula event handler
+	    // el was being dragged but it got nowhere and it was removed from the DOM
+	    // Its last stable parent was container
+	    // originally came from source
+	    value: function remove(el, container, source) {
+	      this.log(':: REMOVE', el, container, source);
+	      if (!this.drake.models) {
+	        this.log('Warning: Can NOT remove it. Must have models:', this.drake.models);
+	        return;
+	      }
+
+	      var ctx = this.createCtx({ el: el, source: source });
+	      this.sourceModel = this.getModel(source); // container
+	      this.removeModel(ctx);
+	      this.drake.cancel(true);
+
+	      this.emit('removeModel', ctx);
+	    }
+
+	    // :: dragula event handler
+	    // el was lifted from source
+
+	  }, {
+	    key: 'drag',
+	    value: function drag(el, source) {
+	      this.log(':: DRAG', el, source);
+	      this.dragElm = el;
+	      this.dragIndex = this.domIndexOf(el, source);
+	    }
+
+	    // :: dragula event handler
+	    // el was dropped into target before a sibling element, and originally came from source
+
+	  }, {
+	    key: 'drop',
+	    value: function drop(el, target, source, sibling) {
+	      this.log(':: DROP', el, target, source);
+	      if (!this.drake.models || !target) {
+	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
+	        return;
+	      }
+	      this.dropIndex = this.domIndexOf(el, target);
+	      this.sourceModel = this.getModel(source); // container
+	      console.log('sourceModel', this.sourceModel, this.dh.sourceModel);
+
+	      var ctx = this.createCtx({ el: el, target: target, source: source });
+	      this.dropModel(ctx);
+
+	      this.emit('dropModel', ctx);
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'DragulaEventHandler';
+	    }
+	  }]);
+	  return DragulaEventHandler;
+	}(BaseHandler);
+
+	var raf = window.requestAnimationFrame;
+	var waitForTransition = raf ? function (fn) {
+	  raf(function () {
+	    raf(fn);
+	  });
+	} : function (fn) {
+	  window.setTimeout(fn, 50);
+	};
+
+	var DropModelBuilder = function () {
+	  function DropModelBuilder(_ref) {
+	    var dh = _ref.dh,
+	        noCopy = _ref.noCopy;
+	    classCallCheck(this, DropModelBuilder);
+
+	    console.log('create DropModelBuilder', dh);
+	    this.dh = dh;
+	    this.noCopy = noCopy;
+	    this.sourceModel = dh.sourceModel;
+	    this.dragIndex = dh.dragIndex;
+	  }
+
+	  createClass(DropModelBuilder, [{
+	    key: 'dropElmModel',
+	    value: function dropElmModel() {
+	      return this.sourceModel.at(this.dragIndex);
+	    }
+	  }, {
+	    key: 'jsonDropElmModel',
+	    value: function jsonDropElmModel() {
+	      var model = this.dropElmModel();
+	      var stringable = model ? model.model || model.stringable : model;
+	      return JSON.parse(JSON.stringify(stringable || model));
+	    }
+	  }, {
+	    key: 'model',
+	    get: function get() {
+	      return this.noCopy ? this.dropElmModel() : this.jsonDropElmModel();
+	    }
+	  }]);
+	  return DropModelBuilder;
+	}();
+
+	var DropModelHandler = function (_BaseHandler) {
+	  inherits(DropModelHandler, _BaseHandler);
+
+	  function DropModelHandler(_ref) {
+	    var dh = _ref.dh,
+	        service = _ref.service,
+	        ctx = _ref.ctx;
+	    classCallCheck(this, DropModelHandler);
+
+	    var _this = possibleConstructorReturn(this, (DropModelHandler.__proto__ || Object.getPrototypeOf(DropModelHandler)).call(this, { dh: dh, service: service }));
+
+	    _this.ctx = ctx;
+
+	    // delegate methods to modelHandler
+	    var _arr = ['notCopy', 'insertModel', 'cancelDrop'];
+	    for (var _i = 0; _i < _arr.length; _i++) {
+	      var name = _arr[_i];
+	      // console.log('dh method', name)
+	      _this[name] = _this.dh[name].bind(_this.dh);
+	    }
+	    return _this;
+	  }
+
+	  createClass(DropModelHandler, [{
+	    key: 'setNoCopy',
+	    value: function setNoCopy() {
+	      this.noCopy = this.dragElm === this.ctx.element;
+	    }
+	  }, {
+	    key: 'setTargetModel',
+	    value: function setTargetModel() {
+	      this.targetModel = this.getModel(this.ctx.containers.target);
+	    }
+	  }, {
+	    key: 'setDropModel',
+	    value: function setDropModel() {
+	      this.dropModel = new DropModelBuilder({
+	        dh: this.dh,
+	        noCopy: this.noCopy
+	      }).model;
+	    }
+	  }, {
+	    key: 'models',
+	    value: function models() {
+	      this.setTargetModel();
+	      this.setDropModel();
+	      return {
+	        models: {
+	          target: this.targetModel,
+	          drop: this.dropModel
+	        }
+	      };
+	    }
+	  }, {
+	    key: 'handle',
+	    value: function handle() {
+	      this.log('dropModelTarget', this.ctx);
+	      this.setNoCopy();
+
+	      var ctx = Object.assign(this.ctx, this.models(), { noCopy: this.noCopy });
+
+	      this.notCopy({ ctx: ctx });
+	      this.cancelDrop(ctx);
+	      this.insertModel(ctx);
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'DropModelHandler';
+	    }
+	  }]);
+	  return DropModelHandler;
+	}(BaseHandler);
+
+	var ModelHandler = function (_BaseHandler) {
+	  inherits(ModelHandler, _BaseHandler);
+
+	  function ModelHandler(_ref) {
+	    var dh = _ref.dh,
+	        service = _ref.service,
+	        options = _ref.options;
+	    classCallCheck(this, ModelHandler);
+	    return possibleConstructorReturn(this, (ModelHandler.__proto__ || Object.getPrototypeOf(ModelHandler)).call(this, { dh: dh, service: service, options: options }));
+	  }
+
+	  createClass(ModelHandler, [{
+	    key: 'context',
+	    value: function context(ctx) {
+	      return Object.assign(ctx, this.models, this.indexes);
+	    }
+	  }, {
+	    key: 'notCopy',
+	    value: function notCopy(_ref2) {
+	      var _this2 = this;
+
+	      var ctx = _ref2.ctx;
+
+	      if (!ctx.noCopy) return;
+	      waitForTransition(function () {
+	        ctx = _this2.context(ctx);
+	        _this2.sourceModel.removeAt(ctx);
+	      });
+	    }
+	  }, {
+	    key: 'removeModel',
+	    value: function removeModel(ctx) {
+	      ctx = this.context(ctx);
+	      this.log('removeModel', ctx);
+	      this.sourceModel.removeAt(ctx);
+	    }
+	  }, {
+	    key: 'insertModel',
+	    value: function insertModel(ctx) {
+	      ctx = this.context(ctx);
+	      this.log('insertModel', ctx);
+	      this.targetModel.insertAt(ctx);
+	      this.emit('insertAt', ctx);
+	    }
+	  }, {
+	    key: 'dropModel',
+	    value: function dropModel(ctx) {
+	      var _ctx = ctx,
+	          containers = _ctx.containers;
+
+	      this.log('dropModel', ctx);
+	      ctx = Object.assign(ctx, this.indexes);
+
+	      containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx);
+	    }
+	  }, {
+	    key: 'dropModelSame',
+	    value: function dropModelSame(ctx) {
+	      ctx = this.context(ctx);
+	      this.log('dropModelSame', ctx);
+	      this.sourceModel.move(ctx);
+	    }
+	  }, {
+	    key: 'dropModelTarget',
+	    value: function dropModelTarget(ctx) {
+	      new DropModelHandler({ dh: this.dh, service: this.service, ctx: ctx }).handle();
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'ModelHandler';
+	    }
+	  }, {
+	    key: 'models',
+	    get: function get() {
+	      return {
+	        models: {
+	          source: this.sourceModel
+	        }
+	      };
+	    }
+	  }]);
+	  return ModelHandler;
+	}(BaseHandler);
+
+	function createModelHandler(_ref) {
+	  var dh = _ref.dh,
+	      service = _ref.service,
+	      _ref$options = _ref.options,
+	      options = _ref$options === undefined ? {} : _ref$options;
+
+	  // console.log('createModelHandler', dh, options, defaults)
+	  var factory = options.createModelHandler || defaults$2.createModelHandler;
+	  return factory({ dh: dh, service: service, options: options });
+	}
+
+	function createDragulaEventHandler(_ref2) {
+	  var dh = _ref2.dh,
+	      service = _ref2.service,
+	      _ref2$options = _ref2.options,
+	      options = _ref2$options === undefined ? {} : _ref2$options;
+
+	  // console.log('createDragulaEventHandler', dh, options, defaults)
+	  var factory = options.createDragulaEventHandler || defaults$2.createDragulaEventHandler;
+	  return factory({ dh: dh, service: service, options: options });
+	}
+
+	var DragHandler = function (_BaseHandler) {
+	  inherits(DragHandler, _BaseHandler);
+
+	  function DragHandler(_ref3) {
+	    var service = _ref3.service,
+	        name = _ref3.name,
+	        drake = _ref3.drake,
+	        _ref3$options = _ref3.options,
+	        options = _ref3$options === undefined ? {} : _ref3$options;
+	    classCallCheck(this, DragHandler);
+
+	    var _this = possibleConstructorReturn(this, (DragHandler.__proto__ || Object.getPrototypeOf(DragHandler)).call(this, { service: service, options: options }));
+
+	    _this.dragIndex = null;
+	    _this.dropIndex = null;
+	    _this.sourceModel = null;
+
+	    _this.dragElm = null;
+	    _this.drake = drake;
+	    _this.name = name;
+
+	    var args = { dh: _this, service: service, options: options };
+	    _this.modelHandler = createModelHandler(args);
+
+	    // delegate methods to modelHandler
+	    var _arr = ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame'];
+	    for (var _i = 0; _i < _arr.length; _i++) {
+	      var _name = _arr[_i];
+	      _this[_name] = _this.modelHandler[_name].bind(_this.modelHandler);
+	    }
+
+	    _this.dragulaEventHandler = createDragulaEventHandler(args);
+
+	    // delegate methods to dragulaEventHandler
+	    var _arr2 = ['remove', 'drag', 'drop'];
+	    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+	      var _name2 = _arr2[_i2];
+	      _this[_name2] = _this.dragulaEventHandler[_name2].bind(_this.dragulaEventHandler);
+	    }
+	    return _this;
+	  }
+
+	  createClass(DragHandler, [{
+	    key: 'getModel',
+	    value: function getModel(container) {
+	      return this.modelManager.createFor({
+	        name: this.name,
+	        drake: this.drake,
+	        logging: this.logging,
+	        model: this.findModelForContainer(container, this.drake)
+	      });
+	    }
+	  }, {
+	    key: 'cancelDrop',
+	    value: function cancelDrop(ctx) {
+	      if (this.targetModel) return;
+	      this.log('No targetModel could be found for target:', ctx.containers.target, ctx);
+	      this.log('in drake:', this.drake);
+	      this.drake.cancel(true);
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'DragHandler';
+	    }
+	  }]);
+	  return DragHandler;
+	}(BaseHandler);
+
 	var defaults$2 = {
 	  createDragHandler: function createDragHandler(_ref) {
-	    var ctx = _ref.ctx,
+	    var service = _ref.service,
 	        name = _ref.name,
 	        drake = _ref.drake;
 
-	    return new DragHandler({ ctx: ctx, name: name, drake: drake });
+	    return new DragHandler({ service: service, name: name, drake: drake });
+	  },
+	  createModelHandler: function createModelHandler(_ref2) {
+	    var dh = _ref2.dh,
+	        service = _ref2.service,
+	        options = _ref2.options;
+
+	    return new ModelHandler({ service: service, dh: dh, options: options });
+	  },
+	  createDragulaEventHandler: function createDragulaEventHandler(_ref3) {
+	    var dh = _ref3.dh,
+	        service = _ref3.service,
+	        options = _ref3.options;
+
+	    return new DragulaEventHandler({ service: service, dh: dh, options: options });
 	  },
 	  createModelManager: function createModelManager(opts) {
 	    return new ModelManager(opts);
-	  },
-	  createModelHandler: function createModelHandler(_ref2) {
-	    var ctx = _ref2.ctx,
-	        name = _ref2.name,
-	        drake = _ref2.drake,
-	        options = _ref2.options;
-
-	    return new ModelHandler({ ctx: ctx, name: name, drake: drake, options: options });
 	  }
 	};
 
@@ -2040,7 +2071,7 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 
-	      var dragHandler = this.createDragHandler({ ctx: this, name: name, drake: drake });
+	      var dragHandler = this.createDragHandler({ service: this, name: name, drake: drake });
 	      this.log('created dragHandler for service', dragHandler);
 
 	      drake.on('remove', dragHandler.remove.bind(dragHandler));

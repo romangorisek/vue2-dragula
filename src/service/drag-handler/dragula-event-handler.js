@@ -1,11 +1,13 @@
 import { BaseHandler } from './base-handler'
 
 export class DragulaEventHandler extends BaseHandler {
-  constructor ({dh, ctx, options}) {
-    super({dh, ctx, options})
-    this.domIndexOf = ctx.domIndexOf.bind(ctx)
+  constructor ({dh, service, dragModel, options}) {
+    super({dh, service, dragModel, options})
+    this.domIndexOf = service.domIndexOf.bind(service)
+
+    console.log('DragulaEventHandler: dh', this.dh)
     this.configDelegates({
-      props: ['dragElm'],
+      props: ['dragElm', 'drake'],
       methods: ['removeModel', 'dropModel']
     })
   }
@@ -19,7 +21,7 @@ export class DragulaEventHandler extends BaseHandler {
   // Its last stable parent was container
   // originally came from source
   remove (el, container, source) {
-    this.log('remove', el, container, source)
+    this.log(':: REMOVE', el, container, source)
     if (!this.drake.models) {
       this.log('Warning: Can NOT remove it. Must have models:', this.drake.models)
       return
@@ -36,7 +38,7 @@ export class DragulaEventHandler extends BaseHandler {
   // :: dragula event handler
   // el was lifted from source
   drag (el, source) {
-    this.log('drag', el, source)
+    this.log(':: DRAG', el, source)
     this.dragElm = el
     this.dragIndex = this.domIndexOf(el, source)
   }
@@ -44,13 +46,14 @@ export class DragulaEventHandler extends BaseHandler {
   // :: dragula event handler
   // el was dropped into target before a sibling element, and originally came from source
   drop (el, target, source, sibling) {
-    this.log('drop', el, target, source)
+    this.log(':: DROP', el, target, source)
     if (!this.drake.models || !target) {
       this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target)
       return
     }
     this.dropIndex = this.domIndexOf(el, target)
     this.sourceModel = this.getModel(source) // container
+    console.log('sourceModel', this.sourceModel, this.dh.sourceModel)
 
     const ctx = this.createCtx({el, target, source})
     this.dropModel(ctx)

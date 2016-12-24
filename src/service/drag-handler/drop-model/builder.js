@@ -1,6 +1,7 @@
 
 export class DropModelBuilder {
   constructor ({dh, noCopy}) {
+    console.log('create DropModelBuilder', dh)
     this.dh = dh
     this.noCopy = noCopy
     this.sourceModel = dh.sourceModel
