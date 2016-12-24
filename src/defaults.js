@@ -1,5 +1,5 @@
 import { DragulaService } from './service'
-import { TimeMachine } from './time-machine'
+import { TimeMachine } from './model/time-machine'
 
 export const defaults = {
   createTimeMachine (opts) {

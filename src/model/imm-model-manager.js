@@ -1,5 +1,5 @@
-import { ModelManager } from './service/model-manager'
-import { defaults } from './defaults'
+import { ModelManager } from './model-manager'
+import { defaults } from '../defaults'
 const { createTimeMachine } = defaults
 
 export class ImmutableModelManager extends ModelManager {

@@ -8,9 +8,7 @@ import { defaults } from './defaults'
 const { createDragHandler, createModelManager } = defaults
 
 export { defaults } from './defaults'
-export { DragHandler } from './drag-handler'
-export { ModelHandler } from './model-handler'
-export { DragulaEventHandler } from './dragula-event-handler'
+export { DragHandler, DragulaEventHandler, ModelHandler } from './drag-handler'
 
 export class DragulaService {
   constructor (opts = {}) {

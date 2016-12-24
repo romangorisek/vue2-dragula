@@ -1,5 +1,5 @@
 import { BaseHandler } from './base-handler'
-import { waitForTransition } from './utils'
+import { waitForTransition } from '../utils'
 
 export class ModelHandler extends BaseHandler {
   constructor ({dh, ctx, options}) {

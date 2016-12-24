@@ -1,6 +1,6 @@
 import { DragHandler } from './drag-handler'
 import { ModelManager } from '../model/model-manager'
-import { ModelHandler } from './model-handler'
+import { ModelHandler } from './drag-handler/model-handler'
 
 export const defaults = {
   createDragHandler ({ctx, name, drake}) {

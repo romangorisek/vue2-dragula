@@ -1,6 +1,6 @@
-import { BaseBinder } from './base-binder'
+import { Base } from './base'
 
-export class UnBinder extends BaseBinder {
+export class UnBinder extends Base {
   constructor ({serviceManager, name, log}) {
     super({serviceManager, name, log})
     this.execute = this.unbind.bind(this)

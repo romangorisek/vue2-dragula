@@ -1257,42 +1257,103 @@ var require$$0$3 = Object.freeze({
 	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
 	};
 
-	var raf = window.requestAnimationFrame;
-	var waitForTransition = raf ? function (fn) {
-	  raf(function () {
-	    raf(fn);
-	  });
-	} : function (fn) {
-	  window.setTimeout(fn, 50);
-	};
+	var BaseHandler = function () {
+	  function BaseHandler(_ref) {
+	    var dh = _ref.dh,
+	        ctx = _ref.ctx,
+	        _ref$options = _ref.options,
+	        options = _ref$options === undefined ? {} : _ref$options;
+	    classCallCheck(this, BaseHandler);
 
-	var DragHandler = function () {
-	  function DragHandler(_ref) {
-	    var ctx = _ref.ctx,
-	        name = _ref.name,
-	        drake = _ref.drake,
-	        options = _ref.options;
-	    classCallCheck(this, DragHandler);
-
-	    this.dragElm = null;
-	    this.dragIndex = null;
-	    this.dropIndex = null;
-	    this.sourceModel = null;
+	    this.dh = dh;
 	    this.logging = ctx.logging;
 	    this.ctx = ctx;
-	    this.serviceName = ctx.name;
-	    this.modelManager = ctx.modelManager;
-	    this.drake = drake;
-	    this.name = name;
-	    this.eventBus = ctx.eventBus;
-	    this.findModelForContainer = ctx.findModelForContainer.bind(ctx);
-	    this.domIndexOf = ctx.domIndexOf.bind(ctx);
+	    this.logger = options.logger || console;
+	    this.options = options;
+
+	    this.delegateCtx(ctx);
+
+	    this.configDelegates({
+	      props: ['drake', 'dragIndex', 'dropIndex', 'sourceModel', 'targetModel', 'eventBus'],
+	      methods: ['getModel']
+	    });
 	  }
 
-	  createClass(DragHandler, [{
+	  createClass(BaseHandler, [{
+	    key: 'delegateCtx',
+	    value: function delegateCtx(ctx) {
+	      this.eventBus = ctx.eventBus;
+	      this.serviceName = ctx.name;
+	      this.modelManager = ctx.modelManager;
+	      this.findModelForContainer = ctx.findModelForContainer.bind(ctx);
+	    }
+	  }, {
+	    key: 'configDelegates',
+	    value: function configDelegates(_ref2) {
+	      var _ref2$props = _ref2.props,
+	          props = _ref2$props === undefined ? [] : _ref2$props,
+	          _ref2$methods = _ref2.methods,
+	          methods = _ref2$methods === undefined ? [] : _ref2$methods;
+
+	      if (!this.dh) return;
+
+	      // delegate properties
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = props[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var name = _step.value;
+
+	          this[name] = this.dh[name];
+	        }
+
+	        // delegate methods (incl getters/setters)
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+
+	      try {
+	        for (var _iterator2 = methods[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          var _name = _step2.value;
+
+	          this[_name] = this.dh[_name].bind(this.dh);
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
+	          }
+	        }
+	      }
+	    }
+	  }, {
 	    key: 'log',
 	    value: function log(event) {
-	      var _console;
+	      var _logger;
 
 	      if (!this.shouldLog) return;
 
@@ -1300,104 +1361,25 @@ var require$$0$3 = Object.freeze({
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
+	      (_logger = this.logger).log.apply(_logger, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
 	    }
 	  }, {
-	    key: 'removeModel',
-	    value: function removeModel() {
-	      this.log('removeModel', {
-	        sourceModel: this.sourceModel,
-	        dragIndex: this.dragIndex
-	      });
-	      this.sourceModel.removeAt(this.dragIndex);
-	    }
-	  }, {
-	    key: 'dropModelSame',
-	    value: function dropModelSame() {
-	      this.log('dropModelSame', {
-	        sourceModel: this.sourceModel,
-	        dragIndex: this.dragIndex,
-	        dropIndex: this.dropIndex
-	      });
+	    key: 'createCtx',
+	    value: function createCtx(_ref3) {
+	      var el = _ref3.el,
+	          source = _ref3.source,
+	          target = _ref3.target,
+	          models = _ref3.models;
 
-	      this.sourceModel.move({
-	        dropIndex: this.dropIndex,
-	        dragIndex: this.dragIndex
-	      });
-	    }
-	  }, {
-	    key: 'insertModel',
-	    value: function insertModel(targetModel, dropElmModel, elements) {
-	      this.log('insertModel', {
-	        targetModel: targetModel,
-	        dropIndex: this.dropIndex,
-	        dropElmModel: dropElmModel,
-	        elements: elements
-	      });
-
-	      targetModel.insertAt(this.dropIndex, dropElmModel);
-	      this.emit('insertAt', {
-	        elements: elements,
-	        targetModel: targetModel,
-	        transitModel: dropElmModel,
-	        dragIndex: this.dragIndex,
-	        dropIndex: this.dropIndex,
-	        models: {
-	          source: this.sourceModel,
-	          target: targetModel,
-	          transit: dropElmModel
+	      return {
+	        element: el,
+	        containers: {
+	          source: source,
+	          target: target
 	        },
-	        indexes: {
-	          source: this.dragIndex,
-	          target: this.dropIndex
-	        }
-	      });
-	    }
-	  }, {
-	    key: 'notCopy',
-	    value: function notCopy() {
-	      var _this = this;
-
-	      waitForTransition(function () {
-	        _this.sourceModel.removeAt(_this.dragIndex);
-	      });
-	    }
-	  }, {
-	    key: 'cancelDrop',
-	    value: function cancelDrop(target) {
-	      this.log('No targetModel could be found for target:', target);
-	      this.log('in drake:', this.drake);
-	      this.drake.cancel(true);
-	    }
-	  }, {
-	    key: 'dropModelTarget',
-	    value: function dropModelTarget(dropElm, target, source) {
-	      this.log('dropModelTarget', dropElm, target, source);
-	      var notCopy = this.dragElm === dropElm;
-	      var targetModel = this.getModel(target);
-	      var dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel();
-
-	      if (notCopy) {
-	        this.notCopy();
-	      }
-
-	      if (!targetModel) {
-	        return this.cancelDrop(target);
-	      }
-
-	      var elements = {
-	        drop: dropElm,
-	        target: target,
-	        source: source
+	        indexes: this.indexes,
+	        models: models
 	      };
-
-	      this.insertModel(targetModel, dropElmModel, elements);
-	    }
-	  }, {
-	    key: 'dropModel',
-	    value: function dropModel(dropElm, target, source) {
-	      this.log('dropModel', dropElm, target, source);
-	      target === source ? this.dropModelSame() : this.dropModelTarget(dropElm, target, source);
 	    }
 	  }, {
 	    key: 'emit',
@@ -1413,17 +1395,154 @@ var require$$0$3 = Object.freeze({
 	      this.eventBus.$emit(serviceEventName, opts);
 	    }
 	  }, {
-	    key: 'getModel',
-	    value: function getModel(location) {
-	      return this.modelManager.createFor({
-	        name: this.name,
-	        drake: this.drake,
-	        logging: this.logging,
-	        model: this.findModelForContainer(location, this.drake)
-	      });
+	    key: 'clazzName',
+	    get: function get() {
+	      throw new Error('BaseHandler Subclass must override clazzName getter');
 	    }
 	  }, {
+	    key: 'shouldLog',
+	    get: function get() {
+	      return this.logging && this.logging.dragHandler;
+	    }
+	  }, {
+	    key: 'indexes',
+	    get: function get() {
+	      return {
+	        indexes: {
+	          source: this.dragIndex,
+	          target: this.dropIndex
+	        }
+	      };
+	    }
+	  }]);
+	  return BaseHandler;
+	}();
+
+	var DropModelBuilder = function () {
+	  function DropModelBuilder(_ref) {
+	    var dh = _ref.dh,
+	        noCopy = _ref.noCopy;
+	    classCallCheck(this, DropModelBuilder);
+
+	    this.dh = dh;
+	    this.noCopy = noCopy;
+	    this.sourceModel = dh.sourceModel;
+	    this.dragIndex = dh.dragIndex;
+	  }
+
+	  createClass(DropModelBuilder, [{
+	    key: "dropElmModel",
+	    value: function dropElmModel() {
+	      return this.sourceModel.at(this.dragIndex);
+	    }
+	  }, {
+	    key: "jsonDropElmModel",
+	    value: function jsonDropElmModel() {
+	      var model = this.dropElmModel();
+	      var stringable = model ? model.model || model.stringable : model;
+	      return JSON.parse(JSON.stringify(stringable || model));
+	    }
+	  }, {
+	    key: "model",
+	    get: function get() {
+	      return this.noCopy ? this.dropElmModel() : this.jsonDropElmModel();
+	    }
+	  }]);
+	  return DropModelBuilder;
+	}();
+
+	var DropModelHandler = function (_BaseHandler) {
+	  inherits(DropModelHandler, _BaseHandler);
+
+	  function DropModelHandler(_ref) {
+	    var dh = _ref.dh,
+	        ctx = _ref.ctx;
+	    classCallCheck(this, DropModelHandler);
+
+	    // delegate methods to modelHandler
+	    var _this = possibleConstructorReturn(this, (DropModelHandler.__proto__ || Object.getPrototypeOf(DropModelHandler)).call(this, { dh: dh, ctx: ctx }));
+
+	    var _arr = ['notCopy', 'insertModel', 'cancelDrop'];
+	    for (var _i = 0; _i < _arr.length; _i++) {
+	      var name = _arr[_i];
+	      _this[name] = _this.dh[name].bind(_this.dh);
+	    }
+	    return _this;
+	  }
+
+	  createClass(DropModelHandler, [{
+	    key: 'setNoCopy',
+	    value: function setNoCopy() {
+	      this.noCopy = this.dragElm === this.ctx.element;
+	    }
+	  }, {
+	    key: 'setTargetModel',
+	    value: function setTargetModel() {
+	      this.targetModel = this.getModel(this.ctx.containers.target);
+	    }
+	  }, {
+	    key: 'setDropModel',
+	    value: function setDropModel() {
+	      this.dropModel = new DropModelBuilder({
+	        dh: this.dh,
+	        noCopy: this.noCopy
+	      }).model;
+	    }
+	  }, {
+	    key: 'models',
+	    value: function models() {
+	      this.setTargetModel();
+	      this.setDropModel();
+	      return {
+	        models: {
+	          target: this.targetModel,
+	          drop: this.dropModel
+	        }
+	      };
+	    }
+	  }, {
+	    key: 'handle',
+	    value: function handle() {
+	      this.log('dropModelTarget', this.ctx);
+	      this.setNoCopy();
+
+	      var ctx = Object.assign(this.ctx, this.models(), { noCopy: this.noCopy });
+
+	      this.notCopy({ ctx: ctx });
+	      this.cancelDrop(ctx);
+	      this.insertModel(ctx);
+	    }
+	  }]);
+	  return DropModelHandler;
+	}(BaseHandler);
+
+	var DragulaEventHandler = function (_BaseHandler) {
+	  inherits(DragulaEventHandler, _BaseHandler);
+
+	  function DragulaEventHandler(_ref) {
+	    var dh = _ref.dh,
+	        ctx = _ref.ctx,
+	        options = _ref.options;
+	    classCallCheck(this, DragulaEventHandler);
+
+	    var _this = possibleConstructorReturn(this, (DragulaEventHandler.__proto__ || Object.getPrototypeOf(DragulaEventHandler)).call(this, { dh: dh, ctx: ctx, options: options }));
+
+	    _this.domIndexOf = ctx.domIndexOf.bind(ctx);
+	    _this.configDelegates({
+	      props: ['dragElm'],
+	      methods: ['removeModel', 'dropModel']
+	    });
+	    return _this;
+	  }
+
+	  createClass(DragulaEventHandler, [{
 	    key: 'remove',
+
+
+	    // :: dragula event handler
+	    // el was being dragged but it got nowhere and it was removed from the DOM
+	    // Its last stable parent was container
+	    // originally came from source
 	    value: function remove(el, container, source) {
 	      this.log('remove', el, container, source);
 	      if (!this.drake.models) {
@@ -1431,16 +1550,17 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 
-	      this.sourceModel = this.getModel(source);
-	      this.removeModel();
+	      var ctx = this.createCtx({ el: el, source: source });
+	      this.sourceModel = this.getModel(source); // container
+	      this.removeModel(ctx);
 	      this.drake.cancel(true);
 
-	      this.emit('removeModel', {
-	        el: el,
-	        source: source,
-	        dragIndex: this.dragIndex
-	      });
+	      this.emit('removeModel', ctx);
 	    }
+
+	    // :: dragula event handler
+	    // el was lifted from source
+
 	  }, {
 	    key: 'drag',
 	    value: function drag(el, source) {
@@ -1448,51 +1568,211 @@ var require$$0$3 = Object.freeze({
 	      this.dragElm = el;
 	      this.dragIndex = this.domIndexOf(el, source);
 	    }
+
+	    // :: dragula event handler
+	    // el was dropped into target before a sibling element, and originally came from source
+
 	  }, {
 	    key: 'drop',
-	    value: function drop(dropEl, target, source) {
-	      this.log('drop', dropEl, target, source);
+	    value: function drop(el, target, source, sibling) {
+	      this.log('drop', el, target, source);
 	      if (!this.drake.models || !target) {
 	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
 	        return;
 	      }
-	      this.dropIndex = this.domIndexOf(dropEl, target);
-	      this.sourceModel = this.getModel(source);
-	      this.dropModel(dropEl, target, source);
+	      this.dropIndex = this.domIndexOf(el, target);
+	      this.sourceModel = this.getModel(source); // container
 
-	      this.emit('dropModel', {
-	        target: target,
-	        source: source,
-	        el: dropEl,
-	        dragIndex: this.dragIndex,
-	        dropIndex: this.dropIndex
+	      var ctx = this.createCtx({ el: el, target: target, source: source });
+	      this.dropModel(ctx);
+
+	      this.emit('dropModel', ctx);
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'DragulaEventHandler';
+	    }
+	  }]);
+	  return DragulaEventHandler;
+	}(BaseHandler);
+
+	var raf = window.requestAnimationFrame;
+	var waitForTransition = raf ? function (fn) {
+	  raf(function () {
+	    raf(fn);
+	  });
+	} : function (fn) {
+	  window.setTimeout(fn, 50);
+	};
+
+	var ModelHandler = function (_BaseHandler) {
+	  inherits(ModelHandler, _BaseHandler);
+
+	  function ModelHandler(_ref) {
+	    var dh = _ref.dh,
+	        ctx = _ref.ctx,
+	        options = _ref.options;
+	    classCallCheck(this, ModelHandler);
+	    return possibleConstructorReturn(this, (ModelHandler.__proto__ || Object.getPrototypeOf(ModelHandler)).call(this, { dh: dh, ctx: ctx, options: options }));
+	  }
+
+	  createClass(ModelHandler, [{
+	    key: 'context',
+	    value: function context(ctx) {
+	      return Object.assign(ctx, this.models, this.indexes);
+	    }
+	  }, {
+	    key: 'dropModel',
+	    value: function dropModel(ctx) {
+	      var _ctx = ctx,
+	          containers = _ctx.containers;
+
+	      this.log('dropModel', ctx);
+	      ctx = Object.assign(ctx, this.indexes);
+
+	      containers.target === containers.source ? this.dropModelSame(ctx) : this.dropModelTarget(ctx);
+	    }
+	  }, {
+	    key: 'removeModel',
+	    value: function removeModel(ctx) {
+	      ctx = this.context(ctx);
+	      this.log('removeModel', ctx);
+	      this.sourceModel.removeAt(ctx);
+	    }
+	  }, {
+	    key: 'dropModelSame',
+	    value: function dropModelSame(ctx) {
+	      ctx = this.context(ctx);
+	      this.log('dropModelSame', ctx);
+	      this.sourceModel.move(ctx);
+	    }
+	  }, {
+	    key: 'insertModel',
+	    value: function insertModel(ctx) {
+	      ctx = this.context(ctx);
+	      this.log('insertModel', ctx);
+	      this.targetModel.insertAt(ctx);
+	      this.emit('insertAt', ctx);
+	    }
+	  }, {
+	    key: 'notCopy',
+	    value: function notCopy(_ref2) {
+	      var _this2 = this;
+
+	      var ctx = _ref2.ctx;
+
+	      if (!ctx.noCopy) return;
+	      waitForTransition(function () {
+	        ctx = _this2.context(ctx);
+	        _this2.sourceModel.removeAt(ctx);
 	      });
 	    }
 	  }, {
-	    key: 'dropElmModel',
-	    value: function dropElmModel() {
-	      return this.sourceModel.at(this.dragIndex);
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'ModelHandler';
 	    }
 	  }, {
-	    key: 'jsonDropElmModel',
-	    value: function jsonDropElmModel() {
-	      var model = this.sourceModel.at(this.dragIndex);
-	      var stringable = model ? model.model || model.stringable : model;
-	      return JSON.parse(JSON.stringify(stringable || model));
+	    key: 'models',
+	    get: function get() {
+	      return {
+	        models: {
+	          source: this.sourceModel
+	        }
+	      };
+	    }
+	  }]);
+	  return ModelHandler;
+	}(BaseHandler);
+
+	function createModelHandler(_ref) {
+	  var dh = _ref.dh,
+	      options = _ref.options;
+
+	  var factory = options.createModelHandler || defaults$2.createModelHandler;
+	  return factory(dh, options);
+	}
+
+	function createDragulaEventHandler(_ref2) {
+	  var dh = _ref2.dh,
+	      options = _ref2.options;
+
+	  var factory = options.createDragulaEventHandler || defaults$2.DragulaEventHandler;
+	  return factory(dh, options);
+	}
+
+	var DragHandler = function (_BaseHandler) {
+	  inherits(DragHandler, _BaseHandler);
+
+	  function DragHandler(_ref3) {
+	    var ctx = _ref3.ctx,
+	        name = _ref3.name,
+	        drake = _ref3.drake,
+	        options = _ref3.options;
+	    classCallCheck(this, DragHandler);
+
+	    var _this = possibleConstructorReturn(this, (DragHandler.__proto__ || Object.getPrototypeOf(DragHandler)).call(this, { ctx: ctx, options: options }));
+
+	    _this.dragIndex = null;
+	    _this.dropIndex = null;
+	    _this.sourceModel = null;
+
+	    _this.dragElm = null;
+	    _this.drake = drake;
+	    _this.name = name;
+
+	    var args = { dh: _this, ctx: ctx, options: options };
+	    _this.modelHandler = createModelHandler(args);
+	    _this.dragulaEventHandler = createDragulaEventHandler(args);
+
+	    // delegate methods to modelHandler
+	    var _arr = ['removeModel', 'insertModel', 'notCopy', 'dropModelSame'];
+	    for (var _i = 0; _i < _arr.length; _i++) {
+	      var _name = _arr[_i];
+	      _this[_name] = _this.modelHandler[_name].bind(_this.modelHandler);
+	    }
+
+	    // delegate methods to dragulaEventHandler
+	    var _arr2 = ['remove', 'drag', 'drop'];
+	    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+	      var _name2 = _arr2[_i2];
+	      _this[_name2] = _this.dragulaEventHandler[_name2].bind(_this.dragulaEventHandler);
+	    }
+	    return _this;
+	  }
+
+	  createClass(DragHandler, [{
+	    key: 'getModel',
+	    value: function getModel(container) {
+	      return this.modelManager.createFor({
+	        name: this.name,
+	        drake: this.drake,
+	        logging: this.logging,
+	        model: this.findModelForContainer(container, this.drake)
+	      });
+	    }
+	  }, {
+	    key: 'cancelDrop',
+	    value: function cancelDrop(ctx) {
+	      if (this.targetModel) return;
+	      this.log('No targetModel could be found for target:', ctx.containers.target, ctx);
+	      this.log('in drake:', this.drake);
+	      this.drake.cancel(true);
+	    }
+	  }, {
+	    key: 'dropModelTarget',
+	    value: function dropModelTarget(ctx) {
+	      new DropModelHandler({ dh: this, ctx: ctx }).handle();
 	    }
 	  }, {
 	    key: 'clazzName',
 	    get: function get() {
 	      return this.constructor.name || 'DragHandler';
 	    }
-	  }, {
-	    key: 'shouldLog',
-	    get: function get() {
-	      return this.logging && this.logging.dragHandler;
-	    }
 	  }]);
 	  return DragHandler;
-	}();
+	}(BaseHandler);
 
 	var ModelManager = function () {
 	  function ModelManager() {
@@ -1507,6 +1787,7 @@ var require$$0$3 = Object.freeze({
 	    this.opts = opts;
 	    this.name = opts.name;
 	    this.drake = opts.drake;
+	    this.groupProp = opts.groupProp || 'group';
 
 	    this.modelRef = opts.model || [];
 	    this.model = this.createModel(this.modelRef);
@@ -1562,7 +1843,10 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'removeAt',
-	    value: function removeAt(index) {
+	    value: function removeAt(_ref) {
+	      var indexes = _ref.indexes;
+
+	      var index = indexes.drag;
 	      this.log('removeAt', {
 	        model: this.model,
 	        index: index
@@ -1571,7 +1855,12 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'insertAt',
-	    value: function insertAt(index, dropModel) {
+	    value: function insertAt(_ref2) {
+	      var indexes = _ref2.indexes,
+	          models = _ref2.models;
+
+	      var index = indexes.drop;
+	      var dropModel = models.transit;
 	      this.log('insertAt', {
 	        model: this.model,
 	        index: index,
@@ -1581,17 +1870,15 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'move',
-	    value: function move(_ref) {
-	      var dragIndex = _ref.dragIndex,
-	          dropIndex = _ref.dropIndex;
+	    value: function move(_ref3) {
+	      var indexes = _ref3.indexes;
 
 	      this.log('move', {
 	        model: this.model,
-	        dragIndex: dragIndex,
-	        dropIndex: dropIndex
+	        indexes: indexes
 	      });
-
-	      return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
+	      var insertModel = this.model.splice(indexes.drag, 1)[0];
+	      return this.model.splice(indexes.drop, 0, insertModel);
 	    }
 	  }, {
 	    key: 'clazzName',
@@ -1617,6 +1904,14 @@ var require$$0$3 = Object.freeze({
 	  },
 	  createModelManager: function createModelManager(opts) {
 	    return new ModelManager(opts);
+	  },
+	  createModelHandler: function createModelHandler(_ref2) {
+	    var ctx = _ref2.ctx,
+	        name = _ref2.name,
+	        drake = _ref2.drake,
+	        options = _ref2.options;
+
+	    return new ModelHandler({ ctx: ctx, name: name, drake: drake, options: options });
 	  }
 	};
 
@@ -1882,13 +2177,13 @@ var require$$0$3 = Object.freeze({
 	    key: 'findModelForContainer',
 	    value: function findModelForContainer(container, drake) {
 	      this.log('findModelForContainer', container, drake);
-	      return (this.findModelContainerByContainer(container, drake) || {}).model;
+	      return (this.findModelContainer(container, drake) || {}).model;
 	    }
 	  }, {
-	    key: 'findModelContainerByContainer',
-	    value: function findModelContainerByContainer(container, drake) {
+	    key: 'findModelContainer',
+	    value: function findModelContainer(container, drake) {
 	      if (!drake.models) {
-	        this.log('findModelContainerByContainer', 'warning: no models found');
+	        this.log('findModelContainer', 'warning: no models found');
 	        return;
 	      }
 	      var found = drake.models.find(function (model) {
@@ -2372,18 +2667,58 @@ var require$$0$3 = Object.freeze({
 	  return { name: name, drakeName: drakeName, serviceName: serviceName };
 	}
 
-	var Updater = function () {
+	var Base = function () {
+	  function Base(_ref) {
+	    var serviceManager = _ref.serviceManager,
+	        name = _ref.name,
+	        log = _ref.log;
+	    classCallCheck(this, Base);
+
+	    this.serviceManager = serviceManager;
+	    this.globalName = name;
+	    this.log = log.dir;
+	  }
+
+	  createClass(Base, [{
+	    key: 'extractAll',
+	    value: function extractAll(_ref2) {
+	      var container = _ref2.container,
+	          vnode = _ref2.vnode,
+	          ctx = _ref2.ctx;
+
+	      var _calcNames = calcNames(this.globalName, vnode, ctx),
+	          name = _calcNames.name,
+	          drakeName = _calcNames.drakeName,
+	          serviceName = _calcNames.serviceName;
+
+	      var service = this.serviceManager.findService(name, vnode, serviceName);
+	      var drake = service.find(drakeName, vnode);
+
+	      if (!service) {
+	        this.log('no service found', name, drakeName);
+	        return;
+	      }
+
+	      return { drake: drake, service: service, name: name, drakeName: drakeName, serviceName: serviceName };
+	    }
+	  }]);
+	  return Base;
+	}();
+
+	var Updater = function (_Base) {
+	  inherits(Updater, _Base);
+
 	  function Updater(_ref) {
 	    var serviceManager = _ref.serviceManager,
 	        name = _ref.name,
 	        log = _ref.log;
 	    classCallCheck(this, Updater);
 
-	    this.log = log.dir;
-	    this.globalName = name;
-	    this.drakeContainers = {};
-	    this.serviceManager = serviceManager;
-	    this.execute = this.update.bind(this);
+	    var _this = possibleConstructorReturn(this, (Updater.__proto__ || Object.getPrototypeOf(Updater)).call(this, { serviceManager: serviceManager, name: name, log: log }));
+
+	    _this.drakeContainers = {};
+	    _this.execute = _this.update.bind(_this);
+	    return _this;
 	  }
 
 	  createClass(Updater, [{
@@ -2394,27 +2729,16 @@ var require$$0$3 = Object.freeze({
 	          vnode = _ref2.vnode,
 	          ctx = _ref2.ctx;
 
-	      this.newValue = newValue;
-	      this.container = container;
-	      this.vnode = vnode;
-
 	      this.log('updateDirective');
 
-	      var _calcNames = calcNames(this.globalName, vnode, ctx),
-	          name = _calcNames.name,
-	          drakeName = _calcNames.drakeName,
-	          serviceName = _calcNames.serviceName;
-
-	      var service = this.serviceManager.findService(name, vnode, serviceName);
-	      var drake = service.find(drakeName, vnode);
+	      var _babelHelpers$get$cal = get(Updater.prototype.__proto__ || Object.getPrototypeOf(Updater.prototype), 'extractAll', this).call(this, { vnode: vnode, ctx: ctx }),
+	          service = _babelHelpers$get$cal.service,
+	          drake = _babelHelpers$get$cal.drake,
+	          drakeName = _babelHelpers$get$cal.drakeName,
+	          serviceName = _babelHelpers$get$cal.serviceName;
 
 	      this.drakeContainers[drakeName] = this.drakeContainers[drakeName] || [];
-	      var dc = this.drakeContainers[drakeName];
-
-	      if (!service) {
-	        this.log('no service found', name, drakeName);
-	        return;
-	      }
+	      var drakeContainer = this.drakeContainers[drakeName];
 
 	      if (!drake.models) {
 	        drake.models = [];
@@ -2424,9 +2748,9 @@ var require$$0$3 = Object.freeze({
 	        container = this.el; // Vue 1
 	      }
 
-	      var modelContainer = service.findModelContainerByContainer(container, drake);
+	      var modelContainer = service.findModelContainer(container, drake);
 
-	      dc.push(container);
+	      drakeContainer.push(container);
 
 	      this.log('DATA', {
 	        service: {
@@ -2454,43 +2778,10 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }]);
 	  return Updater;
-	}();
+	}(Base);
 
-	var BaseBinder = function () {
-	  function BaseBinder(_ref) {
-	    var serviceManager = _ref.serviceManager,
-	        name = _ref.name,
-	        log = _ref.log;
-	    classCallCheck(this, BaseBinder);
-
-	    this.serviceManager = serviceManager;
-	    this.globalName = name;
-	    this.log = log.dir;
-	  }
-
-	  createClass(BaseBinder, [{
-	    key: 'extractAll',
-	    value: function extractAll(_ref2) {
-	      var container = _ref2.container,
-	          vnode = _ref2.vnode,
-	          ctx = _ref2.ctx;
-
-	      var _calcNames = calcNames(this.globalName, vnode, ctx),
-	          name = _calcNames.name,
-	          drakeName = _calcNames.drakeName,
-	          serviceName = _calcNames.serviceName;
-
-	      var service = this.serviceManager.findService(name, vnode, serviceName);
-	      var drake = service.find(drakeName, vnode);
-
-	      return { drake: drake, service: service, name: name, drakeName: drakeName, serviceName: serviceName };
-	    }
-	  }]);
-	  return BaseBinder;
-	}();
-
-	var Binder = function (_BaseBinder) {
-	  inherits(Binder, _BaseBinder);
+	var Binder = function (_Base) {
+	  inherits(Binder, _Base);
 
 	  function Binder(_ref) {
 	    var serviceManager = _ref.serviceManager,
@@ -2547,10 +2838,10 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }]);
 	  return Binder;
-	}(BaseBinder);
+	}(Base);
 
-	var UnBinder = function (_BaseBinder) {
-	  inherits(UnBinder, _BaseBinder);
+	var UnBinder = function (_Base) {
+	  inherits(UnBinder, _Base);
 
 	  function UnBinder(_ref) {
 	    var serviceManager = _ref.serviceManager,
@@ -2609,7 +2900,7 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }]);
 	  return UnBinder;
-	}(BaseBinder);
+	}(Base);
 
 	function capitalize(string) {
 	  return string.charAt(0).toUpperCase() + string.slice(1);
@@ -2844,173 +3135,6 @@ var require$$0$3 = Object.freeze({
 	  creator.execute();
 	}
 
-	var createTimeMachine = defaults$1.createTimeMachine;
-
-
-	var ImmutableModelManager = function (_ModelManager) {
-	  inherits(ImmutableModelManager, _ModelManager);
-
-	  function ImmutableModelManager() {
-	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	    classCallCheck(this, ImmutableModelManager);
-
-	    var _this = possibleConstructorReturn(this, (ImmutableModelManager.__proto__ || Object.getPrototypeOf(ImmutableModelManager)).call(this, opts));
-
-	    _this.timeOut = opts.timeOut || 800;
-	    var createTimeMachineFac = opts.createTimeMachine || createTimeMachine;
-	    _this.timeMachine = createTimeMachineFac(Object.assign(opts, {
-	      model: _this.model,
-	      modelRef: _this.modelRef
-	    }));
-	    return _this;
-	  }
-
-	  createClass(ImmutableModelManager, [{
-	    key: 'timeTravel',
-	    value: function timeTravel(index) {
-	      return this.timeMachine.timeTravel(index);
-	    }
-	  }, {
-	    key: 'undo',
-	    value: function undo() {
-	      // this.log('UNDO', this.timeMachine)
-	      this.timeMachine.undo();
-	      return this;
-	    }
-	  }, {
-	    key: 'redo',
-	    value: function redo() {
-	      // this.log('REDO', this.timeMachine)
-	      this.timeMachine.redo();
-	      return this;
-	    }
-	  }, {
-	    key: 'addToHistory',
-	    value: function addToHistory(model) {
-	      this.timeMachine.addToHistory(model);
-	      return this;
-	    }
-
-	    // override with Immutable
-
-	  }, {
-	    key: 'createModel',
-	    value: function createModel(model) {
-	      return model || [];
-	    }
-
-	    // TODO: add to history!?
-
-	  }, {
-	    key: 'createFor',
-	    value: function createFor() {
-	      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-	      return new ImmutableModelManager(opts);
-	    }
-	  }, {
-	    key: 'at',
-	    value: function at(index) {
-	      console.log('find model at', index, this.model);
-	      return get(ImmutableModelManager.prototype.__proto__ || Object.getPrototypeOf(ImmutableModelManager.prototype), 'at', this).call(this, index);
-	    }
-	  }, {
-	    key: 'isEmpty',
-	    value: function isEmpty() {
-	      return this.model.length === 0;
-	    }
-	  }, {
-	    key: 'actionUpdateModel',
-	    value: function actionUpdateModel(newModel) {
-	      var _this2 = this;
-
-	      setTimeout(function () {
-	        _this2.addToHistory(newModel);
-	      }, this.timeOut || 800);
-	    }
-	  }, {
-	    key: 'removeAt',
-	    value: function removeAt(index) {
-	      this.log('removeAt', {
-	        model: this.model,
-	        index: index
-	      });
-	      // create new model with self excluded
-	      var before = this.model.slice(0, index);
-	      var exclAfter = this.model.slice(index + 1);
-
-	      this.log('removeAt: concat', before, exclAfter);
-	      var newModel = this.createModel().concat(before, exclAfter);
-
-	      this.actionUpdateModel(newModel);
-	      return newModel;
-	    }
-	  }, {
-	    key: 'insertAt',
-	    value: function insertAt(index, dropModel) {
-	      this.log('insertAt', {
-	        model: this.model,
-	        index: index,
-	        dropModel: dropModel
-	      });
-	      // create new model with new inserted
-	      var before = this.model.slice(0, index);
-	      var inclAfter = this.model.slice(index);
-	      this.log('insertAt: concat', before, dropModel, inclAfter);
-
-	      var newModel = this.createModel().concat(before, dropModel, inclAfter);
-
-	      this.actionUpdateModel(newModel);
-	      return newModel;
-	    }
-	  }, {
-	    key: 'move',
-	    value: function move(_ref) {
-	      var dragIndex = _ref.dragIndex,
-	          dropIndex = _ref.dropIndex;
-
-	      this.log('move', {
-	        model: this.model,
-	        dragIndex: dragIndex,
-	        dropIndex: dropIndex
-	      });
-	      this.timeMachine.undo();
-	      return this;
-	    }
-	  }, {
-	    key: 'clazzName',
-	    get: function get() {
-	      return this.constructor.name || 'ImmutableModelManager';
-	    }
-	  }, {
-	    key: 'model',
-	    get: function get() {
-	      return this.timeMachine ? this.timeMachine.model : this._model;
-	    }
-	  }, {
-	    key: 'history',
-	    get: function get() {
-	      return this.timeMachine.history;
-	    }
-	  }, {
-	    key: 'timeIndex',
-	    get: function get() {
-	      return this.timeMachine.timeIndex;
-	    }
-	  }, {
-	    key: 'first',
-	    get: function get() {
-	      return this.at(0);
-	    }
-	  }, {
-	    key: 'last',
-	    get: function get() {
-	      return this.at(this.model.length - 1);
-	    }
-	  }]);
-	  return ImmutableModelManager;
-	}(ModelManager);
-
 	var ActionManager = function () {
 	  function ActionManager() {
 	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -3161,6 +3285,220 @@ var require$$0$3 = Object.freeze({
 	  return ActionManager;
 	}();
 
+	var GroupOps = {
+	  // only insertAt operation needed to switch
+	  // group of item moved
+	  removeAt: function removeAt(_ref) {
+	    var indexes = _ref.indexes,
+	        containers = _ref.containers;
+	  },
+	  insertGroupOf: function insertGroupOf(targetContainer) {
+	    return targetContainer.id;
+	  },
+	  setGroup: function setGroup(dropModel, group) {
+	    dropModel[this.groupProp] = group;
+	  },
+	  insertAt: function insertAt(_ref2) {
+	    var indexes = _ref2.indexes,
+	        models = _ref2.models,
+	        containers = _ref2.containers;
+
+	    var index = indexes.drop;
+	    var dropModel = models.transit;
+
+	    this.log('insertAt', {
+	      model: this.model,
+	      index: index,
+	      dropModel: dropModel
+	    });
+	    // create new model with new inserted
+	    var before = this.model.slice(0, index);
+	    var inclAfter = this.model.slice(index);
+
+	    var group = this.insertGroupOf(containers.target);
+	    this.setGroup(dropModel, group);
+
+	    var newModel = this.createModel().concat(before, dropModel, inclAfter);
+
+	    this.actionUpdateModel(newModel);
+	    return newModel;
+	  }
+	};
+
+	var createTimeMachine = defaults$1.createTimeMachine;
+
+
+	var ImmutableModelManager = function (_ModelManager) {
+	  inherits(ImmutableModelManager, _ModelManager);
+
+	  function ImmutableModelManager() {
+	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	    classCallCheck(this, ImmutableModelManager);
+
+	    var _this = possibleConstructorReturn(this, (ImmutableModelManager.__proto__ || Object.getPrototypeOf(ImmutableModelManager)).call(this, opts));
+
+	    _this.timeOut = opts.timeOut || 800;
+	    var createTimeMachineFac = opts.createTimeMachine || createTimeMachine;
+	    _this.timeMachine = createTimeMachineFac(Object.assign(opts, {
+	      model: _this.model,
+	      modelRef: _this.modelRef
+	    }));
+	    return _this;
+	  }
+
+	  createClass(ImmutableModelManager, [{
+	    key: 'timeTravel',
+	    value: function timeTravel(index) {
+	      return this.timeMachine.timeTravel(index);
+	    }
+	  }, {
+	    key: 'undo',
+	    value: function undo() {
+	      // this.log('UNDO', this.timeMachine)
+	      this.timeMachine.undo();
+	      return this;
+	    }
+	  }, {
+	    key: 'redo',
+	    value: function redo() {
+	      // this.log('REDO', this.timeMachine)
+	      this.timeMachine.redo();
+	      return this;
+	    }
+	  }, {
+	    key: 'addToHistory',
+	    value: function addToHistory(model) {
+	      this.timeMachine.addToHistory(model);
+	      return this;
+	    }
+
+	    // override with Immutable
+
+	  }, {
+	    key: 'createModel',
+	    value: function createModel(model) {
+	      return model || [];
+	    }
+
+	    // TODO: add to history!?
+
+	  }, {
+	    key: 'createFor',
+	    value: function createFor() {
+	      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      return new ImmutableModelManager(opts);
+	    }
+	  }, {
+	    key: 'at',
+	    value: function at(index) {
+	      console.log('find model at', index, this.model);
+	      return get(ImmutableModelManager.prototype.__proto__ || Object.getPrototypeOf(ImmutableModelManager.prototype), 'at', this).call(this, index);
+	    }
+	  }, {
+	    key: 'isEmpty',
+	    value: function isEmpty() {
+	      return this.model.length === 0;
+	    }
+	  }, {
+	    key: 'actionUpdateModel',
+	    value: function actionUpdateModel(newModel) {
+	      var _this2 = this;
+
+	      setTimeout(function () {
+	        _this2.addToHistory(newModel);
+	      }, this.timeOut || 800);
+	    }
+	  }, {
+	    key: 'removeAt',
+	    value: function removeAt(_ref) {
+	      var indexes = _ref.indexes;
+
+	      var index = indexes.drag;
+	      this.log('removeAt', {
+	        model: this.model,
+	        index: index
+	      });
+	      // create new model with self excluded
+	      var before = this.model.slice(0, index);
+	      var exclAfter = this.model.slice(index + 1);
+
+	      this.log('removeAt: concat', before, exclAfter);
+	      var newModel = this.createModel().concat(before, exclAfter);
+
+	      this.actionUpdateModel(newModel);
+	      return newModel;
+	    }
+	  }, {
+	    key: 'insertAt',
+	    value: function insertAt(_ref2) {
+	      var indexes = _ref2.indexes,
+	          models = _ref2.models;
+
+	      var index = indexes.drop;
+	      var dropModel = models.transit;
+
+	      this.log('insertAt', {
+	        model: this.model,
+	        index: index,
+	        dropModel: dropModel
+	      });
+	      // create new model with new inserted
+	      var before = this.model.slice(0, index);
+	      var inclAfter = this.model.slice(index);
+	      this.log('insertAt: concat', before, dropModel, inclAfter);
+
+	      var newModel = this.createModel().concat(before, dropModel, inclAfter);
+
+	      this.actionUpdateModel(newModel);
+	      return newModel;
+	    }
+	  }, {
+	    key: 'move',
+	    value: function move(_ref3) {
+	      var indexes = _ref3.indexes;
+
+	      this.log('move', {
+	        model: this.model,
+	        indexes: indexes
+	      });
+	      this.timeMachine.undo();
+	      return this;
+	    }
+	  }, {
+	    key: 'clazzName',
+	    get: function get() {
+	      return this.constructor.name || 'ImmutableModelManager';
+	    }
+	  }, {
+	    key: 'model',
+	    get: function get() {
+	      return this.timeMachine ? this.timeMachine.model : this._model;
+	    }
+	  }, {
+	    key: 'history',
+	    get: function get() {
+	      return this.timeMachine.history;
+	    }
+	  }, {
+	    key: 'timeIndex',
+	    get: function get() {
+	      return this.timeMachine.timeIndex;
+	    }
+	  }, {
+	    key: 'first',
+	    get: function get() {
+	      return this.at(0);
+	    }
+	  }, {
+	    key: 'last',
+	    get: function get() {
+	      return this.at(this.model.length - 1);
+	    }
+	  }]);
+	  return ImmutableModelManager;
+	}(ModelManager);
+
 	function plugin(Vue) {
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -3193,20 +3531,23 @@ var require$$0$3 = Object.freeze({
 
 	exports.Vue2Dragula = Vue2Dragula;
 	exports.defaults = defaults;
-	exports.DragulaService = DragulaService;
-	exports.DragHandler = DragHandler;
-	exports.ModelManager = ModelManager;
-	exports.ImmutableModelManager = ImmutableModelManager;
-	exports.TimeMachine = TimeMachine;
 	exports.ActionManager = ActionManager;
 	exports.VueDragula = VueDragula;
 	exports.Dragula = Dragula;
 	exports.Logger = Logger;
 	exports.ServiceManager = ServiceManager;
 	exports.Updater = Updater;
-	exports.BaseBinder = BaseBinder;
+	exports.Base = Base;
 	exports.Binder = Binder;
 	exports.UnBinder = UnBinder;
 	exports.Creator = Creator;
+	exports.DragulaService = DragulaService;
+	exports.DragHandler = DragHandler;
+	exports.DragulaEventHandler = DragulaEventHandler;
+	exports.ModelHandler = ModelHandler;
+	exports.GroupOps = GroupOps;
+	exports.ModelManager = ModelManager;
+	exports.ImmutableModelManager = ImmutableModelManager;
+	exports.TimeMachine = TimeMachine;
 
 }));

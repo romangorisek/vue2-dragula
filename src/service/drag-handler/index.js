@@ -1,6 +1,9 @@
 import { DropModelHandler } from './drop-model/handler'
 import { BaseHandler } from './base-handler'
-import { defaults } from './defaults'
+import { defaults } from '../defaults'
+
+export { DragulaEventHandler } from './dragula-event-handler'
+export { ModelHandler } from './model-handler'
 
 function createModelHandler ({dh, options}) {
   const factory = options.createModelHandler || defaults.createModelHandler

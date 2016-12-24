@@ -1,5 +1,5 @@
 export { Updater } from './updater'
-export { BaseBinder } from './base-binder'
+export { Base } from './base'
 export { Binder } from './binder'
 export { UnBinder } from './unbinder'
 export { Creator } from './creator'
