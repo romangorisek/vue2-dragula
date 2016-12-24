@@ -40,6 +40,13 @@ export class DropModelHandler extends BaseHandler {
     }
   }
 
+  cancelDrop (ctx) {
+    if (this.targetModel) return
+    this.log('No targetModel could be found for target:', ctx.containers.target, ctx)
+    this.log('in drake:', this.drake)
+    this.drake.cancel(true)
+  }
+
   handle () {
     this.log('dropModelTarget', this.ctx)
     this.setNoCopy()

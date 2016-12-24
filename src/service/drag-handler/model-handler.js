@@ -3,6 +3,7 @@ import { waitForTransition } from '../utils'
 import { DropModelHandler } from './drop-model/handler'
 
 export class ModelHandler extends BaseHandler {
+  // BaseHandler sets up delegation to method and getters/setters
   constructor ({dh, service, dragModel, options}) {
     super({dh, service, dragModel, options})
   }

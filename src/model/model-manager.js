@@ -7,7 +7,6 @@ export class ModelManager {
     }
     this.opts = opts
     this.name = opts.name
-    this.drake = opts.drake
     this.groupProp = opts.groupProp || 'group'
 
     this.modelRef = opts.model || []

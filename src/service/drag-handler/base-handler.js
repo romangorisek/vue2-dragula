@@ -10,26 +10,8 @@ export class BaseHandler extends Delegator {
     this.logger = options.logger || console
     this.options = options
 
-    this.delegateCtx(service)
-    this.delegateMdl(dragModel)
-
-    this.configDelegates({
-      props: ['drake', 'eventBus'],
-      methods: ['getModel']
-    })
-  }
-
-  delegateMdl (dragModel) {
-    this.delegateProps('dragModel', ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex'])
-  }
-
-  delegateCtx (service) {
-    this.delegateFor('dh', {props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer']})
-  }
-
-  configDelegates ({props = [], methods = []}) {
-    if (!this.dh) return
-    this.delegateFor('dh', {methods, props})
+    this.delegateFor('service', {props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf']})
+    this.delegateFor('dragModel', {props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex']})
   }
 
   get clazzName () {
@@ -56,6 +38,14 @@ export class BaseHandler extends Delegator {
       indexes: this.indexes,
       models
     }
+  }
+
+  getModel (container) {
+    return this.modelManager.createFor({
+      name: this.name,
+      logging: this.logging,
+      model: this.findModelForContainer(container, this.drake)
+    })
   }
 
   get indexes () {

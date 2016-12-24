@@ -1,20 +1,20 @@
 import delegate from 'delegates'
 
 export class Delegator {
-  delegateFor (del, {props = [], methods = []}) {
-    this.delegateProps(del, props)
-    this.delegateMethods(del, methods)
+  delegateFor (delName, {props = [], methods = []}) {
+    this.delegateProps(delName, props)
+    this.delegateMethods(delName, methods)
   }
 
-  delegateMethods (del, methods) {
+  delegateMethods (delName, methods) {
     for (let name of methods) {
-      delegate(this, 'dh').method(name)
+      delegate(this, delName).method(name)
     }
   }
 
-  delegateProps (del, methods) {
+  delegateProps (delName, methods) {
     for (let name of methods) {
-      delegate(this, 'dh').access(name)
+      delegate(this, delName).access(name)
     }
   }
 }
