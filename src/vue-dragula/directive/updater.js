@@ -22,6 +22,7 @@ export class Updater extends Base {
       container = this.el // Vue 1
     }
 
+    this.log('findModelContainer', container, drake)
     let modelContainer = service.findModelContainer(container, drake)
 
     drakeContainer.push(container)

@@ -1,11 +1,18 @@
+import { Delegator } from '../delegator'
 
-export class DropModelBuilder {
+export class DropModelBuilder extends Delegator {
   constructor ({dh, noCopy}) {
+    super()
     console.log('create DropModelBuilder', dh)
     this.dh = dh
     this.noCopy = noCopy
-    this.sourceModel = dh.sourceModel
-    this.dragIndex = dh.dragIndex
+    this.dragModel = dh.dragModel
+    this.configDelegates()
+    console.log('delegates for', this.dragModel, {sourceModel: this.sourceModel, dragIndex: this.dragIndex})
+  }
+
+  configDelegates () {
+    this.delegateFor('dragModel', {props: ['sourceModel', 'dragIndex']})
   }
 
   get model () {

@@ -7,7 +7,7 @@ export class DropModelHandler extends BaseHandler {
     this.ctx = ctx
 
     // delegate methods to modelHandler
-    this.delegateFor('dh', {methods: ['notCopy', 'insertModel', 'cancelDrop']})
+    this.delegateFor('dh', {methods: ['notCopy', 'insertModel']})
   }
 
   get clazzName () {

@@ -6,11 +6,13 @@ export class BaseHandler extends Delegator {
 
     if (dh) {
       this.dh = dh
+      this.drake = dh.drake
+      this.dragModel = dh.dragModel
       this.modelHandler = dh.modelHandler
       this.dragulaEventHandler = dh.dragulaEventHandler
     }
 
-    this.dragModel = dragModel
+    this.dragModel = this.dragModel || dragModel
     this.logging = service.logging
     this.service = service
     this.logger = options.logger || console
@@ -50,6 +52,7 @@ export class BaseHandler extends Delegator {
   }
 
   getModel (container) {
+    this.log('getModel', container, this)
     return this.modelManager.createFor({
       name: this.name,
       logging: this.logging,

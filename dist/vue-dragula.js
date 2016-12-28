@@ -1514,7 +1514,11 @@ var require$$0$3 = Object.freeze({
 	          _ref$methods = _ref.methods,
 	          methods = _ref$methods === undefined ? [] : _ref$methods;
 
-	      if (!this[delName]) return;
+	      console.log('delegateFor', delName, props, methods);
+	      if (!this[delName]) {
+	        console.log('skip delegation, no delegation obj', this[delName]);
+	        return;
+	      }
 	      this.delegateProps(delName, props);
 	      this.delegateMethods(delName, methods);
 	    }
@@ -1548,13 +1552,14 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'delegateProps',
-	    value: function delegateProps(delName, methods) {
+	    value: function delegateProps(delName, props) {
+	      console.log('delegateProps access', props);
 	      var _iteratorNormalCompletion2 = true;
 	      var _didIteratorError2 = false;
 	      var _iteratorError2 = undefined;
 
 	      try {
-	        for (var _iterator2 = methods[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	        for (var _iterator2 = props[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	          var name = _step2.value;
 
 	          delegate(this, delName).access(name);
@@ -1593,11 +1598,13 @@ var require$$0$3 = Object.freeze({
 
 	    if (dh) {
 	      _this.dh = dh;
+	      _this.drake = dh.drake;
+	      _this.dragModel = dh.dragModel;
 	      _this.modelHandler = dh.modelHandler;
 	      _this.dragulaEventHandler = dh.dragulaEventHandler;
 	    }
 
-	    _this.dragModel = dragModel;
+	    _this.dragModel = _this.dragModel || dragModel;
 	    _this.logging = service.logging;
 	    _this.service = service;
 	    _this.logger = options.logger || console;
@@ -1646,6 +1653,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'getModel',
 	    value: function getModel(container) {
+	      this.log('getModel', container, this);
 	      return this.modelManager.createFor({
 	        name: this.name,
 	        logging: this.logging,
@@ -1733,16 +1741,16 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'setModel',
-	    value: function setModel(model, source) {
-	      model = this.getModel(source); // container
+	    value: function setModel(modelName, source) {
+	      this[modelName] = this.getModel(source); // container
 	    }
 	  }, {
 	    key: 'setIndex',
-	    value: function setIndex(index, _ref2) {
+	    value: function setIndex(indexName, _ref2) {
 	      var el = _ref2.el,
 	          source = _ref2.source;
 
-	      index = this.domIndexOf(el, source);
+	      this[indexName] = this.domIndexOf(el, source);
 	    }
 
 	    // :: dragula event handler
@@ -1775,7 +1783,9 @@ var require$$0$3 = Object.freeze({
 	    value: function drag(el, source) {
 	      this.log(':: DRAG', el, source);
 	      this.dragElm = el;
-	      this.setIndex(this.dragIndex, { el: el, source: source });
+	      this.setIndex('dragIndex', { el: el, source: source });
+	      this.log('DRAGGED: dragIndex = ', this.dragIndex);
+	      this.log('dragModel', this.dragModel);
 	    }
 
 	    // :: dragula event handler
@@ -1789,8 +1799,8 @@ var require$$0$3 = Object.freeze({
 	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
 	        return;
 	      }
-	      this.setIndex(this.dropIndex, { el: el, source: source });
-	      this.setModel(this.sourceModel, source);
+	      this.setIndex('dropIndex', { el: el, source: source });
+	      this.setModel('sourceModel', source);
 	      console.log('sourceModel', this.sourceModel, this.dh.sourceModel);
 
 	      var ctx = this.createCtx({ el: el, target: target, source: source });
@@ -1816,20 +1826,31 @@ var require$$0$3 = Object.freeze({
 	  window.setTimeout(fn, 50);
 	};
 
-	var DropModelBuilder = function () {
+	var DropModelBuilder = function (_Delegator) {
+	  inherits(DropModelBuilder, _Delegator);
+
 	  function DropModelBuilder(_ref) {
 	    var dh = _ref.dh,
 	        noCopy = _ref.noCopy;
 	    classCallCheck(this, DropModelBuilder);
 
+	    var _this = possibleConstructorReturn(this, (DropModelBuilder.__proto__ || Object.getPrototypeOf(DropModelBuilder)).call(this));
+
 	    console.log('create DropModelBuilder', dh);
-	    this.dh = dh;
-	    this.noCopy = noCopy;
-	    this.sourceModel = dh.sourceModel;
-	    this.dragIndex = dh.dragIndex;
+	    _this.dh = dh;
+	    _this.noCopy = noCopy;
+	    _this.dragModel = dh.dragModel;
+	    _this.configDelegates();
+	    console.log('delegates for', _this.dragModel, { sourceModel: _this.sourceModel, dragIndex: _this.dragIndex });
+	    return _this;
 	  }
 
 	  createClass(DropModelBuilder, [{
+	    key: 'configDelegates',
+	    value: function configDelegates() {
+	      this.delegateFor('dragModel', { props: ['sourceModel', 'dragIndex'] });
+	    }
+	  }, {
 	    key: 'dropElmModel',
 	    value: function dropElmModel() {
 	      return this.sourceModel.at(this.dragIndex);
@@ -1848,7 +1869,7 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }]);
 	  return DropModelBuilder;
-	}();
+	}(Delegator);
 
 	var DropModelHandler = function (_BaseHandler) {
 	  inherits(DropModelHandler, _BaseHandler);
@@ -1864,7 +1885,7 @@ var require$$0$3 = Object.freeze({
 	    _this.ctx = ctx;
 
 	    // delegate methods to modelHandler
-	    _this.delegateFor('dh', { methods: ['notCopy', 'insertModel', 'cancelDrop'] });
+	    _this.delegateFor('dh', { methods: ['notCopy', 'insertModel'] });
 	    return _this;
 	  }
 
@@ -1994,6 +2015,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'dropModelTarget',
 	    value: function dropModelTarget(ctx) {
+	      this.log('dropModelTarget: dragModel', this.dh.dragModel);
 	      new DropModelHandler({ dh: this.dh, service: this.service, ctx: ctx }).handle();
 	    }
 	  }, {
@@ -2970,6 +2992,7 @@ var require$$0$3 = Object.freeze({
 	        container = this.el; // Vue 1
 	      }
 
+	      this.log('findModelContainer', container, drake);
 	      var modelContainer = service.findModelContainer(container, drake);
 
 	      drakeContainer.push(container);

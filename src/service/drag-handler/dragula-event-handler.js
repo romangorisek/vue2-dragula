@@ -18,17 +18,16 @@ export class DragulaEventHandler extends BaseHandler {
     })
   }
 
-
   get clazzName () {
     return this.constructor.name || 'DragulaEventHandler'
   }
 
-  setModel (model, source) {
-    model = this.getModel(source) // container
+  setModel (modelName, source) {
+    this[modelName] = this.getModel(source) // container
   }
 
-  setIndex (index, {el, source}) {
-    index = this.domIndexOf(el, source)
+  setIndex (indexName, {el, source}) {
+    this[indexName] = this.domIndexOf(el, source)
   }
 
   // :: dragula event handler
@@ -55,7 +54,9 @@ export class DragulaEventHandler extends BaseHandler {
   drag (el, source) {
     this.log(':: DRAG', el, source)
     this.dragElm = el
-    this.setIndex(this.dragIndex, {el, source})
+    this.setIndex('dragIndex', {el, source})
+    this.log('DRAGGED: dragIndex = ', this.dragIndex)
+    this.log('dragModel', this.dragModel)
   }
 
   // :: dragula event handler
@@ -66,8 +67,8 @@ export class DragulaEventHandler extends BaseHandler {
       this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target)
       return
     }
-    this.setIndex(this.dropIndex, {el, source})
-    this.setModel(this.sourceModel, source)
+    this.setIndex('dropIndex', {el, source})
+    this.setModel('sourceModel', source)
     console.log('sourceModel', this.sourceModel, this.dh.sourceModel)
 
     const ctx = this.createCtx({el, target, source})

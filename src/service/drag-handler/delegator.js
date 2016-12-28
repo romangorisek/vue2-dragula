@@ -2,7 +2,11 @@ import delegate from 'delegates'
 
 export class Delegator {
   delegateFor (delName, {props = [], methods = []}) {
-    if (!this[delName]) return
+    console.log('delegateFor', delName, props, methods)
+    if (!this[delName]) {
+      console.log('skip delegation, no delegation obj', this[delName])
+      return
+    }
     this.delegateProps(delName, props)
     this.delegateMethods(delName, methods)
   }
@@ -13,8 +17,9 @@ export class Delegator {
     }
   }
 
-  delegateProps (delName, methods) {
-    for (let name of methods) {
+  delegateProps (delName, props) {
+    console.log('delegateProps access', props)
+    for (let name of props) {
       delegate(this, delName).access(name)
     }
   }
