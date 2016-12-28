@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.4.0
+ * vue-dragula v2.4.2
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1300,11 +1300,13 @@ var require$$0$3 = Object.freeze({
 	    value: function log(event) {
 	      var _console;
 
+	      if (!this.shouldLog) return;
+
 	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      if (!this.shouldLog) (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
+	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
 	    }
 	  }, {
 	    key: 'removeModel',
@@ -1456,7 +1458,7 @@ var require$$0$3 = Object.freeze({
 	    key: 'drop',
 	    value: function drop(dropEl, target, source) {
 	      this.log('drop', dropEl, target, source);
-	      if (!this.drake.models || !target) {
+	      if (!this.drake.models && !target) {
 	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
 	        return;
 	      }
