@@ -2,6 +2,7 @@ import delegate from 'delegates'
 
 export class Delegator {
   delegateFor (delName, {props = [], methods = []}) {
+    if (!this[delName]) return
     this.delegateProps(delName, props)
     this.delegateMethods(delName, methods)
   }

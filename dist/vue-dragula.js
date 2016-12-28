@@ -1514,6 +1514,7 @@ var require$$0$3 = Object.freeze({
 	          _ref$methods = _ref.methods,
 	          methods = _ref$methods === undefined ? [] : _ref$methods;
 
+	      if (!this[delName]) return;
 	      this.delegateProps(delName, props);
 	      this.delegateMethods(delName, methods);
 	    }
@@ -1590,19 +1591,28 @@ var require$$0$3 = Object.freeze({
 
 	    var _this = possibleConstructorReturn(this, (BaseHandler.__proto__ || Object.getPrototypeOf(BaseHandler)).call(this));
 
-	    _this.dh = dh;
+	    if (dh) {
+	      _this.dh = dh;
+	      _this.modelHandler = dh.modelHandler;
+	      _this.dragulaEventHandler = dh.dragulaEventHandler;
+	    }
+
 	    _this.dragModel = dragModel;
 	    _this.logging = service.logging;
 	    _this.service = service;
 	    _this.logger = options.logger || console;
 	    _this.options = options;
-
-	    _this.delegateFor('service', { props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf'] });
-	    _this.delegateFor('dragModel', { props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex'] });
+	    _this.configDelegates();
 	    return _this;
 	  }
 
 	  createClass(BaseHandler, [{
+	    key: 'configDelegates',
+	    value: function configDelegates() {
+	      this.delegateFor('service', { props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf'] });
+	      this.delegateFor('dragModel', { props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex'] });
+	    }
+	  }, {
 	    key: 'log',
 	    value: function log(event) {
 	      var _logger;
@@ -1706,14 +1716,22 @@ var require$$0$3 = Object.freeze({
 	    var _this = possibleConstructorReturn(this, (DragulaEventHandler.__proto__ || Object.getPrototypeOf(DragulaEventHandler)).call(this, { dh: dh, service: service, dragModel: dragModel, options: options }));
 
 	    console.log('DragulaEventHandler: dh', _this.dh);
-	    _this.configDelegates({
-	      props: ['dragElm', 'drake'],
-	      methods: ['removeModel', 'dropModel']
-	    });
 	    return _this;
 	  }
 
 	  createClass(DragulaEventHandler, [{
+	    key: 'configDelegates',
+	    value: function configDelegates() {
+	      get(DragulaEventHandler.prototype.__proto__ || Object.getPrototypeOf(DragulaEventHandler.prototype), 'configDelegates', this).call(this);
+	      this.delegateFor('dh', {
+	        props: ['dragElm', 'drake']
+	      });
+
+	      this.delegateFor('modelHandler', {
+	        methods: ['removeModel', 'dropModel']
+	      });
+	    }
+	  }, {
 	    key: 'setModel',
 	    value: function setModel(model, source) {
 	      model = this.getModel(source); // container
@@ -2002,7 +2020,7 @@ var require$$0$3 = Object.freeze({
 	      _ref$options = _ref.options,
 	      options = _ref$options === undefined ? {} : _ref$options;
 
-	  // console.log('createModelHandler', dh, options, defaults)
+	  console.log('createModelHandler', dh, options, defaults$2);
 	  var factory = options.createModelHandler || defaults$2.createModelHandler;
 	  return factory({ dh: dh, service: service, options: options });
 	}
@@ -2013,7 +2031,7 @@ var require$$0$3 = Object.freeze({
 	      _ref2$options = _ref2.options,
 	      options = _ref2$options === undefined ? {} : _ref2$options;
 
-	  // console.log('createDragulaEventHandler', dh, options, defaults)
+	  console.log('createDragulaEventHandler', dh, options, defaults$2);
 	  var factory = options.createDragulaEventHandler || defaults$2.createDragulaEventHandler;
 	  return factory({ dh: dh, service: service, options: options });
 	}
@@ -2034,31 +2052,49 @@ var require$$0$3 = Object.freeze({
 	    _this.dragElm = null;
 	    _this.drake = drake;
 	    _this.name = name;
+	    _this.dragModel = new DragModel();
 
-	    var dragModel = new DragModel();
-
-	    var args = { dh: _this, service: service, dragModel: dragModel, name: name, options: options };
-	    _this.modelHandler = createModelHandler(args);
-
-	    // delegate methods to modelHandler
-	    var _arr = ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame'];
-	    for (var _i = 0; _i < _arr.length; _i++) {
-	      var _name = _arr[_i];
-	      _this[_name] = _this.modelHandler[_name].bind(_this.modelHandler);
-	    }
-
-	    _this.dragulaEventHandler = createDragulaEventHandler(args);
-
-	    // delegate methods to dragulaEventHandler
-	    var _arr2 = ['remove', 'drag', 'drop'];
-	    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-	      var _name2 = _arr2[_i2];
-	      _this[_name2] = _this.dragulaEventHandler[_name2].bind(_this.dragulaEventHandler);
-	    }
+	    _this.configModelHandler();
+	    _this.configEventHandler();
 	    return _this;
 	  }
 
 	  createClass(DragHandler, [{
+	    key: 'configModelHandler',
+	    value: function configModelHandler() {
+	      this.modelHandler = createModelHandler(this.args);
+
+	      // delegate methods to modelHandler
+	      var _arr = ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame'];
+	      for (var _i = 0; _i < _arr.length; _i++) {
+	        var name = _arr[_i];
+	        this[name] = this.modelHandler[name].bind(this.modelHandler);
+	      }
+	    }
+	  }, {
+	    key: 'configEventHandler',
+	    value: function configEventHandler() {
+	      this.dragulaEventHandler = createDragulaEventHandler(this.args);
+
+	      // delegate methods to dragulaEventHandler
+	      var _arr2 = ['remove', 'drag', 'drop'];
+	      for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+	        var name = _arr2[_i2];
+	        this[name] = this.dragulaEventHandler[name].bind(this.dragulaEventHandler);
+	      }
+	    }
+	  }, {
+	    key: 'args',
+	    get: function get() {
+	      return {
+	        dh: this,
+	        service: this.service,
+	        dragModel: this.dragModel,
+	        name: this.name,
+	        options: this.options
+	      };
+	    }
+	  }, {
 	    key: 'clazzName',
 	    get: function get() {
 	      return this.constructor.name || 'DragHandler';
@@ -2356,13 +2392,20 @@ var require$$0$3 = Object.freeze({
 	    key: 'findModelForContainer',
 	    value: function findModelForContainer(container, drake) {
 	      this.log('findModelForContainer', container, drake);
+	      if (!drake) {
+	        this.error('findModelForContainer', 'missing drake argument');
+	      }
+
 	      return (this.findModelContainer(container, drake) || {}).model;
 	    }
 	  }, {
 	    key: 'findModelContainer',
 	    value: function findModelContainer(container, drake) {
+	      if (!drake) {
+	        this.error('findModelContainer', 'missing drake argument');
+	      }
 	      if (!drake.models) {
-	        this.log('findModelContainer', 'warning: no models found');
+	        this.log('findModelContainer', 'warning: no models on drake');
 	        return;
 	      }
 	      var found = drake.models.find(function (model) {

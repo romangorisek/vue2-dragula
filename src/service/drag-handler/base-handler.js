@@ -3,13 +3,22 @@ import { Delegator } from './delegator'
 export class BaseHandler extends Delegator {
   constructor ({dh, service, dragModel, options = {}}) {
     super()
-    this.dh = dh
+
+    if (dh) {
+      this.dh = dh
+      this.modelHandler = dh.modelHandler
+      this.dragulaEventHandler = dh.dragulaEventHandler
+    }
+
     this.dragModel = dragModel
     this.logging = service.logging
     this.service = service
     this.logger = options.logger || console
     this.options = options
+    this.configDelegates()
+  }
 
+  configDelegates () {
     this.delegateFor('service', {props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf']})
     this.delegateFor('dragModel', {props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex']})
   }

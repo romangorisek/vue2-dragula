@@ -5,11 +5,19 @@ export class DragulaEventHandler extends BaseHandler {
   constructor ({dh, service, dragModel, options}) {
     super({dh, service, dragModel, options})
     console.log('DragulaEventHandler: dh', this.dh)
-    this.configDelegates({
-      props: ['dragElm', 'drake'],
+  }
+
+  configDelegates () {
+    super.configDelegates()
+    this.delegateFor('dh', {
+      props: ['dragElm', 'drake']
+    })
+
+    this.delegateFor('modelHandler', {
       methods: ['removeModel', 'dropModel']
     })
   }
+
 
   get clazzName () {
     return this.constructor.name || 'DragulaEventHandler'
