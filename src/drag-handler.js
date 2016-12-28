@@ -35,7 +35,7 @@ export class DragHandler {
   }
 
   log(event, ...args) {
-    if (!this.shouldLog)
+    if (!this.shouldLog) return
     console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
