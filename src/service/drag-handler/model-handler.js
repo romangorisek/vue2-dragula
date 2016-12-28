@@ -59,8 +59,12 @@ export class ModelHandler extends BaseHandler {
     this.sourceModel.move(ctx)
   }
 
+  createDropModelHandler (ctx) {
+    return new DropModelHandler({dh: this.dh, service: this.service, ctx})
+  }
+
   dropModelTarget (ctx) {
     this.log('dropModelTarget: dragModel', this.dh.dragModel)
-    new DropModelHandler({dh: this.dh, service: this.service, ctx}).handle()
+    this.createDropModelHandler().handle()
   }
 }

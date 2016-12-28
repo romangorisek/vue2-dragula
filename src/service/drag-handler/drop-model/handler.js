@@ -22,11 +22,15 @@ export class DropModelHandler extends BaseHandler {
     this.targetModel = this.getModel(this.ctx.containers.target)
   }
 
-  setDropModel () {
-    this.dropModel = new DropModelBuilder({
+  createdropModel () {
+    return new DropModelBuilder({
       dh: this.dh,
       noCopy: this.noCopy
-    }).model
+    })
+  }
+
+  setDropModel () {
+    this.dropModel = this.createdropModel().model
   }
 
   models () {

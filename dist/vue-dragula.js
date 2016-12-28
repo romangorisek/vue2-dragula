@@ -1900,12 +1900,17 @@ var require$$0$3 = Object.freeze({
 	      this.targetModel = this.getModel(this.ctx.containers.target);
 	    }
 	  }, {
-	    key: 'setDropModel',
-	    value: function setDropModel() {
-	      this.dropModel = new DropModelBuilder({
+	    key: 'createdropModel',
+	    value: function createdropModel() {
+	      return new DropModelBuilder({
 	        dh: this.dh,
 	        noCopy: this.noCopy
-	      }).model;
+	      });
+	    }
+	  }, {
+	    key: 'setDropModel',
+	    value: function setDropModel() {
+	      this.dropModel = this.createdropModel().model;
 	    }
 	  }, {
 	    key: 'models',
@@ -2013,10 +2018,15 @@ var require$$0$3 = Object.freeze({
 	      this.sourceModel.move(ctx);
 	    }
 	  }, {
+	    key: 'createDropModelHandler',
+	    value: function createDropModelHandler(ctx) {
+	      return new DropModelHandler({ dh: this.dh, service: this.service, ctx: ctx });
+	    }
+	  }, {
 	    key: 'dropModelTarget',
 	    value: function dropModelTarget(ctx) {
 	      this.log('dropModelTarget: dragModel', this.dh.dragModel);
-	      new DropModelHandler({ dh: this.dh, service: this.service, ctx: ctx }).handle();
+	      this.createDropModelHandler().handle();
 	    }
 	  }, {
 	    key: 'clazzName',
