@@ -14,7 +14,7 @@ export class DragulaEventHandler extends BaseHandler {
     })
 
     this.delegateFor('modelHandler', {
-      methods: ['removeModel', 'dropModel']
+      methods: ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame']
     })
   }
 

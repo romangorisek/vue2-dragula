@@ -1736,7 +1736,7 @@ var require$$0$3 = Object.freeze({
 	      });
 
 	      this.delegateFor('modelHandler', {
-	        methods: ['removeModel', 'dropModel']
+	        methods: ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame']
 	      });
 	    }
 	  }, {
@@ -2093,36 +2093,34 @@ var require$$0$3 = Object.freeze({
 
 	  createClass(DragHandler, [{
 	    key: 'configModelHandler',
+
+
+	    // TODO: avoid delegates here!
 	    value: function configModelHandler() {
 	      this.modelHandler = createModelHandler(this.args);
-
-	      // delegate methods to modelHandler
-	      var _arr = ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame'];
-	      for (var _i = 0; _i < _arr.length; _i++) {
-	        var name = _arr[_i];
-	        this[name] = this.modelHandler[name].bind(this.modelHandler);
-	      }
 	    }
+
+	    // TODO: reference dragulaEventHandler from service to avoid delegates!?
+	    // pass dragulaEventHandler
+
 	  }, {
 	    key: 'configEventHandler',
 	    value: function configEventHandler() {
-	      this.dragulaEventHandler = createDragulaEventHandler(this.args);
+	      this.dragulaEventHandler = createDragulaEventHandler(Object.assign(this.args, {
+	        dragulaEventHandler: this.dragulaEventHandler
+	      }));
 
-	      // delegate methods to dragulaEventHandler
-	      var _arr2 = ['remove', 'drag', 'drop'];
-	      for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-	        var name = _arr2[_i2];
-	        this[name] = this.dragulaEventHandler[name].bind(this.dragulaEventHandler);
-	      }
+	      this.delegateFor('dragulaEventHandler', ['remove', 'drag', 'drop']);
 	    }
 	  }, {
 	    key: 'args',
 	    get: function get() {
 	      return {
 	        dh: this,
+	        name: this.name,
+	        drake: this.drake,
 	        service: this.service,
 	        dragModel: this.dragModel,
-	        name: this.name,
 	        options: this.options
 	      };
 	    }

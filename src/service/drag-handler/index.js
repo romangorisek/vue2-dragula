@@ -32,29 +32,27 @@ export class DragHandler extends BaseHandler {
   get args () {
     return {
       dh: this,
+      name: this.name,
+      drake: this.drake,
       service: this.service,
       dragModel: this.dragModel,
-      name: this.name,
       options: this.options
     }
   }
 
+  // TODO: avoid delegates here!
   configModelHandler () {
     this.modelHandler = createModelHandler(this.args)
-
-    // delegate methods to modelHandler
-    for (let name of ['removeModel', 'insertModel', 'notCopy', 'dropModel', 'dropModelSame']) {
-      this[name] = this.modelHandler[name].bind(this.modelHandler)
-    }
   }
 
+  // TODO: reference dragulaEventHandler from service to avoid delegates!?
+  // pass dragulaEventHandler
   configEventHandler () {
-    this.dragulaEventHandler = createDragulaEventHandler(this.args)
+    this.dragulaEventHandler = createDragulaEventHandler(Object.assign(this.args, {
+      dragulaEventHandler: this.dragulaEventHandler
+    }))
 
-    // delegate methods to dragulaEventHandler
-    for (let name of ['remove', 'drag', 'drop']) {
-      this[name] = this.dragulaEventHandler[name].bind(this.dragulaEventHandler)
-    }
+    this.delegateFor('dragulaEventHandler', ['remove', 'drag', 'drop'])
   }
 
   get clazzName () {
