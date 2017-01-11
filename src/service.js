@@ -83,7 +83,7 @@ export class DragulaService {
       let errMsg = `Drake named: "${name}" already exists for this service [${this.name}]. 
       Most likely this error in cause by a race condition evaluating multiple template elements with 
       the v-dragula directive having the same drake name. Please initialise the drake in the created() life cycle hook of the VM to fix this problem.`
-      this.error(msg)
+      this.error(errMsg)
     }
 
     this.drakes[name] = drake
