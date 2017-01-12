@@ -4,6 +4,7 @@ export class DragModel {
   // - dropIndex
   // - sourceModel
   // - targetModel
+  // - dragElm
   constructor (opts) {
     this.opts = opts
   }

@@ -1,28 +1,30 @@
 import { Delegator } from './delegator'
 
 export class BaseHandler extends Delegator {
-  constructor ({dh, service, dragModel, options = {}}) {
+  constructor ({dh, service, name, drake, dragModel, options = {}}) {
     super()
 
     if (dh) {
       this.dh = dh
-      this.drake = dh.drake
-      this.dragModel = dh.dragModel
-      this.modelHandler = dh.modelHandler
-      this.dragulaEventHandler = dh.dragulaEventHandler
     }
+    this.configDelegates()
 
+    this.name = name
+    this.drake = drake
     this.dragModel = this.dragModel || dragModel
     this.logging = service.logging
     this.service = service
     this.logger = options.logger || console
     this.options = options
-    this.configDelegates()
   }
 
   configDelegates () {
-    this.delegateFor('service', {props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf']})
-    this.delegateFor('dragModel', {props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex']})
+    if (this.dh) {
+      this.delegateFor('dh', {props: ['drake', 'dragModel', 'modelHandler', 'dragulaEventHandler']})
+    }
+
+    this.delegateFor('service', {props: ['eventBus', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf']})
+    this.delegateFor('dragModel', {props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex', 'dragElm']})
   }
 
   get clazzName () {

@@ -6,13 +6,13 @@ export { DragulaEventHandler } from './dragula-event-handler'
 export { ModelHandler } from './model-handler'
 
 function createModelHandler ({dh, service, options = {}}) {
-  console.log('createModelHandler', dh, options, defaults)
+  // console.log('createModelHandler', dh, options, defaults)
   const factory = options.createModelHandler || defaults.createModelHandler
   return factory({dh, service, options})
 }
 
 function createDragulaEventHandler ({dh, service, options = {}}) {
-  console.log('createDragulaEventHandler', dh, options, defaults)
+  // console.log('createDragulaEventHandler', dh, options, defaults)
   const factory = options.createDragulaEventHandler || defaults.createDragulaEventHandler
   return factory({dh, service, options})
 }
@@ -20,7 +20,7 @@ function createDragulaEventHandler ({dh, service, options = {}}) {
 export class DragHandler extends BaseHandler {
   constructor ({service, name, drake, options = {}}) {
     super({service, options})
-    this.dragElm = null
+    // this.dragElm = null
     this.drake = drake
     this.name = name
     this.dragModel = new DragModel()
