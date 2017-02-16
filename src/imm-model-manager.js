@@ -87,6 +87,7 @@ export class ImmutableModelManager extends ModelManager {
   }
 
   removeAt (index) {
+    if (this.copy) return;
     this.log('removeAt', {
       model: this.model,
       index
@@ -120,6 +121,7 @@ export class ImmutableModelManager extends ModelManager {
   }
 
   move ({dragIndex, dropIndex}) {
+    if (this.copy) return;
     this.log('move', {
       model: this.model,
       dragIndex,

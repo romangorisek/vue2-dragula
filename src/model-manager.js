@@ -1,18 +1,10 @@
-export class ModelManager {
+
+import { BaseModelManager } from 'base-model-manager'
+
+export class ModelManager extends BaseModelManager {
   constructor (opts = {}) {
-    if (Array.isArray(opts)) {
-      opts = {
-        model: opts
-      }
-    }
-    this.opts = opts
-    this.name = opts.name
-    this.drake = opts.drake
-
-    this.modelRef = opts.model || []
+    super(opts)
     this.model = this.createModel(this.modelRef)
-
-    this.logging = opts.logging
     this.log('CREATE', opts)
   }
 
@@ -54,6 +46,7 @@ export class ModelManager {
   }
 
   removeAt (index) {
+    if (this.copy) return;
     this.log('removeAt', {
       model: this.model,
       index
@@ -71,6 +64,7 @@ export class ModelManager {
   }
 
   move ({dragIndex, dropIndex}) {
+    if (this.copy) return;
     this.log('move', {
       model: this.model,
       dragIndex,
