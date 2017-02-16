@@ -9,6 +9,10 @@ const waitForTransition = raf
     window.setTimeout(fn, 50)
   }
 
+function isObject(obj) {
+  return obj === Object(obj);
+}
+
 export class DragHandler {
   constructor({ctx, name, drake, options}) {
     this.dragElm = null
@@ -197,6 +201,15 @@ export class DragHandler {
   jsonDropElmModel() {
     let model = this.sourceModel.at(this.dragIndex)
     let stringable = model ? model.model || model.stringable : model
-    return JSON.parse(JSON.stringify(stringable || model))
+    let md = stringable || model
+    if (!isObject(md)) {
+      this.log('jsonDropElmModel', 'invalid element model, must be some sort of Object', stringable, model)
+    }
+    try {
+      let jsonStr = JSON.stringify(stringable || model)
+      return JSON.parse(jsonStr)
+    } catch (e) {
+      this.log('jsonDropElmModel', 'JSON stringify/parse error', e);
+    }
   }
 }
