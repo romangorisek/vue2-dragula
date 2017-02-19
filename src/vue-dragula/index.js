@@ -32,11 +32,15 @@ export function VueDragula (Vue, options = {}) {
 
   const dragulaFactory = options.createDragula || defaults.createDragula
   Vue.$dragula = dragulaFactory({serviceManager, log})
+  console.log('Created global $dragula')
 
   Vue.prototype.$dragula = Vue.$dragula
 
   const customFacFun = options.directive ? options.directive.createCreator : null
   const creatorFactory = customFacFun || defaults.createCreator
+  console.log('create main factory')
   const creator = creatorFactory({Vue, serviceManager, options, log})
+  console.log('EXECUTE')
   creator.execute()
+  console.log('READY')
 }

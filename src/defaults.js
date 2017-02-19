@@ -6,7 +6,7 @@ export const defaults = {
     return new TimeMachine(opts)
   },
   createService ({name, eventBus, drakes, options}) {
-    // log('default createService', {name, eventBus, drakes, options})
+    console.log('default createService', {name, eventBus, drakes, options})
     return new DragulaService({
       name,
       eventBus,

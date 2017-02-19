@@ -4,12 +4,19 @@ import { defaults as dirDefaults } from './defaults'
 export class ServiceManager {
   constructor ({Vue, options, eventBus, log}) {
     this.log = log.dir
+    this.log('create ServiceManager', options)
     this.Vue = Vue
     this.options = options
     this.buildService = options.createService || defaults.createService
+    console.log('creating Eventbus')
     this.createEventbus()
 
+    if (!this.buildService) {
+      throw new Error('ServiceManager:: No function to build Service')
+    }
+
     // global service
+    console.log('building global service')
     this.appService = this.buildService({
       name: 'global.dragula',
       eventBus: this.eventBus,
@@ -19,6 +26,7 @@ export class ServiceManager {
   }
 
   createEventbus () {
+    console.log('createEventbus')
     let eventBusFactory = this.options.createEventBus || dirDefaults.createEventBus
     this.eventBus = eventBusFactory(this.Vue, this.options) || new this.Vue()
     if (!this.eventBus) {

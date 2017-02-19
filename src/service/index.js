@@ -12,19 +12,22 @@ export { DragHandler, DragulaEventHandler, ModelHandler } from './drag-handler'
 
 export class DragulaService {
   constructor (opts = {}) {
+    console.log('constructor DragulaService', opts)
     let { name, eventBus, drakes, options } = opts
     this.opts = opts
-    options = options || {}
-    this.options = options
+    this.options = options || {}
     this.logging = options.logging
+    console.log('DragulaService log', this.logging)
 
-    this.log('CREATE DragulaService', opts)
+    this.log(':: CREATE DragulaService', opts, 'options:', options.createDragHandler)
 
     this.name = name
     this.drakes = drakes || {} // drake store
     this.eventBus = eventBus
     this.createDragHandler = options.createDragHandler || createDragHandler
     this.createModelManager = options.createModelManager || createModelManager
+
+    this.log('createDragHandler factory', this.createDragHandler)
 
     this.modelManager = this.createModelManager(options)
 
@@ -122,7 +125,11 @@ export class DragulaService {
       return
     }
 
+    this.log('creating service DragHandler for models', name, drake)
     const dragHandler = this.createDragHandler({ service: this, name, drake })
+    if (!dragHandler) {
+      throw new Error('DragHandler could not be created')
+    }
     this.log('created dragHandler for service', dragHandler)
 
     drake.on('remove', dragHandler.remove.bind(dragHandler))

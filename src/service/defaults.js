@@ -3,6 +3,7 @@ import { DragHandler, ModelHandler, DragulaEventHandler } from './drag-handler'
 
 export const defaults = {
   createDragHandler ({service, name, drake}) {
+    console.log('createDragHandler: ', DragHandler)
     return new DragHandler({ service, name, drake })
   },
   createModelHandler ({dh, service, options}) {
@@ -12,6 +13,7 @@ export const defaults = {
     return new DragulaEventHandler({service, dh, options})
   },
   createModelManager (opts) {
+    console.log('createModelManager:', opts)
     return new ModelManager(opts)
   }
 }

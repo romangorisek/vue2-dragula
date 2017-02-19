@@ -5,7 +5,7 @@ function isObject (obj) {
 export class Dragula {
   constructor ({serviceManager, log}) {
     const { appService, buildService } = serviceManager
-    console.log('Dragula', {serviceManager, log})
+    console.log('Dragula constructor', {serviceManager, log})
     this.appService = appService
     this.buildService = buildService
     this.log = log.serviceConfig
@@ -30,7 +30,7 @@ export class Dragula {
   }
 
   createService (serviceOpts = {}) {
-    this.log('createService', serviceOpts)
+    this.log('!!! createService', serviceOpts)
 
     this._serviceMap = this._serviceMap || {}
 

@@ -6,13 +6,13 @@ export { DragulaEventHandler } from './dragula-event-handler'
 export { ModelHandler } from './model-handler'
 
 function createModelHandler ({dh, service, options = {}}) {
-  // console.log('createModelHandler', dh, options, defaults)
+  console.log(':: createModelHandler', dh, options, defaults)
   const factory = options.createModelHandler || defaults.createModelHandler
   return factory({dh, service, options})
 }
 
 function createDragulaEventHandler ({dh, service, options = {}}) {
-  // console.log('createDragulaEventHandler', dh, options, defaults)
+  console.log(':: createDragulaEventHandler', dh, options, defaults)
   const factory = options.createDragulaEventHandler || defaults.createDragulaEventHandler
   return factory({dh, service, options})
 }
@@ -20,6 +20,7 @@ function createDragulaEventHandler ({dh, service, options = {}}) {
 export class DragHandler extends BaseHandler {
   constructor ({service, name, drake, options = {}}) {
     super({service, options})
+    console.log('DragHandler constructor', options)
     // this.dragElm = null
     this.drake = drake
     this.name = name
@@ -42,16 +43,23 @@ export class DragHandler extends BaseHandler {
 
   // TODO: avoid delegates here!
   configModelHandler () {
+    console.log('configModelHandler')
     this.modelHandler = createModelHandler(this.args)
   }
 
   // TODO: reference dragulaEventHandler from service to avoid delegates!?
   // pass dragulaEventHandler
   configEventHandler () {
-    this.dragulaEventHandler = createDragulaEventHandler(Object.assign(this.args, {
-      dragulaEventHandler: this.dragulaEventHandler
-    }))
+    debugger;
+    console.log('configEventHandler', this.args)
 
+    let obj = Object.assign(this.args, {
+      dragulaEventHandler: this.dragulaEventHandler
+    })
+
+    this.dragulaEventHandler = createDragulaEventHandler(obj)
+
+    console.log('delegateFor:: dragulaEventHandler', this.dragulaEventHandler)
     this.delegateFor('dragulaEventHandler', ['remove', 'drag', 'drop'])
   }
 

@@ -1,6 +1,6 @@
 /*!
  * vue-dragula v3.0.0
- * (c) 2016 Yichang Liu
+ * (c) 2017 Yichang Liu
  * Released under the MIT License.
  */
 (function (global, factory) {
@@ -1589,6 +1589,8 @@ var require$$0$3 = Object.freeze({
 	  function BaseHandler(_ref) {
 	    var dh = _ref.dh,
 	        service = _ref.service,
+	        name = _ref.name,
+	        drake = _ref.drake,
 	        dragModel = _ref.dragModel,
 	        _ref$options = _ref.options,
 	        options = _ref$options === undefined ? {} : _ref$options;
@@ -1598,26 +1600,28 @@ var require$$0$3 = Object.freeze({
 
 	    if (dh) {
 	      _this.dh = dh;
-	      _this.drake = dh.drake;
-	      _this.dragModel = dh.dragModel;
-	      _this.modelHandler = dh.modelHandler;
-	      _this.dragulaEventHandler = dh.dragulaEventHandler;
 	    }
+	    _this.configDelegates();
 
+	    _this.name = name;
+	    _this.drake = drake;
 	    _this.dragModel = _this.dragModel || dragModel;
 	    _this.logging = service.logging;
 	    _this.service = service;
 	    _this.logger = options.logger || console;
 	    _this.options = options;
-	    _this.configDelegates();
 	    return _this;
 	  }
 
 	  createClass(BaseHandler, [{
 	    key: 'configDelegates',
 	    value: function configDelegates() {
-	      this.delegateFor('service', { props: ['eventBus', 'name', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf'] });
-	      this.delegateFor('dragModel', { props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex'] });
+	      if (this.dh) {
+	        this.delegateFor('dh', { props: ['drake', 'dragModel', 'modelHandler', 'dragulaEventHandler'] });
+	      }
+
+	      this.delegateFor('service', { props: ['eventBus', 'modelManager'], methods: ['findModelForContainer', 'domIndexOf'] });
+	      this.delegateFor('dragModel', { props: ['sourceModel', 'targetModel', 'dragIndex', 'dropIndex', 'dragElm'] });
 	    }
 	  }, {
 	    key: 'log',
@@ -1704,6 +1708,7 @@ var require$$0$3 = Object.freeze({
 	// - dropIndex
 	// - sourceModel
 	// - targetModel
+	// - dragElm
 	function DragModel(opts) {
 	  classCallCheck(this, DragModel);
 
@@ -2052,7 +2057,7 @@ var require$$0$3 = Object.freeze({
 	      _ref$options = _ref.options,
 	      options = _ref$options === undefined ? {} : _ref$options;
 
-	  console.log('createModelHandler', dh, options, defaults$2);
+	  console.log(':: createModelHandler', dh, options, defaults$2);
 	  var factory = options.createModelHandler || defaults$2.createModelHandler;
 	  return factory({ dh: dh, service: service, options: options });
 	}
@@ -2063,7 +2068,7 @@ var require$$0$3 = Object.freeze({
 	      _ref2$options = _ref2.options,
 	      options = _ref2$options === undefined ? {} : _ref2$options;
 
-	  console.log('createDragulaEventHandler', dh, options, defaults$2);
+	  console.log(':: createDragulaEventHandler', dh, options, defaults$2);
 	  var factory = options.createDragulaEventHandler || defaults$2.createDragulaEventHandler;
 	  return factory({ dh: dh, service: service, options: options });
 	}
@@ -2081,7 +2086,8 @@ var require$$0$3 = Object.freeze({
 
 	    var _this = possibleConstructorReturn(this, (DragHandler.__proto__ || Object.getPrototypeOf(DragHandler)).call(this, { service: service, options: options }));
 
-	    _this.dragElm = null;
+	    console.log('DragHandler constructor', options);
+	    // this.dragElm = null
 	    _this.drake = drake;
 	    _this.name = name;
 	    _this.dragModel = new DragModel();
@@ -2097,6 +2103,7 @@ var require$$0$3 = Object.freeze({
 
 	    // TODO: avoid delegates here!
 	    value: function configModelHandler() {
+	      console.log('configModelHandler');
 	      this.modelHandler = createModelHandler(this.args);
 	    }
 
@@ -2106,10 +2113,16 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'configEventHandler',
 	    value: function configEventHandler() {
-	      this.dragulaEventHandler = createDragulaEventHandler(Object.assign(this.args, {
-	        dragulaEventHandler: this.dragulaEventHandler
-	      }));
+	      debugger;
+	      console.log('configEventHandler', this.args);
 
+	      var obj = Object.assign(this.args, {
+	        dragulaEventHandler: this.dragulaEventHandler
+	      });
+
+	      this.dragulaEventHandler = createDragulaEventHandler(obj);
+
+	      console.log('delegateFor:: dragulaEventHandler', this.dragulaEventHandler);
 	      this.delegateFor('dragulaEventHandler', ['remove', 'drag', 'drop']);
 	    }
 	  }, {
@@ -2139,6 +2152,7 @@ var require$$0$3 = Object.freeze({
 	        name = _ref.name,
 	        drake = _ref.drake;
 
+	    console.log('createDragHandler: ', DragHandler);
 	    return new DragHandler({ service: service, name: name, drake: drake });
 	  },
 	  createModelHandler: function createModelHandler(_ref2) {
@@ -2156,6 +2170,7 @@ var require$$0$3 = Object.freeze({
 	    return new DragulaEventHandler({ service: service, dh: dh, options: options });
 	  },
 	  createModelManager: function createModelManager(opts) {
+	    console.log('createModelManager:', opts);
 	    return new ModelManager(opts);
 	  }
 	};
@@ -2170,23 +2185,27 @@ var require$$0$3 = Object.freeze({
 	  function DragulaService() {
 	    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    classCallCheck(this, DragulaService);
+
+	    console.log('constructor DragulaService', opts);
 	    var name = opts.name,
 	        eventBus = opts.eventBus,
 	        drakes = opts.drakes,
 	        options = opts.options;
 
 	    this.opts = opts;
-	    options = options || {};
-	    this.options = options;
+	    this.options = options || {};
 	    this.logging = options.logging;
+	    console.log('DragulaService log', this.logging);
 
-	    this.log('CREATE DragulaService', opts);
+	    this.log(':: CREATE DragulaService', opts, 'options:', options.createDragHandler);
 
 	    this.name = name;
 	    this.drakes = drakes || {}; // drake store
 	    this.eventBus = eventBus;
 	    this.createDragHandler = options.createDragHandler || createDragHandler;
 	    this.createModelManager = options.createModelManager || createModelManager;
+
+	    this.log('createDragHandler factory', this.createDragHandler);
 
 	    this.modelManager = this.createModelManager(options);
 
@@ -2285,7 +2304,11 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 
+	      this.log('creating service DragHandler for models', name, drake);
 	      var dragHandler = this.createDragHandler({ service: this, name: name, drake: drake });
+	      if (!dragHandler) {
+	        throw new Error('DragHandler could not be created');
+	      }
 	      this.log('created dragHandler for service', dragHandler);
 
 	      drake.on('remove', dragHandler.remove.bind(dragHandler));
@@ -2595,7 +2618,7 @@ var require$$0$3 = Object.freeze({
 	        drakes = _ref.drakes,
 	        options = _ref.options;
 
-	    // log('default createService', {name, eventBus, drakes, options})
+	    console.log('default createService', { name: name, eventBus: eventBus, drakes: drakes, options: options });
 	    return new DragulaService({
 	      name: name,
 	      eventBus: eventBus,
@@ -2614,12 +2637,19 @@ var require$$0$3 = Object.freeze({
 	    classCallCheck(this, ServiceManager);
 
 	    this.log = log.dir;
+	    this.log('create ServiceManager', options);
 	    this.Vue = Vue;
 	    this.options = options;
 	    this.buildService = options.createService || defaults$1.createService;
+	    console.log('creating Eventbus');
 	    this.createEventbus();
 
+	    if (!this.buildService) {
+	      throw new Error('ServiceManager:: No function to build Service');
+	    }
+
 	    // global service
+	    console.log('building global service');
 	    this.appService = this.buildService({
 	      name: 'global.dragula',
 	      eventBus: this.eventBus,
@@ -2631,6 +2661,7 @@ var require$$0$3 = Object.freeze({
 	  createClass(ServiceManager, [{
 	    key: 'createEventbus',
 	    value: function createEventbus() {
+	      console.log('createEventbus');
 	      var eventBusFactory = this.options.createEventBus || dirDefaults.createEventBus;
 	      this.eventBus = eventBusFactory(this.Vue, this.options) || new this.Vue();
 	      if (!this.eventBus) {
@@ -2673,7 +2704,7 @@ var require$$0$3 = Object.freeze({
 	    var appService = serviceManager.appService,
 	        buildService = serviceManager.buildService;
 
-	    console.log('Dragula', { serviceManager: serviceManager, log: log });
+	    console.log('Dragula constructor', { serviceManager: serviceManager, log: log });
 	    this.appService = appService;
 	    this.buildService = buildService;
 	    this.log = log.serviceConfig;
@@ -2705,7 +2736,7 @@ var require$$0$3 = Object.freeze({
 	    value: function createService() {
 	      var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-	      this.log('createService', serviceOpts);
+	      this.log('!!! createService', serviceOpts);
 
 	      this._serviceMap = this._serviceMap || {};
 
@@ -3170,6 +3201,7 @@ var require$$0$3 = Object.freeze({
 	        log = _ref.log;
 	    classCallCheck(this, Creator);
 
+	    console.log('Creator', serviceManager, options);
 	    this.name = name;
 	    this.Vue = Vue;
 	    this.log = log.dir;
@@ -3199,10 +3231,12 @@ var require$$0$3 = Object.freeze({
 	    value: function createDirClass(name, options) {
 	      var _this = this;
 
+	      console.log('createDirClass', name, options);
 	      var DefaultClazz = this.default[name];
 	      var defaultCreator = function defaultCreator() {
 	        return new DefaultClazz(_this.default.args);
 	      };
+
 	      var factoryFunctionName = 'create' + capitalize(name);
 	      var customFun = this.options.directive ? this.options.directive[factoryFunctionName] : null;
 	      var updaterClazz = customFun || defaultCreator;
@@ -3379,13 +3413,17 @@ var require$$0$3 = Object.freeze({
 
 	  var dragulaFactory = options.createDragula || dirDefaults.createDragula;
 	  Vue.$dragula = dragulaFactory({ serviceManager: serviceManager, log: log });
+	  console.log('Created global $dragula');
 
 	  Vue.prototype.$dragula = Vue.$dragula;
 
 	  var customFacFun = options.directive ? options.directive.createCreator : null;
 	  var creatorFactory = customFacFun || dirDefaults.createCreator;
+	  console.log('create main factory');
 	  var creator = creatorFactory({ Vue: Vue, serviceManager: serviceManager, options: options, log: log });
+	  console.log('EXECUTE');
 	  creator.execute();
+	  console.log('READY');
 	}
 
 	var ActionManager = function () {

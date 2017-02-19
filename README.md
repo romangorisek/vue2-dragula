@@ -100,6 +100,14 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 
 [Vue 2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
+Create a symbolic global link to your `vue2-dragula` by running `npm link` from the root of `vue2-dragula`
+
+Then from the `vue2-dragula-demo` repo, link to your locally linked `vue2-dragula` via `npm link vue2-dragula` from the root of the demo project
+
+Each time you update `vue2-dragula`, run `npm run build` to create the dist files used by `vue2-dragula` as per `main` entry in `package.json`. 
+
+Unfortunately we can't to the uncompiled file since we are using ES6 modules (f.ex `import`), which the browser can't (yet) handle.
+
 ## The API in depth
 Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive.
 Add named service(s) via `this.$dragula.createService` and initialise with the drakes you want to use.

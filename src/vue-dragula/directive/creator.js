@@ -7,6 +7,7 @@ function capitalize (string) {
 export class Creator {
   // TODO: Allow for customisation via options containing factory methods
   constructor ({Vue, serviceManager, name = 'globalDrake', options, log}) {
+    console.log('Creator', serviceManager, options)
     this.name = name
     this.Vue = Vue
     this.log = log.dir
@@ -30,8 +31,10 @@ export class Creator {
   // - binder
   // - unbinder
   createDirClass (name, options) {
+    console.log('createDirClass', name, options)    
     const DefaultClazz = this.default[name]
     const defaultCreator = () => { return new DefaultClazz(this.default.args) }
+
     const factoryFunctionName = 'create' + capitalize(name)
     const customFun = this.options.directive ? this.options.directive[factoryFunctionName] : null
     const updaterClazz = customFun || defaultCreator
