@@ -1,5 +1,11 @@
 ## Changelog
 
+## 2.4.4
+
+- Added `BaseModelManager` as base and interface for `ModelManager` to extend/implement
+- When copy mode is set, `move` and `remove` model manager actions are not performed on model, only `insertAt`
+- Better error handling on Drag handler JSON parsing
+
 ## 2.x
 
 Removed old `/example` app. Doesn't work with Vue2 or new design.
