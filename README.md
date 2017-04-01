@@ -1,4 +1,6 @@
 # vue2-dragula
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/kristianmandrup/vue2-dragula.svg)](https://greenkeeper.io/)
 > :ok_hand: Drag and drop so simple it hurts
 
 Vue wrapper for [dragula](https://github.com/bevacqua/dragula) drag'n drop library, based on [vue-dragula](https://github.com/Astray-git/vue-dragula) by [@Astray-git](https://github.com/Astray-git).
