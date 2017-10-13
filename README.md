@@ -18,6 +18,7 @@ See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Chan
 All test pass. Now supports action history with time travel and undo/redo. See [demo](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 ## Install
+
 #### CommonJS
 
 *npm*
@@ -44,6 +45,10 @@ Vue.use(Vue2Dragula, {
   }
 });
 ```
+
+## VueX integration
+
+See [VueX integration example](https://github.com/kristianmandrup/vue2-dragula/tree/master/examples/VueX-sample.md)
 
 ## Template Usage
 ``` html
@@ -104,7 +109,7 @@ For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
 [Vue 2 demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 ## The API in depth
-Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive. 
+Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive.
 Add named service(s) via `this.$dragula.createService` and initialise with the drakes you want to use.
 
 ### $dragula
@@ -120,7 +125,7 @@ Add named service(s) via `this.$dragula.createService` and initialise with the d
 
 ### DragulaService
 The `DragulaService` constructor takes the following deconstructed arguments.
-Only `name` and `eventBus` are required. 
+Only `name` and `eventBus` are required.
 
 Note: You don't normally need to create the `DragulaService` yourself. Use the API to handle this for you.
 
@@ -138,7 +143,7 @@ Drakes are indexed by name in the `drakes` Object of the service. Each key is th
 ## Model mechanics
 The `drake` event handlers have default mechanics for how to operate on the underlyng models. These can be customized as needed.
 
-A common scenario is to have a tree of node objects, where each node has 
+A common scenario is to have a tree of node objects, where each node has
 a `children` key. You'd want to be able to drag elements to modify the node tree stucture.
 
 ```js
@@ -171,7 +176,7 @@ a `children` key. You'd want to be able to drag elements to modify the node tree
 }
 ```
 
-In this example we should be able to move a form input specification object from one form container node to another. This is possible simply by 
+In this example we should be able to move a form input specification object from one form container node to another. This is possible simply by
 setting `<template>` elements with `v-dragula` directives to point to `children[0].children` and `children[1].children` respectively. We can use the rest of the node tree data to visualize the various different nodes. This could form the basis for a visual editor!
 
 ### DragHandler for fine-grained control
@@ -388,7 +393,7 @@ Vue.use(VueDragula, { createService });
 ```
 
 ### Custom event bus
-You can customize the event bus used via the `createEventBus` option. 
+You can customize the event bus used via the `createEventBus` option.
 You could f.ex create an event bus factory method to always log events emitted if logging is turned on.
 
 ```js
@@ -597,9 +602,9 @@ The following classes are included:
 See [time travel demo](https://github.com/kristianmandrup/vue2-dragula-demo/) for how to use these classes.
 
 ```js
-import { 
-  ImmutableModelManager, 
-  TimeMachine, ActionManager 
+import {
+  ImmutableModelManager,
+  TimeMachine, ActionManager
 } from 'vue2-dragula'
 ```
 
