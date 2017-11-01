@@ -187,72 +187,83 @@ export class DragulaService {
     return this
   }
 
-  calcOpts(name, args) {
-    switch (name) {
-      case 'cloned':
+  get argsEventMap() {
+    return this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap()
+  }
+
+  set argsEventMap(customArgsEventMap) {
+    this._argsEventMap = customArgsEventMap
+  }
+
+  get defaultArgsEventMap() {
+    return {
+      cloned(args) {
         return {
           clone: args[0],
           original: args[1],
           type: args[2]
         }
-
-        // moves: function (el, source, handle, sibling)
-      case 'moves':
+      },
+      moves(args) {
         return {
           el: args[0],
           source: args[1],
           handle: args[2],
           sibling: args[3]
         }
-
-      case 'copy':
+      },
+      copy(args) {
         return {
           el: args[0],
           source: args[1],
         }
-
-        // accepts: function (el, target, source, sibling)
-      case 'accepts':
+      },
+      accepts(args) {
         return {
           el: args[0],
           target: args[1],
           source: args[2],
           sibling: args[3]
         }
-
-        // invalid: function (el, handle)
-      case 'invalid':
+      },
+      invalid(args) {
         return {
           el: args[0],
           handle: args[1],
         }
-
-      case 'drag':
+      },
+      drag(args) {
         return {
           el: args[0],
           source: args[1]
         }
-
-      case 'dragend':
+      },
+      dragend(args) {
         return {
           el: args[0]
         }
-
-      case 'drop':
+      },
+      drop(args) {
         return {
           el: args[0],
           target: args[1],
           source: args[2],
           sibling: args[3]
         }
-
-      default:
+      },
+      defaultEvent(args) {
         return {
           el: args[0],
           container: args[1],
           source: args[2]
         }
+      }
     }
+  }
+
+  calcOpts(name, args) {
+    let argEventMap = this.argsEventMap[name]
+    return argEventMap ? argEventMap(args) : argEventMap.defaultEvent(args)
   }
 
   setupEvents(name, drake) {
