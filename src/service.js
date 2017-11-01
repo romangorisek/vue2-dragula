@@ -4,11 +4,23 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-import { DragHandler } from './drag-handler'
-import { ModelManager } from './model-manager'
+import {
+  DragHandler
+} from './drag-handler'
+import {
+  ModelManager
+} from './model-manager'
 
-function createDragHandler({ctx, name, drake}) {
-  return new DragHandler({ ctx, name, drake })
+function createDragHandler({
+  ctx,
+  name,
+  drake
+}) {
+  return new DragHandler({
+    ctx,
+    name,
+    drake
+  })
 }
 
 function createModelManager(opts) {
@@ -16,9 +28,14 @@ function createModelManager(opts) {
 }
 
 export class DragulaService {
-  constructor (opts = {}) {
-    let {name, eventBus, drakes, options } = opts
-    options  = options || {}
+  constructor(opts = {}) {
+    let {
+      name,
+      eventBus,
+      drakes,
+      options
+    } = opts
+    options = options || {}
     this.options = options
     this.logging = options.logging
 
@@ -32,6 +49,7 @@ export class DragulaService {
 
     this.modelManager = this.createModelManager(options)
 
+    // Dragula events supported
     this.events = [
       'cancel',
       'cloned',
@@ -43,9 +61,21 @@ export class DragulaService {
       'remove',
       'shadow',
       'dropModel',
-      'removeModel'
+      'removeModel',
+      'accepts',
+      'moves',
+      'invalid'
     ]
   }
+
+  addEvents(...eventNames) {
+    this.events = this.events.concat(...eventNames)
+  }
+
+  removeEvents(...eventNames) {
+    this.events = this.events.filter(name => eventNames.includes(name))
+  }
+
 
   createModel() {
     return this.modelManager.createModel();
@@ -75,13 +105,13 @@ export class DragulaService {
     return Object.keys(this.drakes)
   }
 
-  add (name, drake) {
+  add(name, drake) {
     this.log('add (drake)', name, drake)
     this._validate('add', name)
     if (this.find(name)) {
       this.log('existing drakes', this.drakeNames)
-      let errMsg = `Drake named: "${name}" already exists for this service [${this.name}]. 
-      Most likely this error in cause by a race condition evaluating multiple template elements with 
+      let errMsg = `Drake named: "${name}" already exists for this service [${this.name}].
+      Most likely this error in cause by a race condition evaluating multiple template elements with
       the v-dragula directive having the same drake name. Please initialise the drake in the created() life cycle hook of the VM to fix this problem.`
       this.error(errMsg)
     }
@@ -96,13 +126,13 @@ export class DragulaService {
     return drake
   }
 
-  find (name) {
+  find(name) {
     this.log('find (drake) by name', name)
     this._validate('find', name)
     return this.drakes[name]
   }
 
-  handleModels (name, drake) {
+  handleModels(name, drake) {
     this.log('handleModels', name, drake)
     this._validate('handleModels', name)
     if (drake.registered) { // do not register events twice
@@ -110,7 +140,11 @@ export class DragulaService {
       return
     }
 
-    const dragHandler = this.createDragHandler({ ctx: this, name, drake })
+    const dragHandler = this.createDragHandler({
+      ctx: this,
+      name,
+      drake
+    })
     this.log('created dragHandler for service', dragHandler)
 
     drake.on('remove', dragHandler.remove.bind(dragHandler))
@@ -121,7 +155,7 @@ export class DragulaService {
   }
 
   // convenience to set eventBus handlers via Object
-  on (handlerConfig = {}) {
+  on(handlerConfig = {}) {
     this.log('on (events) ', handlerConfig)
     Object.keys(handlerConfig).forEach(handlerName => {
       let handlerFunction = handlerConfig[handlerName]
@@ -130,11 +164,13 @@ export class DragulaService {
     })
   }
 
-  destroy (name) {
+  destroy(name) {
     this.log('destroy (drake) ', name)
     this._validate('destroy', name)
     let drake = this.find(name)
-    if (!drake) { return }
+    if (!drake) {
+      return
+    }
     drake.destroy()
     this._delete(name)
   }
@@ -143,7 +179,7 @@ export class DragulaService {
     delete this.drakes[name]
   }
 
-  setOptions (name, options) {
+  setOptions(name, options) {
     this.log('setOptions (drake)', name, options)
     this._validate('setOptions', name)
     let drake = this.add(name, dragula(options))
@@ -151,47 +187,87 @@ export class DragulaService {
     return this
   }
 
-  setupEvents (name, drake) {
+  calcOpts(name, args) {
+    switch (name) {
+      case 'cloned':
+        return {
+          clone: args[0],
+          original: args[1],
+          type: args[2]
+        }
+
+        // moves: function (el, source, handle, sibling)
+      case 'moves':
+        return {
+          el: args[0],
+          source: args[1],
+          handle: args[2],
+          sibling: args[3]
+        }
+
+      case 'copy':
+        return {
+          el: args[0],
+          source: args[1],
+        }
+
+        // accepts: function (el, target, source, sibling)
+      case 'accepts':
+        return {
+          el: args[0],
+          target: args[1],
+          source: args[2],
+          sibling: args[3]
+        }
+
+        // invalid: function (el, handle)
+      case 'invalid':
+        return {
+          el: args[0],
+          handle: args[1],
+        }
+
+      case 'drag':
+        return {
+          el: args[0],
+          source: args[1]
+        }
+
+      case 'dragend':
+        return {
+          el: args[0]
+        }
+
+      case 'drop':
+        return {
+          el: args[0],
+          target: args[1],
+          source: args[2],
+          sibling: args[3]
+        }
+
+      default:
+        return {
+          el: args[0],
+          container: args[1],
+          source: args[2]
+        }
+    }
+  }
+
+  setupEvents(name, drake) {
     this.log('setupEvents', name, drake)
     this._validate('setupEvents', name)
     drake.initEvents = true
     let _this = this
 
-    function calcOpts(name, args) {
-      switch (name) {
-        case 'cloned':
-          return { clone: args[0], original: args[1], type: args[2] }
-
-        case 'drag':
-          return { el: args[0], source: args[1] }
-
-        case 'dragend':
-          return { el: args[0] }
-
-        case 'drop':
-          return {
-            el: args[0],
-            target: args[1],
-            source: args[2],
-            sibling: args[3]
-          }
-
-        default:
-          return {
-            el: args[0],
-            container: args[1],
-            source: args[2]
-          }
-      }
-    }
-
     let emitter = type => {
       _this.log('emitter', type)
 
-      function replicate () {
+      function replicate() {
         let args = Array.prototype.slice.call(arguments)
         let sendArgs = [name].concat(args)
-        let opts = calcOpts(name, args)
+        let opts = this.calcOpts(name, args)
         opts.name = name
         opts.service = this
         opts.drake = drake
@@ -205,19 +281,19 @@ export class DragulaService {
     this.events.forEach(emitter)
   }
 
-  domIndexOf (child, parent) {
+  domIndexOf(child, parent) {
     return Array.prototype.indexOf.call(
       parent.children,
       child
     )
   }
 
-  findModelForContainer (container, drake) {
+  findModelForContainer(container, drake) {
     this.log('findModelForContainer', container, drake)
     return (this.findModelContainerByContainer(container, drake) || {}).model
   }
 
-  findModelContainerByContainer (container, drake) {
+  findModelContainerByContainer(container, drake) {
     if (!drake.models) {
       this.log('findModelContainerByContainer', 'warning: no models found')
       return
@@ -230,4 +306,3 @@ export class DragulaService {
     return found
   }
 }
-

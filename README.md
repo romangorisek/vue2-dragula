@@ -15,7 +15,19 @@ See [Changelog](https://github.com/kristianmandrup/vue2-dragula/blob/master/Chan
 
 ## Status
 
-All test pass. Now supports action history with time travel and undo/redo. See [demo](https://github.com/kristianmandrup/vue2-dragula-demo/)
+All test pass. Supports action history with time travel and undo/redo.
+
+## Demo
+
+See [vue2-dragula demo](https://github.com/kristianmandrup/vue2-dragula-demo/)
+
+## Gotchas
+
+Beware of Vue 2 reactivity issues when working with Arrays.
+
+See post: [reactivity in Vue2 vs Vue3](https://blog.cloudboost.io/reactivity-in-vue-js-2-vs-vue-js-3-dcdd0728dcdf)
+
+Use `Vue.set` or `vm.$set` to explicitly set/initialize an Array on a component and notify Vue about it.
 
 ## Install
 
@@ -46,11 +58,61 @@ Vue.use(Vue2Dragula, {
 });
 ```
 
+## Dragula events and drag effects
+
+To "fine tune" Dragula events and drag effects:
+
+- [events](https://github.com/kristianmandrup/vue2-dragula#events)
+- [$dragula API](https://github.com/kristianmandrup/vue2-dragula#dragula)
+- [drag effects & events](https://github.com/kristianmandrup/vue2-dragula#adding-drag-effects)
+
+Events supported can be found (and modified) in the `DragulaService` instance, `events` instance variable:
+
+```js
+let supportedEvents = myDragulaService.events
+myDragulaService.addEvents('accepts', 'moves')
+myDragulaService.removeEvents('out', 'over')
+```
+
+The `events` are used in `setupEvents(name, drake)` which you can override to customize as needed. If you subclass `DragulaService` (recommended), you can override `calcOpts` to calculate event options for additional events:
+
+```js
+calcOpts(name, args) {
+  switch (name) {
+    case 'cloned':
+      return {
+        clone: args[0],
+        original: args[1],
+        type: args[2]
+      }
+    // more cases
+    case default:
+      // see below
+  }
+}
+```
+
+Currently the following [Dragula events](https://github.com/bevacqua/dragula#drakeon-events) are directly supported:
+
+- `cloned`
+- `moves`
+- `accepts`
+- `invalid`
+- `drag`
+- `dragend`
+- `drop`
+- `copy`
+
+Any other event is expected to be handled by the default case, ie. `(el, container, source)`
+
 ## VueX integration
 
 See [VueX integration example](https://github.com/kristianmandrup/vue2-dragula/tree/master/examples/VueX-sample.md)
 
+Please add more examples.
+
 ## Template Usage
+
 ``` html
 <div class="wrapper">
   <div class="container" v-dragula="colOne" drake="first">
@@ -642,7 +704,9 @@ The `ActionManager` can be used to manage actions at the VM level. If you have m
 
 ## Bonus Recipes
 
-#### Auto-sorted lists
+Please see the [Wiki](https://github.com/kristianmandrup/vue2-dragula/wiki)
+
+### Auto-sorted lists
 
 Add an Rx `Observable` or a `watch` to your model (list) which triggers a `sort` of a derived (ie. immutable) model whenever it is updated. You should then display the derived model in your view. Otherwise each sort operation would trigger a new sort.
 
