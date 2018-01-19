@@ -1,12 +1,19 @@
 import dragula from 'dragula'
-import { DragulaService } from './service'
+import {
+  DragulaService
+} from './service'
 
 if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
 const defaults = {
-  createService: function ({name, eventBus, drakes, options}) {
+  createService: function ({
+    name,
+    eventBus,
+    drakes,
+    options
+  }) {
     return new DragulaService({
       name,
       eventBus,
@@ -14,7 +21,7 @@ const defaults = {
       options
     })
   },
-  createEventBus: function(Vue) {
+  createEventBus: function (Vue) {
     return new Vue()
   }
 }
@@ -51,7 +58,7 @@ export default function (Vue, options = {}) {
   function logDir(...args) {
     if (!options.logging) return
     if (!options.logging.directive) return
-    console.log('v-dragula directive', ...args);
+    console.log('v-dragula directive', ...args)
   }
 
   logPlugin('Initializing vue-dragula plugin', options)
@@ -78,7 +85,6 @@ export default function (Vue, options = {}) {
   })
 
   let globalName = 'globalDrake'
-  let drake
 
   class Dragula {
     constructor(options) {
@@ -105,7 +111,7 @@ export default function (Vue, options = {}) {
     createService(serviceOpts = {}) {
       logServiceConfig('createService', serviceOpts)
 
-      this._serviceMap = this._serviceMap || {};
+      this._serviceMap = this._serviceMap || {}
 
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
@@ -169,7 +175,7 @@ export default function (Vue, options = {}) {
         let serviceNames = this.serviceNames
 
         if (!serviceNames || serviceNames.length < 1) {
-          console.warn('vue-dragula: No services found to add events handlers for', this._serviceMap);
+          console.warn('vue-dragula: No services found to add events handlers for', this._serviceMap)
           return this
         }
 
@@ -237,50 +243,50 @@ export default function (Vue, options = {}) {
       }
     }
     logDir('using global service', appService)
-    return appService //.find(name, vnode)
-  }
-
-  function findDrake(name, vnode, serviceName) {
-    return findService(name, vnode, serviceName).find(name, vnode)
+    return appService
   }
 
   function calcNames(name, vnode, ctx) {
-    let drakeName = vnode
-      ? vnode.data.attrs.drake // Vue 2
-      : this.params.drake // Vue 1
-
-    const serviceName = vnode
-      ? vnode.data.attrs.service // Vue 2
-      : this.params.service // Vue 1
+    let drakeName = vnode ? vnode.data.attrs.drake : this.params.drake
+    const serviceName = vnode ? vnode.data.attrs.service : this.params.service
 
     if (drakeName !== undefined && drakeName.length !== 0) {
       name = drakeName
     }
     drakeName = isEmpty(drakeName) ? 'default' : drakeName
 
-    return {name, drakeName, serviceName}
+    return {
+      name,
+      drakeName,
+      serviceName
+    }
   }
 
   function updateDirective(container, binding, vnode, oldVnode) {
-    logDir('updateDirective');
-    const newValue = vnode
-      ? binding.value // Vue 2
-      : container // Vue 1
-    if (!newValue) { return }
+    logDir('updateDirective')
+    const newValue = vnode ? binding.value : container
+    if (!newValue) {
+      return
+    }
 
-    const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
+    const {
+      name,
+      drakeName,
+      serviceName
+    } = calcNames(globalName, vnode, this)
     const service = findService(name, vnode, serviceName)
     const drake = service.find(drakeName, vnode)
 
     drakeContainers[drakeName] = drakeContainers[drakeName] || []
     let dc = drakeContainers[drakeName]
+
     // skip if has already been configured (same container in same drake)
     if (dc) {
       let found = dc.find(c => c === container)
-      // if (found) {
-      //   logDir('already has drake container configured', drakeName, container)
-      //   return
-      // }
+      if (found) {
+        logDir('already has drake container configured', drakeName, container)
+        return
+      }
     }
 
     if (!service) {
@@ -328,10 +334,14 @@ export default function (Vue, options = {}) {
   Vue.directive('dragula', {
     params: ['drake', 'service'],
 
-    bind (container, binding, vnode) {
+    bind(container, binding, vnode) {
       logDir('BIND', container, binding, vnode)
 
-      const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
+      const {
+        name,
+        drakeName,
+        serviceName
+      } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
       const drake = service.find(drakeName, vnode)
 
@@ -363,7 +373,7 @@ export default function (Vue, options = {}) {
       service.handleModels(name, newDrake)
     },
 
-    update (container, binding, vnode, oldVnode) {
+    update(container, binding, vnode, oldVnode) {
       logDir('UPDATE', container, binding, vnode)
       // Vue 1
       if (Vue.version === 1) {
@@ -371,20 +381,24 @@ export default function (Vue, options = {}) {
       }
     },
 
-    componentUpdated (container, binding, vnode, oldVnode) {
+    componentUpdated(container, binding, vnode, oldVnode) {
       logDir('COMPONENT UPDATED', container, binding, vnode)
     },
 
-    inserted (container, binding, vnode, oldVnode) {
+    inserted(container, binding, vnode, oldVnode) {
       logDir('INSERTED', container, binding, vnode)
       // Vue 2
       updateDirective(container, binding, vnode, oldVnode)
     },
 
-    unbind (container, binding, vnode) {
+    unbind(container, binding, vnode) {
       logDir('UNBIND', container, binding, vnode)
 
-      const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
+      const {
+        name,
+        drakeName,
+        serviceName
+      } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
       const drake = service.find(drakeName, vnode)
 
@@ -400,7 +414,9 @@ export default function (Vue, options = {}) {
         container
       })
 
-      if (!drake) { return }
+      if (!drake) {
+        return
+      }
 
       var containerIndex = drake.containers.indexOf(container)
 
@@ -417,4 +433,3 @@ export default function (Vue, options = {}) {
 
   })
 }
-

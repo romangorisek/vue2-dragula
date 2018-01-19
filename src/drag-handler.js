@@ -1,20 +1,28 @@
 const raf = window.requestAnimationFrame
-const waitForTransition = raf
-  ? function (fn) {
-    raf(() => {
-      raf(fn)
-    })
-  }
-  : function (fn) {
-    window.setTimeout(fn, 50)
-  }
+
+function raffy(fn) {
+  raf(() => {
+    raf(fn)
+  })
+}
+
+function winTimeout(fn) {
+  window.setTimeout(fn, 50)
+}
+
+const waitForTransition = raf ? raffy : winTimeout
 
 function isObject(obj) {
-  return obj === Object(obj);
+  return obj === Object(obj)
 }
 
 export class DragHandler {
-  constructor({ctx, name, drake, options}) {
+  constructor({
+    ctx,
+    name,
+    drake,
+    options
+  }) {
     this.dragElm = null
     this.dragIndex = null
     this.dropIndex = null
@@ -103,7 +111,6 @@ export class DragHandler {
     this.drake.cancel(true)
   }
 
-
   dropModelTarget(dropElm, target, source) {
     this.log('dropModelTarget', dropElm, target, source)
     let notCopy = this.dragElm === dropElm
@@ -151,7 +158,7 @@ export class DragHandler {
     })
   }
 
-  remove (el, container, source) {
+  remove(el, container, source) {
     this.log('remove', el, container, source)
     if (!this.drake.models) {
       this.log('Warning: Can NOT remove it. Must have models:', this.drake.models)
@@ -169,13 +176,13 @@ export class DragHandler {
     })
   }
 
-  drag (el, source) {
+  drag(el, source) {
     this.log('drag', el, source)
     this.dragElm = el
     this.dragIndex = this.domIndexOf(el, source)
   }
 
-  drop (dropEl, target, source) {
+  drop(dropEl, target, source) {
     this.log('drop', dropEl, target, source)
     if (!this.drake.models && !target) {
       this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target)
@@ -209,7 +216,7 @@ export class DragHandler {
       let jsonStr = JSON.stringify(stringable || model)
       return JSON.parse(jsonStr)
     } catch (e) {
-      this.log('jsonDropElmModel', 'JSON stringify/parse error', e);
+      this.log('jsonDropElmModel', 'JSON stringify/parse error', e)
     }
   }
 }

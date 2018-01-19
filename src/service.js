@@ -76,9 +76,8 @@ export class DragulaService {
     this.events = this.events.filter(name => eventNames.includes(name))
   }
 
-
   createModel() {
-    return this.modelManager.createModel();
+    return this.modelManager.createModel()
   }
 
   get shouldLog() {
@@ -188,7 +187,8 @@ export class DragulaService {
   }
 
   get argsEventMap() {
-    return this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap()
+    this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap()
+    return this._argsEventMap
   }
 
   set argsEventMap(customArgsEventMap) {
@@ -215,7 +215,7 @@ export class DragulaService {
       copy(args) {
         return {
           el: args[0],
-          source: args[1],
+          source: args[1]
         }
       },
       accepts(args) {
@@ -229,7 +229,7 @@ export class DragulaService {
       invalid(args) {
         return {
           el: args[0],
-          handle: args[1],
+          handle: args[1]
         }
       },
       drag(args) {
@@ -277,7 +277,6 @@ export class DragulaService {
 
       function replicate() {
         let args = Array.prototype.slice.call(arguments)
-        let sendArgs = [name].concat(args)
         let opts = this.calcOpts(name, args)
         opts.name = name
         opts.service = this

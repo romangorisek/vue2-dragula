@@ -1,10 +1,11 @@
 export class BaseModelManager {
-  constructor (opts = {}) {
+  constructor(opts = {}) {
     if (Array.isArray(opts)) {
       opts = {
         model: opts
       }
     }
+    opts.drake = opts.drake || {}
     this.opts = opts
     this.copy = opts.copy || opts.drake.copy
     this.name = opts.name
@@ -14,56 +15,59 @@ export class BaseModelManager {
     this.modelRef = opts.model || []
   }
 
-  get clazzName () {
+  get clazzName() {
     return this.constructor.name || 'BaseModelManager'
   }
 
-  get shouldLog () {
+  get shouldLog() {
     return this.logging && this.logging.modelManager
   }
 
-  log (event, ...args) {
+  log(event, ...args) {
     if (!this.shouldLog) return
     console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
-  notYet (name) {
+  notYet(name) {
     this.log(name, 'not yet implemented')
   }
 
-  undo () {
+  undo() {
     this.notYet('undo')
   }
 
-  redo () {
+  redo() {
     this.notYet('redo')
   }
 
-  at (index) {
+  at(index) {
     this.notYet('at')
   }
 
-  clear () {
+  clear() {
     this.notYet('clear')
   }
 
-  createModel (model) {
+  createModel(model) {
     this.notYet('createModel')
   }
 
-  createFor (opts = {}) {
+  createFor(opts = {}) {
     this.notYet('createFor')
   }
 
-  removeAt (index) {
+  removeAt(index) {
     this.notYet('removeAt')
   }
 
-  insertAt (index, dropModel) {
+  insertAt(index, dropModel) {
     this.notYet('removeAt')
   }
 
-  move ({dragIndex, dropIndex}) {
+  move({
+    dragIndex,
+    dropIndex
+  }) {
     this.notYet('move')
   }
 }

@@ -1120,13 +1120,18 @@ var require$$0$3 = Object.freeze({
 	};
 
 	var raf = window.requestAnimationFrame;
-	var waitForTransition = raf ? function (fn) {
+
+	function raffy(fn) {
 	  raf(function () {
 	    raf(fn);
 	  });
-	} : function (fn) {
+	}
+
+	function winTimeout(fn) {
 	  window.setTimeout(fn, 50);
-	};
+	}
+
+	var waitForTransition = raf ? raffy : winTimeout;
 
 	function isObject(obj) {
 	  return obj === Object(obj);
@@ -1379,6 +1384,7 @@ var require$$0$3 = Object.freeze({
 	        model: opts
 	      };
 	    }
+	    opts.drake = opts.drake || {};
 	    this.opts = opts;
 	    this.copy = opts.copy || opts.drake.copy;
 	    this.name = opts.name;
@@ -1787,7 +1793,6 @@ var require$$0$3 = Object.freeze({
 
 	        function replicate() {
 	          var args = Array.prototype.slice.call(arguments);
-	          var sendArgs = [name].concat(args);
 	          var opts = this.calcOpts(name, args);
 	          opts.name = name;
 	          opts.service = this;
@@ -1841,7 +1846,8 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'argsEventMap',
 	    get: function get() {
-	      return this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap();
+	      this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap();
+	      return this._argsEventMap;
 	    },
 	    set: function set(customArgsEventMap) {
 	      this._argsEventMap = customArgsEventMap;
@@ -2022,7 +2028,6 @@ var require$$0$3 = Object.freeze({
 	  });
 
 	  var globalName = 'globalDrake';
-	  var drake = void 0;
 
 	  var Dragula = function () {
 	    function Dragula(options) {
@@ -2206,32 +2211,28 @@ var require$$0$3 = Object.freeze({
 	      }
 	    }
 	    logDir('using global service', appService);
-	    return appService; //.find(name, vnode)
-	  }
-
-	  function findDrake(name, vnode, serviceName) {
-	    return findService(name, vnode, serviceName).find(name, vnode);
+	    return appService;
 	  }
 
 	  function calcNames(name, vnode, ctx) {
-	    var drakeName = vnode ? vnode.data.attrs.drake // Vue 2
-	    : this.params.drake; // Vue 1
-
-	    var serviceName = vnode ? vnode.data.attrs.service // Vue 2
-	    : this.params.service; // Vue 1
+	    var drakeName = vnode ? vnode.data.attrs.drake : this.params.drake;
+	    var serviceName = vnode ? vnode.data.attrs.service : this.params.service;
 
 	    if (drakeName !== undefined && drakeName.length !== 0) {
 	      name = drakeName;
 	    }
 	    drakeName = isEmpty(drakeName) ? 'default' : drakeName;
 
-	    return { name: name, drakeName: drakeName, serviceName: serviceName };
+	    return {
+	      name: name,
+	      drakeName: drakeName,
+	      serviceName: serviceName
+	    };
 	  }
 
 	  function updateDirective(container, binding, vnode, oldVnode) {
 	    logDir('updateDirective');
-	    var newValue = vnode ? binding.value // Vue 2
-	    : container; // Vue 1
+	    var newValue = vnode ? binding.value : container;
 	    if (!newValue) {
 	      return;
 	    }
@@ -2246,15 +2247,16 @@ var require$$0$3 = Object.freeze({
 
 	    drakeContainers[drakeName] = drakeContainers[drakeName] || [];
 	    var dc = drakeContainers[drakeName];
+
 	    // skip if has already been configured (same container in same drake)
 	    if (dc) {
 	      var found = dc.find(function (c) {
 	        return c === container;
 	      });
-	      // if (found) {
-	      //   logDir('already has drake container configured', drakeName, container)
-	      //   return
-	      // }
+	      if (found) {
+	        logDir('already has drake container configured', drakeName, container);
+	        return;
+	      }
 	    }
 
 	    if (!service) {

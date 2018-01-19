@@ -1,12 +1,16 @@
-import { ModelManager } from './model-manager'
-import { TimeMachine } from './time-machine'
+import {
+  ModelManager
+} from './model-manager'
+import {
+  TimeMachine
+} from './time-machine'
 
 const createDefaultTimeMachine = function (opts) {
   return new TimeMachine(opts)
 }
 
 export class ImmutableModelManager extends ModelManager {
-  constructor (opts = {}) {
+  constructor(opts = {}) {
     super(opts)
     this.timeOut = opts.timeOut || 800
     let createTimeMachine = opts.createTimeMachine || createDefaultTimeMachine
@@ -16,72 +20,72 @@ export class ImmutableModelManager extends ModelManager {
     }))
   }
 
-  get clazzName () {
+  get clazzName() {
     return this.constructor.name || 'ImmutableModelManager'
   }
 
-  get model () {
+  get model() {
     return this.timeMachine ? this.timeMachine.model : this._model
   }
 
-  get history () {
+  get history() {
     return this.timeMachine.history
   }
 
-  get timeIndex () {
+  get timeIndex() {
     return this.timeMachine.timeIndex
   }
 
-  timeTravel (index) {
+  timeTravel(index) {
     return this.timeMachine.timeTravel(index)
   }
 
-  undo () {
+  undo() {
     // this.log('UNDO', this.timeMachine)
     this.timeMachine.undo()
     return this
   }
 
-  redo () {
+  redo() {
     // this.log('REDO', this.timeMachine)
     this.timeMachine.redo()
     return this
   }
 
-  addToHistory (model) {
+  addToHistory(model) {
     this.timeMachine.addToHistory(model)
     return this
   }
 
   // override with Immutable
-  createModel (model) {
+  createModel(model) {
     return model || []
   }
 
   // TODO: add to history!?
-  createFor (opts = {}) {
+  createFor(opts = {}) {
     return new ImmutableModelManager(opts)
   }
 
-  isEmpty () {
+  isEmpty() {
     return this.model.length === 0
   }
 
-  get first () {
+  get first() {
     return this.at(0)
   }
 
-  get last () {
+  get last() {
     return this.at(this.model.length - 1)
   }
 
-  actionUpdateModel (newModel) {
+  actionUpdateModel(newModel) {
     setTimeout(() => {
       this.addToHistory(newModel)
     }, this.timeOut || 800)
   }
 
-  removeAt (index) {
+  removeAt(index) {
     if (this.copy) return;
     this.log('removeAt', {
       model: this.model,
@@ -98,7 +102,7 @@ export class ImmutableModelManager extends ModelManager {
     return newModel
   }
 
-  insertAt (index, dropModel) {
+  insertAt(index, dropModel) {
     this.log('insertAt', {
       model: this.model,
       index,
@@ -115,8 +119,11 @@ export class ImmutableModelManager extends ModelManager {
     return newModel
   }
 
-  move ({dragIndex, dropIndex}) {
-    if (this.copy) return;
+  move({
+    dragIndex,
+    dropIndex
+  }) {
+    if (this.copy) return
     this.log('move', {
       model: this.model,
       dragIndex,
