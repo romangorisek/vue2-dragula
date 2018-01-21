@@ -266,7 +266,7 @@ export class DragulaService {
     return argEventMap ? argEventMap(args) : argEventMap.defaultEvent(args)
   }
 
-  setupEvents(name, drake) {
+  setupEvents(name, drake = {}) {
     this.log('setupEvents', name, drake)
     this._validate('setupEvents', name)
     drake.initEvents = true
@@ -277,7 +277,7 @@ export class DragulaService {
 
       function replicate() {
         let args = Array.prototype.slice.call(arguments)
-        let opts = this.calcOpts(name, args)
+        let opts = _this.calcOpts(name, args)
         opts.name = name
         opts.service = this
         opts.drake = drake
