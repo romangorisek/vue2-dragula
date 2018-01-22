@@ -52,16 +52,31 @@ export class ModelManager extends BaseModelManager {
       model: this.model,
       index
     })
-    return this.model.splice(index, 1)
+    const splicedModel = this.model.splice(index, 1)
+    const removedModel = this.model
+
+    this.log({
+      splicedModel,
+      removedModel
+    })
+    return splicedModel
   }
 
-  insertAt(index, dropModel) {
+  insertAt(index, insertModel) {
     this.log('insertAt', {
       model: this.model,
       index,
-      dropModel
+      insertModel
     })
-    return this.model.splice(index, 0, dropModel)
+    // according to Vue docs, Vue wraps splice method to mutate array in place and update view
+    const splicedModel = this.model.splice(index, 0, insertModel)
+    const modelAfterInsert = this.model
+
+    this.log('insertAt', {
+      splicedModel,
+      modelAfterInsert
+    })
+    return modelAfterInsert
   }
 
   move({
@@ -74,7 +89,17 @@ export class ModelManager extends BaseModelManager {
       dragIndex,
       dropIndex
     })
+    const splicedRemainder = this.model.splice(dragIndex, 1)
+    const remainder = splicedRemainder[0]
 
-    return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0])
+    const modelAfterRemove = this.model.splice(dropIndex, 0, remainder)
+    const movedModel = this.model
+
+    this.log('move', {
+      splicedRemainder,
+      modelAfterRemove,
+      movedModel
+    })
+    return modelAfterRemove
   }
 }

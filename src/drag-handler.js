@@ -51,6 +51,9 @@ export class DragHandler {
     console.log(`${this.clazzName} [${this.name}] :`, event, ...args)
   }
 
+  /**
+   * Remove model at drag index
+   */
   removeModel() {
     this.log('removeModel', {
       sourceModel: this.sourceModel,
@@ -59,6 +62,10 @@ export class DragHandler {
     this.sourceModel.removeAt(this.dragIndex)
   }
 
+  /**
+   * Drop model on same container
+   * Move model from dropIndex to dragIndex
+   */
   dropModelSame() {
     this.log('dropModelSame', {
       sourceModel: this.sourceModel,
@@ -72,6 +79,12 @@ export class DragHandler {
     })
   }
 
+  /**
+   * Insert model on targetModel
+   * @param {*} targetModel
+   * @param {*} dropElmModel
+   * @param {*} elements
+   */
   insertModel(targetModel, dropElmModel, elements) {
     this.log('insertModel', {
       targetModel: targetModel,
@@ -81,6 +94,7 @@ export class DragHandler {
     })
 
     targetModel.insertAt(this.dropIndex, dropElmModel)
+
     this.emit('insertAt', {
       elements,
       targetModel,
@@ -99,20 +113,41 @@ export class DragHandler {
     })
   }
 
+  /**
+   * If not copy, we remove model from source model after a nice transition
+   */
   notCopy() {
     waitForTransition(() => {
       this.sourceModel.removeAt(this.dragIndex)
     })
   }
 
+  /**
+   * Cancel drop
+   * @param {*} target
+   */
   cancelDrop(target) {
-    this.log('No targetModel could be found for target:', target)
-    this.log('in drake:', this.drake)
+    this.log('No targetModel could be found for target:', {
+      target
+    })
+    this.log('in drake:', {
+      drake: this.drake
+    })
     this.drake.cancel(true)
   }
 
+  /**
+   * Handle drop model from source to target
+   * @param {*} dropElm
+   * @param {*} target
+   * @param {*} source
+   */
   dropModelTarget(dropElm, target, source) {
-    this.log('dropModelTarget', dropElm, target, source)
+    this.log('dropModelTarget', {
+      dropElm,
+      target,
+      source
+    })
     let notCopy = this.dragElm === dropElm
     let targetModel = this.getModel(target)
     let dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel()
@@ -135,31 +170,63 @@ export class DragHandler {
   }
 
   dropModel(dropElm, target, source) {
-    this.log('dropModel', dropElm, target, source)
+    this.log('dropModel', {
+      dropElm,
+      target,
+      source
+    })
     target === source ? this.dropModelSame() : this.dropModelTarget(dropElm, target, source)
   }
 
   emit(eventName, opts = {}) {
+    this.log('emit', {
+      eventName,
+      opts
+    })
     opts.sourceModel = this.sourceModel
     opts.name = this.name
-    let serviceEventName = `${this.serviceName}:${eventName}`
-
-    this.log('emit', serviceEventName, eventName, opts)
     this.eventBus.$emit(eventName, opts)
+
+    this.log('emit service', {
+      serviceEventName,
+      eventName,
+      opts
+    })
+    let serviceEventName = `${this.serviceName}:${eventName}`
     this.eventBus.$emit(serviceEventName, opts)
   }
 
+  /**
+   * Get model from location in
+   * @param {*} location
+   */
   getModel(location) {
+    const model = this.findModelForContainer(location, this.drake)
+    this.log('getModel', {
+      location,
+      model
+    })
+
     return this.modelManager.createFor({
       name: this.name,
       drake: this.drake,
       logging: this.logging,
-      model: this.findModelForContainer(location, this.drake)
+      model
     })
   }
 
+  /**
+   * Remov element from container in source
+   * @param {*} el
+   * @param {*} container
+   * @param {*} source
+   */
   remove(el, container, source) {
-    this.log('remove', el, container, source)
+    this.log('remove', {
+      el,
+      container,
+      source
+    })
     if (!this.drake.models) {
       this.log('Warning: Can NOT remove it. Must have models:', this.drake.models)
       return
@@ -176,14 +243,32 @@ export class DragHandler {
     })
   }
 
+  /**
+   * Handle drag element from source
+   * @param {*} el
+   * @param {*} source
+   */
   drag(el, source) {
-    this.log('drag', el, source)
+    this.log('drag', {
+      el,
+      source
+    })
     this.dragElm = el
     this.dragIndex = this.domIndexOf(el, source)
   }
 
+  /**
+   * Handle drop element from source to target
+   * @param {*} dropEl
+   * @param {*} target
+   * @param {*} source
+   */
   drop(dropEl, target, source) {
-    this.log('drop', dropEl, target, source)
+    this.log('drop', {
+      dropEl,
+      target,
+      source
+    })
     if (!this.drake.models && !target) {
       this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target)
       return

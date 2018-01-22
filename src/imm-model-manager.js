@@ -36,16 +36,26 @@ export class ImmutableModelManager extends ModelManager {
     return this.timeMachine.timeIndex
   }
 
+  /**
+   * Travel to specific point in action history stack
+   * @param {*} index
+   */
   timeTravel(index) {
     return this.timeMachine.timeTravel(index)
   }
 
+  /**
+   * Undo previous action from history
+   */
   undo() {
     // this.log('UNDO', this.timeMachine)
     this.timeMachine.undo()
     return this
   }
 
+  /**
+   * Redo undone action
+   */
   redo() {
     // this.log('REDO', this.timeMachine)
     this.timeMachine.redo()
@@ -85,8 +95,12 @@ export class ImmutableModelManager extends ModelManager {
     }, this.timeOut || 800)
   }
 
+  /**
+   * Removes item at index
+   * @param {*} index
+   */
   removeAt(index) {
-    if (this.copy) return;
+    if (this.copy) return
     this.log('removeAt', {
       model: this.model,
       index
@@ -102,23 +116,71 @@ export class ImmutableModelManager extends ModelManager {
     return newModel
   }
 
-  insertAt(index, dropModel) {
+  /**
+   * Inserts a dropModel at specific index
+   * NOTE: Copy needs to insert the copied item only, no remove or move involved
+   * @param {*} index
+   * @param {*} dropModel
+   */
+  insertAt(index, insertModel) {
     this.log('insertAt', {
       model: this.model,
       index,
-      dropModel
+      insertModel
     })
-    // create new model with new inserted
-    const before = this.model.slice(0, index)
-    const inclAfter = this.model.slice(index)
-    this.log('insertAt: concat', before, dropModel, inclAfter)
 
-    const newModel = this.createModel().concat(before, dropModel, inclAfter)
+    // create new model with new inserted
+
+    // Slice off the items BEFORE the insertion index
+    const itemsBefore = this.sliceBefore(index)
+
+    // Slice off the items ATER the insertion index
+    const itemsAfter = this._sliceAfter(index)
+
+    this.log('insertAt: concat', {
+      itemsBefore,
+      insertModel,
+      itemsAfter
+    })
+
+    const newModel = this._createNewModelFromInsert(itemsBefore, insertModel, itemsAfter)
+
+    this.log({
+      newModel
+    })
 
     this.actionUpdateModel(newModel)
     return newModel
   }
 
+  _createNewModelFromInsert(itemsBefore, insertItem, itemsAfter) {
+    return this.createModel().concat(itemsBefore, insertItem, itemsAfter)
+  }
+
+  /**
+   * Slice off the items before the insertion index
+   * @param {*} index
+   */
+  _sliceBefore(index) {
+    return this.model.slice(0, index)
+  }
+
+  /**
+   * Slice off the items after the insertion index
+   * @param {*} index
+   */
+  _sliceAfter(index) {
+    this.model.slice(index)
+  }
+
+
+
+
+  /**
+   * Moves item from one index to another
+   * NOTE: If we are doing a copy, we should never perform a move (ie. a remove and insert)
+   * @param {*} param0
+   */
   move({
     dragIndex,
     dropIndex

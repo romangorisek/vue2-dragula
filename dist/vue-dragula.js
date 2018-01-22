@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.5.1
+ * vue-dragula v2.5.3
  * (c) 2018 Yichang Liu
  * Released under the MIT License.
  */
@@ -1173,6 +1173,11 @@ var require$$0$3 = Object.freeze({
 
 	      (_console = console).log.apply(_console, [this.clazzName + ' [' + this.name + '] :', event].concat(args));
 	    }
+
+	    /**
+	     * Remove model at drag index
+	     */
+
 	  }, {
 	    key: 'removeModel',
 	    value: function removeModel() {
@@ -1182,6 +1187,12 @@ var require$$0$3 = Object.freeze({
 	      });
 	      this.sourceModel.removeAt(this.dragIndex);
 	    }
+
+	    /**
+	     * Drop model on same container
+	     * Move model from dropIndex to dragIndex
+	     */
+
 	  }, {
 	    key: 'dropModelSame',
 	    value: function dropModelSame() {
@@ -1196,6 +1207,14 @@ var require$$0$3 = Object.freeze({
 	        dragIndex: this.dragIndex
 	      });
 	    }
+
+	    /**
+	     * Insert model on targetModel
+	     * @param {*} targetModel
+	     * @param {*} dropElmModel
+	     * @param {*} elements
+	     */
+
 	  }, {
 	    key: 'insertModel',
 	    value: function insertModel(targetModel, dropElmModel, elements) {
@@ -1207,6 +1226,7 @@ var require$$0$3 = Object.freeze({
 	      });
 
 	      targetModel.insertAt(this.dropIndex, dropElmModel);
+
 	      this.emit('insertAt', {
 	        elements: elements,
 	        targetModel: targetModel,
@@ -1224,6 +1244,11 @@ var require$$0$3 = Object.freeze({
 	        }
 	      });
 	    }
+
+	    /**
+	     * If not copy, we remove model from source model after a nice transition
+	     */
+
 	  }, {
 	    key: 'notCopy',
 	    value: function notCopy() {
@@ -1233,17 +1258,39 @@ var require$$0$3 = Object.freeze({
 	        _this.sourceModel.removeAt(_this.dragIndex);
 	      });
 	    }
+
+	    /**
+	     * Cancel drop
+	     * @param {*} target
+	     */
+
 	  }, {
 	    key: 'cancelDrop',
 	    value: function cancelDrop(target) {
-	      this.log('No targetModel could be found for target:', target);
-	      this.log('in drake:', this.drake);
+	      this.log('No targetModel could be found for target:', {
+	        target: target
+	      });
+	      this.log('in drake:', {
+	        drake: this.drake
+	      });
 	      this.drake.cancel(true);
 	    }
+
+	    /**
+	     * Handle drop model from source to target
+	     * @param {*} dropElm
+	     * @param {*} target
+	     * @param {*} source
+	     */
+
 	  }, {
 	    key: 'dropModelTarget',
 	    value: function dropModelTarget(dropElm, target, source) {
-	      this.log('dropModelTarget', dropElm, target, source);
+	      this.log('dropModelTarget', {
+	        dropElm: dropElm,
+	        target: target,
+	        source: source
+	      });
 	      var notCopy = this.dragElm === dropElm;
 	      var targetModel = this.getModel(target);
 	      var dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel();
@@ -1267,7 +1314,11 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'dropModel',
 	    value: function dropModel(dropElm, target, source) {
-	      this.log('dropModel', dropElm, target, source);
+	      this.log('dropModel', {
+	        dropElm: dropElm,
+	        target: target,
+	        source: source
+	      });
 	      target === source ? this.dropModelSame() : this.dropModelTarget(dropElm, target, source);
 	    }
 	  }, {
@@ -1275,28 +1326,60 @@ var require$$0$3 = Object.freeze({
 	    value: function emit(eventName) {
 	      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+	      this.log('emit', {
+	        eventName: eventName,
+	        opts: opts
+	      });
 	      opts.sourceModel = this.sourceModel;
 	      opts.name = this.name;
-	      var serviceEventName = this.serviceName + ':' + eventName;
-
-	      this.log('emit', serviceEventName, eventName, opts);
 	      this.eventBus.$emit(eventName, opts);
+
+	      this.log('emit service', {
+	        serviceEventName: serviceEventName,
+	        eventName: eventName,
+	        opts: opts
+	      });
+	      var serviceEventName = this.serviceName + ':' + eventName;
 	      this.eventBus.$emit(serviceEventName, opts);
 	    }
+
+	    /**
+	     * Get model from location in
+	     * @param {*} location
+	     */
+
 	  }, {
 	    key: 'getModel',
 	    value: function getModel(location) {
+	      var model = this.findModelForContainer(location, this.drake);
+	      this.log('getModel', {
+	        location: location,
+	        model: model
+	      });
+
 	      return this.modelManager.createFor({
 	        name: this.name,
 	        drake: this.drake,
 	        logging: this.logging,
-	        model: this.findModelForContainer(location, this.drake)
+	        model: model
 	      });
 	    }
+
+	    /**
+	     * Remov element from container in source
+	     * @param {*} el
+	     * @param {*} container
+	     * @param {*} source
+	     */
+
 	  }, {
 	    key: 'remove',
 	    value: function remove(el, container, source) {
-	      this.log('remove', el, container, source);
+	      this.log('remove', {
+	        el: el,
+	        container: container,
+	        source: source
+	      });
 	      if (!this.drake.models) {
 	        this.log('Warning: Can NOT remove it. Must have models:', this.drake.models);
 	        return;
@@ -1312,17 +1395,39 @@ var require$$0$3 = Object.freeze({
 	        dragIndex: this.dragIndex
 	      });
 	    }
+
+	    /**
+	     * Handle drag element from source
+	     * @param {*} el
+	     * @param {*} source
+	     */
+
 	  }, {
 	    key: 'drag',
 	    value: function drag(el, source) {
-	      this.log('drag', el, source);
+	      this.log('drag', {
+	        el: el,
+	        source: source
+	      });
 	      this.dragElm = el;
 	      this.dragIndex = this.domIndexOf(el, source);
 	    }
+
+	    /**
+	     * Handle drop element from source to target
+	     * @param {*} dropEl
+	     * @param {*} target
+	     * @param {*} source
+	     */
+
 	  }, {
 	    key: 'drop',
 	    value: function drop(dropEl, target, source) {
-	      this.log('drop', dropEl, target, source);
+	      this.log('drop', {
+	        dropEl: dropEl,
+	        target: target,
+	        source: source
+	      });
 	      if (!this.drake.models && !target) {
 	        this.log('Warning: Can NOT drop it. Must have either models:', this.drake.models, ' or target:', target);
 	        return;
@@ -1543,17 +1648,32 @@ var require$$0$3 = Object.freeze({
 	        model: this.model,
 	        index: index
 	      });
-	      return this.model.splice(index, 1);
+	      var splicedModel = this.model.splice(index, 1);
+	      var removedModel = this.model;
+
+	      this.log({
+	        splicedModel: splicedModel,
+	        removedModel: removedModel
+	      });
+	      return splicedModel;
 	    }
 	  }, {
 	    key: 'insertAt',
-	    value: function insertAt(index, dropModel) {
+	    value: function insertAt(index, insertModel) {
 	      this.log('insertAt', {
 	        model: this.model,
 	        index: index,
-	        dropModel: dropModel
+	        insertModel: insertModel
 	      });
-	      return this.model.splice(index, 0, dropModel);
+	      // according to Vue docs, Vue wraps splice method to mutate array in place and update view
+	      var splicedModel = this.model.splice(index, 0, insertModel);
+	      var modelAfterInsert = this.model;
+
+	      this.log('insertAt', {
+	        splicedModel: splicedModel,
+	        modelAfterInsert: modelAfterInsert
+	      });
+	      return modelAfterInsert;
 	    }
 	  }, {
 	    key: 'move',
@@ -1567,8 +1687,18 @@ var require$$0$3 = Object.freeze({
 	        dragIndex: dragIndex,
 	        dropIndex: dropIndex
 	      });
+	      var splicedRemainder = this.model.splice(dragIndex, 1);
+	      var remainder = splicedRemainder[0];
 
-	      return this.model.splice(dropIndex, 0, this.model.splice(dragIndex, 1)[0]);
+	      var modelAfterRemove = this.model.splice(dropIndex, 0, remainder);
+	      var movedModel = this.model;
+
+	      this.log('move', {
+	        splicedRemainder: splicedRemainder,
+	        modelAfterRemove: modelAfterRemove,
+	        movedModel: movedModel
+	      });
+	      return modelAfterRemove;
 	    }
 	  }, {
 	    key: 'clazzName',
@@ -1777,12 +1907,17 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'calcOpts',
 	    value: function calcOpts(name, args) {
-	      var argEventMap = this.argsEventMap[name];
-	      return argEventMap ? argEventMap(args) : argEventMap.defaultEvent(args);
+	      function noOpts() {
+	        return {};
+	      }
+	      var argEventMap = this.argsEventMap[name] || this.argsEventMap.defaultEvent || noOpts;
+	      return argEventMap(args);
 	    }
 	  }, {
 	    key: 'setupEvents',
-	    value: function setupEvents(name, drake) {
+	    value: function setupEvents(name) {
+	      var drake = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
 	      this.log('setupEvents', name, drake);
 	      this._validate('setupEvents', name);
 	      drake.initEvents = true;
@@ -1793,7 +1928,7 @@ var require$$0$3 = Object.freeze({
 
 	        function replicate() {
 	          var args = Array.prototype.slice.call(arguments);
-	          var opts = this.calcOpts(name, args);
+	          var opts = _this.calcOpts(name, args);
 	          opts.name = name;
 	          opts.service = this;
 	          opts.drake = drake;
@@ -1846,7 +1981,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'argsEventMap',
 	    get: function get() {
-	      this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap();
+	      this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap;
 	      return this._argsEventMap;
 	    },
 	    set: function set(customArgsEventMap) {
@@ -2528,9 +2663,20 @@ var require$$0$3 = Object.freeze({
 
 	  createClass(ImmutableModelManager, [{
 	    key: 'timeTravel',
+
+
+	    /**
+	     * Travel to specific point in action history stack
+	     * @param {*} index
+	     */
 	    value: function timeTravel(index) {
 	      return this.timeMachine.timeTravel(index);
 	    }
+
+	    /**
+	     * Undo previous action from history
+	     */
+
 	  }, {
 	    key: 'undo',
 	    value: function undo() {
@@ -2538,6 +2684,11 @@ var require$$0$3 = Object.freeze({
 	      this.timeMachine.undo();
 	      return this;
 	    }
+
+	    /**
+	     * Redo undone action
+	     */
+
 	  }, {
 	    key: 'redo',
 	    value: function redo() {
@@ -2583,6 +2734,12 @@ var require$$0$3 = Object.freeze({
 	        _this2.addToHistory(newModel);
 	      }, this.timeOut || 800);
 	    }
+
+	    /**
+	     * Removes item at index
+	     * @param {*} index
+	     */
+
 	  }, {
 	    key: 'removeAt',
 	    value: function removeAt(index) {
@@ -2601,24 +2758,80 @@ var require$$0$3 = Object.freeze({
 	      this.actionUpdateModel(newModel);
 	      return newModel;
 	    }
+
+	    /**
+	     * Inserts a dropModel at specific index
+	     * NOTE: Copy needs to insert the copied item only, no remove or move involved
+	     * @param {*} index
+	     * @param {*} dropModel
+	     */
+
 	  }, {
 	    key: 'insertAt',
-	    value: function insertAt(index, dropModel) {
+	    value: function insertAt(index, insertModel) {
 	      this.log('insertAt', {
 	        model: this.model,
 	        index: index,
-	        dropModel: dropModel
+	        insertModel: insertModel
 	      });
-	      // create new model with new inserted
-	      var before = this.model.slice(0, index);
-	      var inclAfter = this.model.slice(index);
-	      this.log('insertAt: concat', before, dropModel, inclAfter);
 
-	      var newModel = this.createModel().concat(before, dropModel, inclAfter);
+	      // create new model with new inserted
+
+	      // Slice off the items BEFORE the insertion index
+	      var itemsBefore = this.sliceBefore(index);
+
+	      // Slice off the items ATER the insertion index
+	      var itemsAfter = this._sliceAfter(index);
+
+	      this.log('insertAt: concat', {
+	        itemsBefore: itemsBefore,
+	        insertModel: insertModel,
+	        itemsAfter: itemsAfter
+	      });
+
+	      var newModel = this._createNewModelFromInsert(itemsBefore, insertModel, itemsAfter);
+
+	      this.log({
+	        newModel: newModel
+	      });
 
 	      this.actionUpdateModel(newModel);
 	      return newModel;
 	    }
+	  }, {
+	    key: '_createNewModelFromInsert',
+	    value: function _createNewModelFromInsert(itemsBefore, insertItem, itemsAfter) {
+	      return this.createModel().concat(itemsBefore, insertItem, itemsAfter);
+	    }
+
+	    /**
+	     * Slice off the items before the insertion index
+	     * @param {*} index
+	     */
+
+	  }, {
+	    key: '_sliceBefore',
+	    value: function _sliceBefore(index) {
+	      return this.model.slice(0, index);
+	    }
+
+	    /**
+	     * Slice off the items after the insertion index
+	     * @param {*} index
+	     */
+
+	  }, {
+	    key: '_sliceAfter',
+	    value: function _sliceAfter(index) {
+	      this.model.slice(index);
+	    }
+
+	    /**
+	     * Moves item from one index to another
+	     * NOTE: If we are doing a copy, we should never perform a move (ie. a remove and insert)
+	     * @param {*} param0
+	     */
+
 	  }, {
 	    key: 'move',
 	    value: function move(_ref) {
@@ -2713,12 +2926,29 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'doAct',
 	    value: function doAct(container, action) {
+	      this.log('doAct', {
+	        container: container,
+	        action: action
+	      });
 	      var actFun = container[action].bind(container);
 	      // this.log('doAct', actFun, container, action)
 	      if (!actFun) {
 	        throw new Error(container, 'missing', action, 'method');
 	      }
 	      actFun();
+	    }
+
+	    // if not a copy action, do the action on source container also
+
+	  }, {
+	    key: 'isSourceContainerAction',
+	    value: function isSourceContainerAction(action) {
+	      return action !== 'copy';
+	    }
+	  }, {
+	    key: 'isTargetContainerAction',
+	    value: function isTargetContainerAction(action) {
+	      return true;
 	    }
 	  }, {
 	    key: 'do',
@@ -2737,15 +2967,26 @@ var require$$0$3 = Object.freeze({
 	      // TODO: use elements, indexes to create visual transition/animation effect
 	      var models = action.models;
 
-	      this.log(name, action);
+	      this.log('do', {
+	        name: name,
+	        action: action,
+	        source: source,
+	        target: target
+	      });
 
 	      var source = models.source,
 	          target = models.target;
 
-	      // this.log(name, 'actions', source, target)
+	      // perform one action on source and one on target
+	      // this could be the cause of the double copy problem
+	      // since a copy action only takes effect on the target container
 
-	      this.doAct(source, name);
-	      this.doAct(target, name);
+	      if (this.isSourceContainerAction(action)) {
+	        this.doAct(source, name);
+	      }
+	      if (this.isTargetContainerAction(action)) {
+	        this.doAct(target, name);
+	      }
 
 	      this.emitAction(name, action);
 
@@ -2755,6 +2996,10 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'emitAction',
 	    value: function emitAction(name, action) {
+	      this.log('emitAction', {
+	        name: name,
+	        action: action
+	      });
 	      var fun = this.observer[name];
 	      if (typeof fun === 'function') fun(action);
 	    }
@@ -2771,6 +3016,8 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'undo',
 	    value: function undo() {
+	      this.log('UNDO');
+
 	      this.do({
 	        name: 'undo',
 	        container: {
@@ -2782,6 +3029,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'redo',
 	    value: function redo() {
+	      this.log('REDO');
 	      this.do({
 	        name: 'redo',
 	        container: {
@@ -2792,17 +3040,20 @@ var require$$0$3 = Object.freeze({
 	    }
 	  }, {
 	    key: 'act',
-	    value: function act(_ref2) {
-	      var name = _ref2.name,
-	          models = _ref2.models,
-	          indexes = _ref2.indexes,
-	          elements = _ref2.elements;
+	    value: function act() {
+	      var action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	      var name = action.name,
+	          models = action.models,
+	          indexes = action.indexes,
+	          elements = action.elements;
 
-	      this.actions.done.push({
+	      this.log('act (store action on stack)', {
+	        name: name,
 	        models: models,
 	        indexes: indexes,
 	        elements: elements
 	      });
+	      this.actions.done.push(action);
 	    }
 	  }, {
 	    key: 'clazzName',

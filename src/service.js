@@ -187,7 +187,7 @@ export class DragulaService {
   }
 
   get argsEventMap() {
-    this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap()
+    this._argsEventMap = this._argsEventMap || this.defaultArgsEventMap
     return this._argsEventMap
   }
 
@@ -262,8 +262,11 @@ export class DragulaService {
   }
 
   calcOpts(name, args) {
-    let argEventMap = this.argsEventMap[name]
-    return argEventMap ? argEventMap(args) : argEventMap.defaultEvent(args)
+    function noOpts() {
+      return {}
+    }
+    let argEventMap = this.argsEventMap[name] || this.argsEventMap.defaultEvent || noOpts
+    return argEventMap(args)
   }
 
   setupEvents(name, drake = {}) {
