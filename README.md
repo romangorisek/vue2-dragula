@@ -6,6 +6,24 @@ Vue wrapper for [dragula](https://github.com/bevacqua/dragula) drag'n drop libra
 
 This library has been refactored, upgraded and extended with powerful new features for use with Vue 2.
 
+## Call for help: copy error
+
+This library has a long standing issue with the `copy` operation, resulting in items being inserted twice in the target container.
+
+I have tried to debug it thorougly but with no success so far. I suspect it has to do with the Vue2 override of Array `splice` method, used in the Model Manager and the correct use of the Vue update queue.
+
+You can try the `ImmutableModelManager` and see if that works better as it will return a new immutable array with a new pointer on each change.
+
+[$set for modifying objects in array for reactivity](https://github.com/vuejs/vue/issues/4443)
+
+`Vue.set(this.model, changedModel)`
+
+Here a [JSFiddle](https://jsfiddle.net/tfvouu61/2/) to play with
+
+Please help fix this bug!
+
+Also: I haven't been using Vue2 much for the past year, so could use another contributor to be a care taker for this project. Thanks!
+
 ## Overview
 
 - Works with [Vue 2](https://medium.com/the-vue-point/vue-2-0-is-here-ef1f26acf4b8#.c089dtgol)
