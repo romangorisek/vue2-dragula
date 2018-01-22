@@ -10,7 +10,7 @@ This library has been refactored, upgraded and extended with powerful new featur
 
 This library has a long standing issue with the `copy` operation, resulting in items being inserted twice in the target container.
 
-I have tried to debug it thorougly but with no success so far. I suspect it has to do with the Vue2 override of Array `splice` method, used in the Model Manager and the correct use of the Vue update queue.
+I have tried to debug it thorougly but with no success so far. I suspect it has to do with the Vue2 override of Array `splice` method, used in the `ModelManager` and the correct use of the Vue update queue.
 
 You can try the `ImmutableModelManager` and see if that works better as it will return a new immutable array with a new pointer on each change.
 
@@ -22,7 +22,27 @@ Here a [JSFiddle](https://jsfiddle.net/tfvouu61/2/) to play with
 
 Please help fix this bug!
 
-Also: I haven't been using Vue2 much for the past year, so could use another contributor to be a care taker for this project. Thanks!
+You can also try a simple array example in a Vue component, with buttons and handlers to simulate each of the effects (on underlying array model) for the drag effects:
+
+- `copy`
+- `move`
+
+To better help track and fix the problem with the way Vue updates arrays.
+
+```js
+insertAt(index, insertModel) {
+  const splicedModel = this.model.splice(index, 0, insertModel)
+  const modelAfterInsert = this.model
+  return splicedModel
+}
+```
+
+Currently the `splicedModel` returns an empty array `[]` and `modelAfterInsert` the same (unmodified) array as before the `splice`. Yet, `copy` (or Vue?) still ends up inserting the item twice in the UI
+
+### Call for care taker or more contributors
+
+I haven't been using Vue2 much for the past year, so could use one or more contributors to be take care of this project and keep it up to date.
+Thanks!
 
 ## Overview
 
