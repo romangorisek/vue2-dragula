@@ -39,6 +39,31 @@ insertAt(index, insertModel) {
 
 Currently the `splicedModel` returns an empty array `[]` and `modelAfterInsert` the same (unmodified) array as before the `splice`. Yet, `copy` (or Vue?) still ends up inserting the item twice in the UI
 
+## Copy: ensure clone
+
+When making a copy error we need to ensure we are not reusing the same reference in the two container models. We need to clone the value first.
+
+Otherwise, if "copy" is deleted or modified in one container, it will be deleted/modifed in both due to shared reference.
+
+```js
+dropModelTarget(dropElm, target, source) {
+  let notCopy = this.dragElm === dropElm
+  let dropElmModel = notCopy ? this.dropElmModel() : this.jsonDropElmModel()
+  if (notCopy) {
+    this.notCopy()
+  }
+  // ...
+}
+
+jsonDropElmModel() {
+  // ...
+  let jsonStr = JSON.stringify(stringable || model)
+  return JSON.parse(jsonStr)
+}
+```
+
+So we should be handling this correctly!?
+
 ### Call for care taker or more contributors
 
 I haven't been using Vue2 much for the past year, so could use one or more contributors to be take care of this project and keep it up to date.
