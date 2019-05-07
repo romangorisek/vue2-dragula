@@ -415,9 +415,11 @@ var require$$0$3 = Object.freeze({
 	    var _offsetX; // reference x
 	    var _offsetY; // reference y
 	    var _moveX; // reference move x
-	    var _moveY; // reference move y
+			var _moveY; // reference move y
+			var _clientXInit;
 	    var _initialSibling; // reference sibling when grabbed
-	    var _currentSibling; // reference sibling now
+			var _currentSibling; // reference sibling now
+			var _immediate;
 	    var _copy; // item used for copying
 	    var _renderTimer; // timer for setTimeout renderMirrorImage
 	    var _lastDropTarget = null; // last container item was over
@@ -680,7 +682,7 @@ var require$$0$3 = Object.freeze({
 	      if (isInitialPlacement(target)) {
 	        drake.emit('cancel', item, _source, _source);
 	      } else {
-	        drake.emit('drop', item, target, _source, _currentSibling);
+	        drake.emit('drop', item, target, _source, _currentSibling, _immediate);
 	      }
 	      cleanup();
 	    }
@@ -718,7 +720,7 @@ var require$$0$3 = Object.freeze({
 	      if (initial || reverts) {
 	        drake.emit('cancel', item, _source, _source);
 	      } else {
-	        drake.emit('drop', item, parent, _source, _currentSibling);
+	        drake.emit('drop', item, parent, _source, _currentSibling, _immediate);
 	      }
 	      cleanup();
 	    }
@@ -737,7 +739,15 @@ var require$$0$3 = Object.freeze({
 	      if (_lastDropTarget) {
 	        drake.emit('out', item, _lastDropTarget, _source);
 	      }
-	      drake.emit('dragend', item);
+				drake.emit('dragend', item);
+				
+				// rok2019
+				let elements = document.getElementsByClassName("item");
+				for (let el of elements) {
+					el.classList.remove('mirror-over')
+				}
+				// end - rok2019
+
 	      _source = _item = _copy = _initialSibling = _currentSibling = _renderTimer = _lastDropTarget = null;
 	    }
 
@@ -780,10 +790,16 @@ var require$$0$3 = Object.freeze({
 	      if (!_mirror) {
 	        return;
 	      }
-	      e.preventDefault();
+				e.preventDefault();
+				
+				var clientX = getCoord('clientX', e);
+				var clientY = getCoord('clientY', e);
 
-	      var clientX = getCoord('clientX', e);
-	      var clientY = getCoord('clientY', e);
+				// WIP - lock dragging vertically
+				// console.log(clientX)
+				// if (!_clientXInit) {
+				// 		_clientXInit = clientX - _offsetX;
+				// }
 	      var x = clientX - _offsetX;
 	      var y = clientY - _offsetY;
 
@@ -807,7 +823,7 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 	      var reference;
-	      var immediate = getImmediateChild(dropTarget, elementBehindCursor);
+				var immediate = _immediate = getImmediateChild(dropTarget, elementBehindCursor);
 	      if (immediate !== null) {
 	        reference = getReference(dropTarget, immediate, clientX, clientY);
 	      } else if (o.revertOnSpill === true && !_copy) {
@@ -820,12 +836,32 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 	      if (reference === null && changed || reference !== item && reference !== nextEl(item)) {
-	        _currentSibling = reference;
-	        dropTarget.insertBefore(item, reference);
-	        drake.emit('shadow', item, dropTarget, _source);
+					_currentSibling = reference;
+					// console.log(item)
+					// console.log(reference)
+					// dropTarget.insertBefore(item, reference);
+
+					// rok2019
+					let elements = document.getElementsByClassName("item");
+					for (let el of elements) {
+						el.classList.remove('mirror-over')
+					}
+					if (immediate) {
+						immediate.classList.add('mirror-over')
+					}
+					// end - rok2019
+
+
+	        drake.emit('shadow', item, dropTarget, _source, immediate);
 	      }
 	      function moved(type) {
-	        drake.emit(type, item, _lastDropTarget, _source);
+					drake.emit(type, item, _lastDropTarget, _source);
+					// rok2019
+					let elements = document.getElementsByClassName("item");
+					for (let el of elements) {
+						el.classList.remove('mirror-over')
+					}
+					// end - rok2019
 	      }
 	      function over() {
 	        if (changed) {
@@ -1062,7 +1098,8 @@ var require$$0$3 = Object.freeze({
 	    };
 	    if (coord in missMap && !(coord in host) && missMap[coord] in host) {
 	      coord = missMap[coord];
-	    }
+			}
+
 	    return host[coord];
 	  }
 
@@ -2265,7 +2302,7 @@ var require$$0$3 = Object.freeze({
 	        var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	        logServiceConfig('on', name, handlerConfig);
-	        if ((typeof name === 'undefined' ? 'undefined' : typeof name) === 'object') {
+	        if ((typeof name === 'undefined' ? 'undefined' : _typeof(name)) === 'object') {
 	          handlerConfig = name;
 	          // add event handlers for all services
 	          var serviceNames = this.serviceNames;
