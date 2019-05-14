@@ -743,8 +743,8 @@ var require$$0$3 = Object.freeze({
 				
 				// rok2019
 				let elements = document.getElementsByClassName("item");
-				for (let el of elements) {
-					el.classList.remove('mirror-over')
+				for(var i = 0; i < elements.length; i++) {
+					element[i].classList.remove('mirror-over');
 				}
 				// end - rok2019
 
@@ -843,11 +843,12 @@ var require$$0$3 = Object.freeze({
 
 					// rok2019
 					let elements = document.getElementsByClassName("item");
-					for (let el of elements) {
-						el.classList.remove('mirror-over')
+					
+					for(var i = 0; i < elements.length; i++) {
+						element[i].classList.remove('mirror-over');
 					}
 					if (immediate) {
-						immediate.classList.add('mirror-over')
+						immediate.classList.add('mirror-over');
 					}
 					// end - rok2019
 
@@ -858,8 +859,9 @@ var require$$0$3 = Object.freeze({
 					drake.emit(type, item, _lastDropTarget, _source);
 					// rok2019
 					let elements = document.getElementsByClassName("item");
-					for (let el of elements) {
-						el.classList.remove('mirror-over')
+					
+					for(var i = 0; i < elements.length; i++) {
+						element[i].classList.remove('mirror-over');
 					}
 					// end - rok2019
 	      }
@@ -2302,7 +2304,7 @@ var require$$0$3 = Object.freeze({
 	        var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	        logServiceConfig('on', name, handlerConfig);
-	        if ((typeof name === 'undefined' ? 'undefined' : _typeof(name)) === 'object') {
+	        if ((typeof name === 'undefined' ? 'undefined' : typeof(name)) === 'object') {
 	          handlerConfig = name;
 	          // add event handlers for all services
 	          var serviceNames = this.serviceNames;
