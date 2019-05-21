@@ -744,7 +744,7 @@ var require$$0$3 = Object.freeze({
 				// rok2019
 				let elements = document.getElementsByClassName("item");
 				for(var i = 0; i < elements.length; i++) {
-					element[i].classList.remove('mirror-over');
+					elements[i].classList.remove('mirror-over');
 				}
 				// end - rok2019
 
@@ -845,7 +845,7 @@ var require$$0$3 = Object.freeze({
 					let elements = document.getElementsByClassName("item");
 					
 					for(var i = 0; i < elements.length; i++) {
-						element[i].classList.remove('mirror-over');
+						elements[i].classList.remove('mirror-over');
 					}
 					if (immediate) {
 						immediate.classList.add('mirror-over');
@@ -861,7 +861,7 @@ var require$$0$3 = Object.freeze({
 					let elements = document.getElementsByClassName("item");
 					
 					for(var i = 0; i < elements.length; i++) {
-						element[i].classList.remove('mirror-over');
+						elements[i].classList.remove('mirror-over');
 					}
 					// end - rok2019
 	      }
